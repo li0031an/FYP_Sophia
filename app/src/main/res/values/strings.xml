@@ -1,0 +1,160 @@
+<resources>
+    <string name="app_name">FYP_AMPS_ANDROID_YISHAN</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="title_activity_base">BaseActivity</string>
+    <string name="title_activity_login">LoginActivity</string>
+
+    <string name="logout">Logout</string>
+
+    <string name="collections">Collections</string>
+    <string name="action_overflow">Menu</string>
+    <string name="workingassets">Working Assets</string>
+    <string name="projects">Projects</string>
+    <string name="folder">Folder</string>
+    <string name="search">Search</string>
+    <string name="report">Report</string>
+    <string name="home">Home</string>
+    <string name="admin">Admin</string>
+    <string name="profile">Profile</string>
+    <string name="theme">Theme</string>
+    <string name="help">Help</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="button_login">Login</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="view">View</string>
+    <string name="news">NEWS</string>
+    <string name="headline1">Headline1 \nContent of headline 1</string>
+    <string name="title_fragment_profile_account">ProfileAccountFragment</string>
+    <string name="title_activity_main_tab_menu">MainTabMenu</string>
+    <string name="title_activity_profile_tab_menu">MainActivity</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="displayname">Display Name</string>
+    <string name="firstname">First Name</string>
+    <string name="lastname">Last Name</string>
+    <string name="email">Email Address</string>
+    <string name="title">Title</string>
+    <string name="gender">Gender</string>
+    <string name="birthdate">Birth Date</string>
+    <string name="ic">IC</string>
+    <string name="update">Update</string>
+    <string name="cancel">Cancel</string>
+    <string name="title_fragment_profile_password">ProfilePasswordFragment</string>
+    <string name="currentpassword">Current Password</string>
+    <string name="newpassword">New Password</string>
+    <string name="verifypassword">Verify Password</string>
+    <string name="title_fragment_profile_settings">ProfileSettingsFragment</string>
+    <string name="noofprojectstodisplay">No. of Projects to display: </string>
+    <string name="noofassetstodisplay">No. of Assets to display: </string>
+    <string name="autopreviewassets">Automatically Preview Assets</string>
+    <string name="requirechangepassword">Require change of password every 72 days</string>
+
+    <string-array name="number1to10">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
+
+    <string name="title_activity_project">ProjectActivity</string>
+    <string name="title_fragment_project_information">ProjectInformationFragment</string>
+    <string name="title_fragment_project_bulletins">ProjectBulletinsFragment</string>
+    <string name="title_fragment_project_charts">ProjectChartsFragment</string>
+    <string name="projectname">Project Name</string>
+    <string name="projecttype">Project Type</string>
+    <string name="projectstatus">Project Status</string>
+    <string name="client">Client</string>
+    <string name="estimatedstart">Estimated Start</string>
+    <string name="estimatedend">Estimated End</string>
+    <string name="estimatedduration">Estimated Duration (days)</string>
+    <string name="actualstart">Actual Start</string>
+    <string name="actualend">Actual End</string>
+    <string name="actualduration">Actual Duration (days)</string>
+    <string name="description">Description</string>
+    <string name="createdby">Created By: Admin</string>
+    <string name="creationdate">Creation Date: 04/03/2013</string>
+    <string name="lastupdatedby">Last Updated By: Admin</string>
+    <string name="lastupdatedon">Last Updated On: 04/03/2013</string>
+
+    <string-array name="projecttypevalue">
+        <item>Type A</item>
+        <item>Type B</item>
+        <item>Type C</item>
+        <item>Type D</item>
+    </string-array>
+    <string-array name="projectstatusvalue">
+        <item>Status A</item>
+        <item>Status B</item>
+        <item>Status C</item>
+        <item>Status D</item>
+    </string-array>
+    <string-array name="clientvalue">
+        <item>Client A</item>
+        <item>Client B</item>
+        <item>Client C</item>
+        <item>Client D</item>
+    </string-array>
+
+    <string name="title_activity_folder">FolderActivity</string>
+    <string name="title_fragment_search">SearchFragment</string>
+    <string name="title_fragment_report">ReportFragment</string>
+    <string name="title_activity_report">ReportActivity</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="title_activity_working_assets">WorkingAssetsActivity</string>
+    <string name="title_activity_project_list">ProjectListActivity</string>
+    <string name="name">Name</string>
+    <string name="status">Status</string>
+    <string name="preview">Preview</string>
+    <string name="details">Details</string>
+    <string name="title_fragment_working_assets_preview">WorkingAssetsPreviewFragment</string>
+    <string name="title_fragment_working_assets_properties">WorkingAssetsPropertiesFragment</string>
+    <string name="title_fragment_working_assets_comments">WorkingAssetsCommentsFragment</string>
+    <string name="title_fragment_working_assets_revisions">WorkingAssetsRevisionsFragment</string>
+    <string name="title_fragment_working_assets_log_history">WorkingAssetsLogHistoryFragment</string>
+    <string name="assetname">Asset Name</string>
+    <string name="underproject">Under Project</string>
+    <string name="workflow">Workflow</string>
+    <string name="currentstep">Current Step</string>
+    <string name="assigneduser">Assigned User</string>
+    <string name="trackingstatus">Tracking Status</string>
+
+    <string-array name="workflowvalue">
+        <item>Workflow 1</item>
+        <item>Workflow 2</item>
+        <item>Workflow 3</item>
+        <item>Workflow 4</item>
+    </string-array>
+    <string-array name="currentstepvalue">
+        <item>Step 1</item>
+        <item>Step 2</item>
+        <item>Step 3</item>
+        <item>Step 4</item>
+    </string-array>
+
+    <string name="comment">Comment</string>
+    <string name="revision">Revision</string>
+    <string name="user">User</string>
+    <string name="date">Date</string>
+    <string name="revisionno">Revision No</string>
+    <string name="uploadedby">Uploaded By</string>
+    <string name="uploadeddate">Uploaded Date</string>
+    <string name="title_activity_image_upload">Upload Asset</string>
+    <string name="upload">Upload</string>
+    <string name="Description">Description</string>
+    <string name="x">X</string>
+    <string name="title_activity_video_upload">Upload Video</string>
+    <string name="view_video">Video Player</string>
+    <string name="image_full_screen">Full-screen image review</string>
+    <string name="full_screen_mode">Full-Screen Mode: </string>
+    <string name="title_activity_project_details">ProjectDetailsActivity</string>
+</resources>
