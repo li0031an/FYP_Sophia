@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +29,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class LoginActivity extends BaseActivity implements Settings {
+public class LoginActivity extends Activity implements Settings {
     public static String TAG = "LoginActivity";
     public static String ERROR_MSG_INCORRECT_INPUT_INFO = "Incorrect username or password";
     private static final String SHARED_PREFERENCE_LOGIN_NAME = "preference_login";
@@ -154,6 +155,7 @@ public class LoginActivity extends BaseActivity implements Settings {
             }
         }
 
+        //todo - HttpClient is deprecated, needs change
         public String login() {
             String responseBody = "";
             // Instantiate an HttpClient
