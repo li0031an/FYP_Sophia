@@ -10,8 +10,8 @@
 
     <item android:id="@+id/action_logout"
         android:title="@string/logout"
+        android:icon="@mipmap/ic_launcher"
         android:orderInCategory="300"
-
         android:showAsAction="ifRoom" />
 
 </menu>
