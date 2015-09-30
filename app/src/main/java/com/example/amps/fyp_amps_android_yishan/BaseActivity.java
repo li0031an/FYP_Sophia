@@ -73,8 +73,8 @@ public class BaseActivity extends Activity implements Settings {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         System.out.println(item.getItemId());
-//        switch (item.getItemId()) {
-//            case R.id.home:
+        switch (item.getItemId()) {
+//            case R.id.action_logout:
 //                intent = new Intent(this, HomeActivity.class);
 //                startActivity(intent);
 //                finish();
@@ -99,14 +99,14 @@ public class BaseActivity extends Activity implements Settings {
 //                startActivity(intent);
 //                finish();
 //                break;
-//            case R.id.logout:
-//                Logout task = new Logout();
-//                task.execute();
-//                intent = new Intent(this, LoginActivity.class);
-//                break;
-//            default:
-//                break;
-//        }
+            case R.id.action_logout:
+                Logout task = new Logout();
+                task.execute();
+                intent = new Intent(this, LoginActivity.class);
+                break;
+            default:
+                break;
+        }
         return true;
     }
 
