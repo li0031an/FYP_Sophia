@@ -28,12 +28,12 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ProjectListActivity extends BaseActivity implements Settings,
         View.OnClickListener {
-    ProgressDialog dialog;
-    String error_code;
-    ArrayList<Project> projectArray = new ArrayList<Project>();
+    ArrayList<Project> projectArray;
+    GetProjectInfo task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         setContentView(R.layout.activity_project_list);
         setTitle("Projects");
         settings = getSharedPreferences(SETTINGS, 0);
-        GetProjectInfo task = new GetProjectInfo();
+        task = new GetProjectInfo(this, settings);
         task.execute();
     }
 
@@ -70,7 +70,6 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             textViewName.setId(i);
             textViewName.setOnClickListener(this);
 
-
             tr.addView(textViewName, new TableRow.LayoutParams(0,
                     LayoutParams.WRAP_CONTENT, (float) 1));
 
@@ -87,85 +86,23 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         startActivity(intent);
     }
 
-    public class GetProjectInfo extends AsyncTask<Object, Object, Object> {
-
-        @Override
-        protected void onPreExecute() {
-            dialog = ProgressDialog.show(ProjectListActivity.this,
-                    "Retrieving Projects", "Please wait...", true);
-        }
-
-        @Override
-        protected String doInBackground(Object... arg0) {
-            return retrieveProjects();
-
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            dialog.dismiss();
-            parseJSONResponse((String) result);
-
+    public void onGetProjectInfoReady(){
+        projectArray = task.projectArray;
+        if (null != projectArray && projectArray.size() != 0) {
             View v = ProjectListActivity.this
                     .findViewById(android.R.id.content).getRootView();
             createTableRow(v);
-        }
-
-        public String retrieveProjects() {
-            String responseBody = "";
-            // Instantiate an HttpClient
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(SZAAPIURL + "getProjectInfo");
-
-            // Post parameters
-            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-            postParameters.add(new BasicNameValuePair("tokenid", settings
-                    .getString("tokenid", null)));
-            postParameters.add(new BasicNameValuePair("userid", settings
-                    .getString("userid", null)));
-
-            // Instantiate a POST HTTP method
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                responseBody = httpclient.execute(httppost, responseHandler);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return responseBody;
-        }
-
-        public void parseJSONResponse(String responseBody) {
-            JSONArray json, data_array;
-            JSONObject job;
-            Project p;
-            try {
-                json = new JSONArray(responseBody);
-                job = json.getJSONObject(0);
-                data_array = job.getJSONArray("data_array");
-                for (int i = 0; i < data_array.length(); i++) {
-                    JSONObject dataJob = new JSONObject(data_array.getString(i));
-
-                    p = new Project();
-                    p.setProject_id(dataJob.getString("project_id"));
-                    p.setName(dataJob.getString("name"));
-                    p.setDes(dataJob.getString("des"));
-                    p.setEstimated_datestart(dataJob
-                            .getString("estimated_datestart"));
-                    p.setEstimated_dateend(dataJob
-                            .getString("estimated_dateend"));
-                    p.setActual_datestart(dataJob.getString("actual_datestart"));
-                    p.setActual_dateend(dataJob.getString("actual_dateend"));
-                    p.setDuration(dataJob.getString("duration"));
-                    p.setCreated_userid(dataJob.getString("created_userid"));
-                    p.setCreated_datetime(dataJob.getString("created_datetime"));
-                    p.setUpdated_userid(dataJob.getString("updated_userid"));
-                    p.setUpdated_datetime(dataJob.getString("updated_datetime"));
-                    projectArray.add(p);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        } else {
+            showToast("No project found via GetProjectInfo");
         }
     }
+    public void showToast(String info){
+        Toast toast = Toast.makeText(
+                ProjectListActivity.this,
+                info,
+                Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+
 }
