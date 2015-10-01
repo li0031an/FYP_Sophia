@@ -31,7 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ProjectListActivity extends BaseActivity implements Settings,
-        View.OnClickListener {
+        View.OnClickListener, GetProjectInfoListener {
     ArrayList<Project> projectArray;
     GetProjectInfo task;
 
@@ -41,7 +41,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         setContentView(R.layout.activity_project_list);
         setTitle("Projects");
         settings = getSharedPreferences(SETTINGS, 0);
-        task = new GetProjectInfo(this, settings);
+        task = new GetProjectInfo(this, ProjectListActivity.this, settings);
         task.execute();
     }
 
@@ -86,6 +86,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         startActivity(intent);
     }
 
+    @Override
     public void onGetProjectInfoReady(){
         projectArray = task.projectArray;
         if (null != projectArray && projectArray.size() != 0) {

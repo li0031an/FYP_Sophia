@@ -1,6 +1,7 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.view.View;
@@ -23,18 +24,21 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
 
     ProgressDialog dialog;
     String error_code;
-    ProjectListActivity projectListActivity;
+    GetProjectInfoListener getProjectInfoListener;
+    Context context;
     SharedPreferences settings;
     ArrayList<Project> projectArray = new ArrayList<Project>();
 
-    public GetProjectInfo(ProjectListActivity projectListActivity, SharedPreferences settings) {
-        this.projectListActivity = projectListActivity;
+    public GetProjectInfo(GetProjectInfoListener getProjectInfoListener,
+            Context context, SharedPreferences settings) {
+        this.getProjectInfoListener = getProjectInfoListener;
         this.settings = settings;
+        this.context = context;
     }
 
     @Override
     protected void onPreExecute() {
-        dialog = ProgressDialog.show(projectListActivity,
+        dialog = ProgressDialog.show(context,
                 "Retrieving Projects", "Please wait...", true);
     }
 
@@ -48,7 +52,7 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
     protected void onPostExecute(Object result) {
         dialog.dismiss();
         parseJSONResponse((String) result);
-        projectListActivity.onGetProjectInfoReady();
+        getProjectInfoListener.onGetProjectInfoReady();
     }
 
     public String retrieveProjects() {
