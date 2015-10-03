@@ -112,12 +112,11 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
             job = json.getJSONObject(0);
             int errorCode= job.getInt("error_code");
             oneLevelChild.setError_code(String.valueOf(errorCode));
-            //todo -- handle null string return for error message
             oneLevelChild.setError_message(job.getString("error_messages"));
 
             if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
-                showToast(oneLevelChild.getError_message());
+                showToast(oneLevelChild.getError_message().substring(2, oneLevelChild.getError_message().length() - 2));
                 return oneLevelChild;
             }
             data_array = job.getJSONArray("data_array");

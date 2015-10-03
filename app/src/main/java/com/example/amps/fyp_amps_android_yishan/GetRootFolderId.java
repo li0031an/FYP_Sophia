@@ -124,7 +124,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
 
             if (errorCode == 0) showToast("get root folder id successfully");
             if (errorCode != 0) {
-                showToast(rootFolderId.getError_message());
+                showToast(rootFolderId.getError_message().substring(2, rootFolderId.getError_message().length()-2));
                 return rootFolderId;
             }
             data_array = job.getJSONObject("data_array");

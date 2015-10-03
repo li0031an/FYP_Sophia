@@ -91,6 +91,14 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
         try {
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
+            int errorCode= job.getInt("error_code");
+            String errorMsg = job.getString("error_messages");
+
+            if (errorCode == 0) showToast("get one level child successfully");
+            if (errorCode != 0) {
+                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                return array;
+            }
             data_array = job.getJSONArray("data_array");
             for (int i = 0; i < data_array.length(); i++) {
                 JSONObject dataJob = new JSONObject(data_array.getString(i));
