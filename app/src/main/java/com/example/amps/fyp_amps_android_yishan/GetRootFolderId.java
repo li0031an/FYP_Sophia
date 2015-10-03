@@ -54,12 +54,17 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
     @Override
     protected void onPostExecute(Object result) {
         dialog.dismiss();
-        RootFolderId rootFolderId = parseRootFolderId((String) result);
+        rootFolderId = parseRootFolderId((String) result);
 
         if (null != rootFolderId) {
             if (Integer.parseInt(rootFolderId.error_code) == 0) {
                 rootFolderInfo = rootFolderId.getRootFolderInfo();
-                getRootFolderIdListener.onGetRootFolderIdReady();
+                if (null != rootFolderInfo) {
+                    Log.d(TAG, "IN rootFolderInfo ID" + rootFolderInfo.getFolder_id());
+                    getRootFolderIdListener.onGetRootFolderIdReady();
+                } else {
+                    Log.d(TAG, "rootFolderInfo() is null unexpectedly.");
+                }
             }
             Log.d(TAG, "getRootId.getError_code: " + rootFolderId.getError_code());
             Log.d(TAG, "getRootId.getError_message: " + rootFolderId.getError_message());
@@ -98,7 +103,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
     }
 
     public RootFolderId parseRootFolderId(String responseBody) {
-        JSONArray json;
+        JSONArray json, errorMsg;
         JSONObject job, data_array;
         RootFolderId rootFolderId = new RootFolderId();
         try {
@@ -107,6 +112,14 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
             int errorCode= job.getInt("error_code");
             rootFolderId.setError_code(String.valueOf(errorCode));
 //                rootFolderId.setError_message(job.getJSONArray("error_messages").getString(0));
+////            errorMsg = job.getJSONArray("error_messages");
+//            if (!job.isNull("error_messages")) {
+//                errorMsg = job.getJSONArray("error_messages");
+//                String error = errorMsg.getString(0);
+//                rootFolderId.setError_message(error);
+//            } else {
+//                rootFolderId.setError_message("");
+//            }
             rootFolderId.setError_message(job.getString("error_messages"));
 
             if (errorCode == 0) showToast("get root folder id successfully");
@@ -130,17 +143,28 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
     private Folder parseFolder(JSONObject data_array){
         Folder folder = new Folder();
         try {
-            folder.setFolder_id(data_array.getString("folder_id"));
-            Log.d(TAG, "parseFolder: setFolder_id()" + folder.getFolder_id());
-            folder.setName(data_array.getString("name"));
-            folder.setDes(data_array.getString("des"));
-            folder.setCreated_userid(data_array.getString("created_userid"));
-            folder.setCreated_username(data_array.getString("created_username"));
-            folder.setCreated_datetime(data_array.getString("created_datetime"));
-            folder.setUpdated_userid(data_array.getString("updated_userid"));
-            folder.setUpdated_username(data_array.getString("updated_username"));
-            folder.setUpdated_datetime(data_array.getString("updated_datetime"));
-            folder.setIs_shared(data_array.getString("is_shared"));
+            if (!data_array.isNull("folder_id")) {
+                folder.setFolder_id(data_array.getString("folder_id"));
+                Log.d(TAG, "parseFolder: setFolder_id()" + folder.getFolder_id());
+            } if (!data_array.isNull("name")) {
+                folder.setName(data_array.getString("name"));
+            } if (!data_array.isNull("des")) {
+                folder.setDes(data_array.getString("des"));
+            } if (!data_array.isNull("created_userid")) {
+                folder.setCreated_userid(data_array.getString("created_userid"));
+            } if (!data_array.isNull("created_username")) {
+                folder.setCreated_username(data_array.getString("created_username"));
+            } if (!data_array.isNull("created_datetime")) {
+                folder.setCreated_datetime(data_array.getString("created_datetime"));
+            } if (!data_array.isNull("updated_userid")) {
+                folder.setUpdated_userid(data_array.getString("updated_userid"));
+            } if (!data_array.isNull("updated_username")) {
+                folder.setUpdated_username(data_array.getString("updated_username"));
+            } if (!data_array.isNull("updated_datetime")) {
+                folder.setUpdated_datetime(data_array.getString("updated_datetime"));
+            } if (!data_array.isNull("is_shared")) {
+                folder.setIs_shared(data_array.getString("is_shared"));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

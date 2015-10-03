@@ -139,17 +139,28 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
     private Folder parseFolder(JSONObject data_array){
         Folder folder = new Folder();
         try {
-            folder.setFolder_id(data_array.getString("folder_id"));
-            Log.d(TAG, "parseFolder: setFolder_id()" + folder.getFolder_id());
-            folder.setName(data_array.getString("name"));
-            folder.setDes(data_array.getString("des"));
-            folder.setCreated_userid(data_array.getString("created_userid"));
-            folder.setCreated_username(data_array.getString("created_username"));
-            folder.setCreated_datetime(data_array.getString("created_datetime"));
-            folder.setUpdated_userid(data_array.getString("updated_userid"));
-            folder.setUpdated_username(data_array.getString("updated_username"));
-            folder.setUpdated_datetime(data_array.getString("updated_datetime"));
-            folder.setIs_shared(data_array.getString("is_shared"));
+            if (!data_array.isNull("folder_id")) {
+                folder.setFolder_id(data_array.getString("folder_id"));
+                Log.d(TAG, "parseFolder: setFolder_id()" + folder.getFolder_id());
+            } if (!data_array.isNull("name")) {
+                folder.setName(data_array.getString("name"));
+            } if (!data_array.isNull("des")) {
+                folder.setDes(data_array.getString("des"));
+            } if (!data_array.isNull("created_userid")) {
+                folder.setCreated_userid(data_array.getString("created_userid"));
+            } if (!data_array.isNull("created_username")) {
+                folder.setCreated_username(data_array.getString("created_username"));
+            } if (!data_array.isNull("created_datetime")) {
+                folder.setCreated_datetime(data_array.getString("created_datetime"));
+            } if (!data_array.isNull("updated_userid")) {
+                folder.setUpdated_userid(data_array.getString("updated_userid"));
+            } if (!data_array.isNull("updated_username")) {
+                folder.setUpdated_username(data_array.getString("updated_username"));
+            } if (!data_array.isNull("updated_datetime")) {
+                folder.setUpdated_datetime(data_array.getString("updated_datetime"));
+            } if (!data_array.isNull("is_shared")) {
+                folder.setIs_shared(data_array.getString("is_shared"));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

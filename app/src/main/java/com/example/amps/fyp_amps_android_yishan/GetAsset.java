@@ -125,17 +125,26 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
     private Asset parseAsset(JSONObject data_array){
         Asset asset = new Asset();
         try {
-            asset.setAsset_id(data_array.getString("asset_id"));
-            Log.d(TAG, "parseAsset: setAsset_id()" + asset.getAsset_id());
-            asset.setName(data_array.getString("name"));
-            asset.setExt(data_array.getString("ext"));
-            asset.setCreated_userid(data_array.getString("created_userid"));
-            asset.setEstimated_datestart(data_array.getString("estimated_datestart"));
-            asset.setCreated_datetime(data_array.getString("created_datetime"));
-            asset.setUpdated_userid(data_array.getString("updated_userid"));
-            asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
-            asset.setUpdated_datetime(data_array.getString("updated_datetime"));
-
+            if (!data_array.isNull("asset_id")) {
+                asset.setAsset_id(data_array.getString("asset_id"));
+                Log.d(TAG, "parseAsset: setAsset_id()" + asset.getAsset_id());
+            } if (!data_array.isNull("name")) {
+                asset.setName(data_array.getString("name"));
+            } if (!data_array.isNull("ext")) {
+                asset.setExt(data_array.getString("ext"));
+            } if (!data_array.isNull("created_userid")) {
+                asset.setCreated_userid(data_array.getString("created_userid"));
+            } if (!data_array.isNull("estimated_datestart")) {
+                asset.setEstimated_datestart(data_array.getString("estimated_datestart"));
+            } if (!data_array.isNull("created_datetime")) {
+                asset.setCreated_datetime(data_array.getString("created_datetime"));
+            } if (!data_array.isNull("updated_userid")) {
+                asset.setUpdated_userid(data_array.getString("updated_userid"));
+            } if (!data_array.isNull("estimated_dateend")) {
+                asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
+            } if (!data_array.isNull("updated_datetime")) {
+                asset.setUpdated_datetime(data_array.getString("updated_datetime"));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
