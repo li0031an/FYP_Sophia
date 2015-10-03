@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.view.View;
+import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements Settings {
 
     ProgressDialog dialog;
-    String error_code;
     GetProjectInfoListener getProjectInfoListener;
     Context context;
     SharedPreferences settings;
@@ -51,8 +51,12 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
     @Override
     protected void onPostExecute(Object result) {
         dialog.dismiss();
-        parseJSONResponse((String) result);
-        getProjectInfoListener.onGetProjectInfoReady();
+        projectArray = parseJSONResponse((String) result);
+        if (null != projectArray && 0 != projectArray.size()) {
+            getProjectInfoListener.onGetProjectInfoReady();
+        } else {
+            showToast("You do not admin any projects.");
+        }
     }
 
     public String retrieveProjects() {
@@ -79,10 +83,11 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
         return responseBody;
     }
 
-    public void parseJSONResponse(String responseBody) {
+    public ArrayList<Project> parseJSONResponse(String responseBody) {
         JSONArray json, data_array;
         JSONObject job;
         Project p;
+        ArrayList<Project> array = new ArrayList<Project>();
         try {
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
@@ -105,14 +110,22 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
                 p.setCreated_datetime(dataJob.getString("created_datetime"));
                 p.setUpdated_userid(dataJob.getString("updated_userid"));
                 p.setUpdated_datetime(dataJob.getString("updated_datetime"));
-                projectArray.add(p);
+                array.add(p);
             }
         } catch (JSONException e) {
             e.printStackTrace();
-        }
+        } return array;
     }
 
     protected ArrayList<Project> getProjectArray(){
         return projectArray;
+    }
+
+    public void showToast(String info){
+        Toast toast = Toast.makeText(
+                context,
+                info,
+                Toast.LENGTH_LONG);
+        toast.show();
     }
 }

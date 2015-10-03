@@ -115,9 +115,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     public void onGetRootFolderIdReady(){
         rootFolder = getRootFolderId.getRootFolder();
         if (null != rootFolder) {
-            String rootId = rootFolder.folder_id;
-            if (null != rootId) {
-                rootFolderId = rootId;
+            rootFolderId = rootFolder.folder_id;
+            if (null != rootFolderId) {
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             }

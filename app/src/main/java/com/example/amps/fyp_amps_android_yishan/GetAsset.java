@@ -57,8 +57,10 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         Log.d(TAG, "onPostExecute starts");
         if (null != result) {
             assetList = parseAssetObject((String) result);
-            if (null != assetList) {
+            if (null != assetList && assetList.size() != 0) {
                 getAssetListener.onAssetReady();
+            } else {
+                showToast("The folder is empty");
             }
         }
     }

@@ -64,16 +64,16 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
         if (null != oneLevelChild) {
             if (Integer.parseInt(oneLevelChild.error_code) == 0) {
                 folderList = oneLevelChild.getFolderList();
-                getOneLevelChildListener.onOneLevelChildReady();
+                if (null != folderList) {
+                    getOneLevelChildListener.onOneLevelChildReady();
+                } else {
+                    showToast("The project is empty.");
+                }
             }
 
             Log.d(TAG, "oneLevelChild.getError_code: " + oneLevelChild.getError_code());
             Log.d(TAG, "oneLevelChild.getError_message: " + oneLevelChild.getError_message());
         }
-        //Log.d(TAG, "getRootId: " + rootFolderId.getRootFolderInfo().getFolder_id());
-
-
-
     }
 
     public String getOneLevelChildObject() {
