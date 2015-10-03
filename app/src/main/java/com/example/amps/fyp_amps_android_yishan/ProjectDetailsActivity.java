@@ -30,34 +30,53 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 
-public class ProjectDetailsActivity extends BaseActivity implements Settings, GetRootFolderIdListener, GetOneLevelChildListener {
+public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener,
+        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener {
 
     private static String TAG = "ProjectDetailsActivity";
     private String projectId;
+    private String rootFolderId;
     private Folder rootFolder;
     private ArrayList<Folder> folderList = new ArrayList<Folder>();
+    private ArrayList<Asset> assetList = new ArrayList<Asset>();
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
+    GetAsset getAsset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_details);
         setTitle("Project folders");
+        settings = getSharedPreferences(SETTINGS, 0);
         Intent intent = getIntent();
         projectId = intent.getStringExtra("project_id");
-        settings = getSharedPreferences(SETTINGS, 0);
-        getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-        getRootFolderId.execute();
-
+        String intentRootId = intent.getStringExtra("rootFolderId");
+        if (null != intentRootId) {
+            rootFolderId = intentRootId;
+            Log.d(TAG, "intent - rootFolderId" + rootFolderId);
+            getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+            getAsset.execute();
+        } else {
+            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+            getRootFolderId.execute();
+        }
     }
 
     @Override
     protected void onNewIntent(Intent newIntent) {
         super.onNewIntent(newIntent);
         setIntent(newIntent);
-        projectId = newIntent.getStringExtra("project_id");
-        Log.d(TAG, "onNewIntent - project_id" + projectId);
+        String intentProjectId = newIntent.getStringExtra("project_id");
+        if (null != intentProjectId) {
+            projectId = intentProjectId;
+            Log.d(TAG, "onNewIntent - project_id" + projectId);
+        }
+        String intentRootId = newIntent.getStringExtra("rootFolderId");
+        if (null != intentRootId) {
+            rootFolderId = intentRootId;
+            Log.d(TAG, "onNewIntent - rootFolderId" + rootFolderId);
+        }
     }
 
     @Override
@@ -83,13 +102,23 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Ge
     }
 
     @Override
+    public void onClick(View view) {
+        Folder folder = folderList.get(view.getId());
+        Intent intent = new Intent(ProjectDetailsActivity.this, ProjectDetailsActivity.class);
+        intent.putExtra("project_id", projectId);
+        intent.putExtra("rootFolderId", folder.getFolder_id());
+        startActivity(intent);
+    }
+
+
+    @Override
     public void onGetRootFolderIdReady(){
         rootFolder = getRootFolderId.getRootFolder();
         if (null != rootFolder) {
-            showToast("root folder id has not been implemented.");
             String rootId = rootFolder.folder_id;
             if (null != rootId) {
-                getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootId, projectId);
+                rootFolderId = rootId;
+                getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             }
         }else {
@@ -105,11 +134,22 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Ge
             Log.d(TAG, "folderList.getFolder_id: " + folderList.get(0).getFolder_id());
             View v = ProjectDetailsActivity.this
                     .findViewById(android.R.id.content).getRootView();
-            createTableRow(v);
+            createFolderTableRow(v);
         }
     }
 
-    public void createTableRow(View v) {
+    @Override
+    public void onAssetReady(){
+        assetList = getAsset.getAssetList();
+        if (null != assetList) {
+            Log.d(TAG, "assetList is gotten");
+            View v = ProjectDetailsActivity.this
+                    .findViewById(android.R.id.content).getRootView();
+            createAssetTableRow(v);
+        }
+    }
+
+    public void createFolderTableRow(View v) {
         TableLayout tl = (TableLayout) findViewById(R.id.tableRowFolderList);
 
         for (int i = 0; i < folderList.size(); i++) {
@@ -125,7 +165,34 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Ge
             textViewName.setGravity(Gravity.CENTER_VERTICAL);
             textViewName.setPadding(16, 16, 16, 16);
             textViewName.setId(i);
-            //todo -- onclick
+            textViewName.setOnClickListener(this);
+
+
+            tr.addView(textViewName, new TableRow.LayoutParams(0,
+                    TableRow.LayoutParams.WRAP_CONTENT, (float) 1));
+
+            tl.addView(tr, new TableLayout.LayoutParams(
+                    TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+        }
+    }
+
+    public void createAssetTableRow(View v) {
+        TableLayout tl = (TableLayout) findViewById(R.id.tableRowFolderList);
+
+        for (int i = 0; i < assetList.size(); i++) {
+            Asset asset = assetList.get(i);
+            TableRow tr = new TableRow(this);
+
+            if (i % 2 == 0)
+                tr.setBackgroundColor(Color.WHITE);
+
+            tr.setPadding(0, 16, 0, 16);
+            TextView textViewName = new TextView(this);
+            textViewName.setText(asset.getName() + " asset");
+            textViewName.setGravity(Gravity.CENTER_VERTICAL);
+            textViewName.setPadding(16, 16, 16, 16);
+            textViewName.setId(i);
+            //todo- preview
             //textViewName.setOnClickListener(this);
 
 
