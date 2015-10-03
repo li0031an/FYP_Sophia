@@ -145,6 +145,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
             e.printStackTrace();
         }
         return folder;
+
     }
 
     public void showToast(String info){
@@ -153,6 +154,10 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
                 info,
                 Toast.LENGTH_LONG);
         toast.show();
+    }
+
+    protected Folder getRootFolder(){
+        return rootFolderInfo;
     }
 
 }

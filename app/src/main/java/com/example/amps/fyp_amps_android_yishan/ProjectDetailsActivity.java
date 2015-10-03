@@ -84,7 +84,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Ge
 
     @Override
     public void onGetRootFolderIdReady(){
-        rootFolder = getRootFolderId.rootFolderInfo;
+        rootFolder = getRootFolderId.getRootFolder();
         if (null != rootFolder) {
             showToast("root folder id has not been implemented.");
             String rootId = rootFolder.folder_id;
@@ -100,7 +100,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Ge
 
     @Override
     public void onOneLevelChildReady(){
-        folderList = getOneLevelChild.folderList;
+        folderList = getOneLevelChild.getFolderList();
         if (null != folderList) {
             Log.d(TAG, "folderList.getFolder_id: " + folderList.get(0).getFolder_id());
             View v = ProjectDetailsActivity.this

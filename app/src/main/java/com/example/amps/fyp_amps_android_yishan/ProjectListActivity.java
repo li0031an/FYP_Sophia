@@ -88,7 +88,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
 
     @Override
     public void onGetProjectInfoReady(){
-        projectArray = task.projectArray;
+        projectArray = task.getProjectArray();
         if (null != projectArray && projectArray.size() != 0) {
             View v = ProjectListActivity.this
                     .findViewById(android.R.id.content).getRootView();

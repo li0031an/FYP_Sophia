@@ -111,4 +111,8 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
             e.printStackTrace();
         }
     }
+
+    protected ArrayList<Project> getProjectArray(){
+        return projectArray;
+    }
 }

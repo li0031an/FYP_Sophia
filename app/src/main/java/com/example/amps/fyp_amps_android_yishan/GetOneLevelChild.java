@@ -163,4 +163,8 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
                 Toast.LENGTH_LONG);
         toast.show();
     }
+
+    protected ArrayList<Folder> getFolderList(){
+        return folderList;
+    }
 }
