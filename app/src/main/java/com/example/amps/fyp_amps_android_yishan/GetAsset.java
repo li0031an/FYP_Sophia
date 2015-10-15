@@ -145,6 +145,10 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
                 asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
             } if (!data_array.isNull("updated_datetime")) {
                 asset.setUpdated_datetime(data_array.getString("updated_datetime"));
+            } if (!data_array.isNull("getBase64_thumbnail")) {
+                asset.setBase64_thumbnail(data_array.getString("getBase64_thumbnail"));
+            } if (!data_array.isNull("statusid")) {
+                asset.setStatusid(data_array.getString("statusid"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
