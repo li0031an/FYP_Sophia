@@ -31,6 +31,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private Folder rootFolder;
     private ArrayList<Object> folderList = new ArrayList<Object>();
     private ArrayList<Object> assetList = new ArrayList<Object>();
+    private Object currentItemList;
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
     GetAsset getAsset;
@@ -161,18 +162,26 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
         if (null != arrayfolderList) {
             Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
-            View v = ProjectDetailsActivity.this
-                    .findViewById(android.R.id.content).getRootView();
-//            createFolderCardRow(v);
+            currentItemList = (Object) arrayfolderList;
             for (int i = 0; i<arrayfolderList.size(); i++) {
-                folderList.add((Object) arrayfolderList.get(i));
+                folderList.add(arrayfolderList.get(i));
             }
             mAdapter = new RecyclerViewAdapter(this,folderList);
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
                     Log.i(TAG, " Clicked on Item ");
-                    displayAssetList(position);
+                    if (currentItemList == folderList) {
+//                        displayAssetList(view.getId());
+                        displayAssetList(position);
+
+                    } else {
+                        Log.d(TAG, "start assetDetail activity");
+                        Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+                        intent.putExtra("project_id", projectId);
+//            intent.putExtra("rootFolderId", folder.getFolder_id());
+                        startActivity(intent);
+                    }
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -196,7 +205,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     assetIdList.add(temp.asset_id);
                 } //Todo -- if several images are calling GetAssetDetail() at almost the same time
                 assetList.add(temp);
-            }if (needThumbNailUpdate) {
+            } currentItemList = (Object) assetList;
+            if (needThumbNailUpdate) {
                 getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId);
                 getAssetDetail.execute();
             }
@@ -249,7 +259,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     mRecyclerView.setAdapter(mAdapter);
                 }
             }
-        }
+        } currentItemList = (Object)assetList;
     }
 
     public void createFolderCardRow(View v) {
