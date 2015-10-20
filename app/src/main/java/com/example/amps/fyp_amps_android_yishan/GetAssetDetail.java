@@ -41,22 +41,22 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class GetAssetDetail extends AsyncTask<Object, Object, Object> implements Settings{
+public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>> implements Settings{
     private static String TAG = "GetAssetDetail";
     GetAssetListener getAssetListener;
     Context context;
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String assetId;
-    Asset asset = null;
+    ArrayList<String> assetIdList = new ArrayList<String>()  ;
+    ArrayList<Asset> assetList = new ArrayList<Asset>();
 
-    public GetAssetDetail(GetAssetListener getAssetListener, Context context, SharedPreferences settings, String assetId, String projectId){
+    public GetAssetDetail(GetAssetListener getAssetListener, Context context, SharedPreferences settings, ArrayList<String> assetIdList, String projectId){
         Log.d(TAG, "GetAssetDetail constructor starts");
         this.getAssetListener = getAssetListener;
         this.context = context;
         this.settings = settings;
-        this.assetId = assetId;
+        this.assetIdList = assetIdList;
         this.projectId = projectId;
     }
 
@@ -67,27 +67,36 @@ public class GetAssetDetail extends AsyncTask<Object, Object, Object> implements
     }
 
     @Override
-    protected String doInBackground(Object... arg0) {
+    protected ArrayList<String> doInBackground(Object... arg0) {
         Log.d(TAG, "doInBackground starts");
-        return getAssetObject();
-
+        ArrayList<String> jsonStringList = new ArrayList<String>();
+        for(int i = 0; i<assetIdList.size(); i++) {
+            String temp = getAssetObject(assetIdList.get(i));
+            if (null != temp) {
+                jsonStringList.add(temp);
+            }
+        } return jsonStringList;
     }
 
     @Override
-    protected void onPostExecute(Object result) {
+    protected void onPostExecute(ArrayList<String> result) {
         dialog.dismiss();
         Log.d(TAG, "onPostExecute starts");
-        if (null != result) {
-            asset = parseAssetObject((String) result);
-            if (null != asset ) {
-                getAssetListener.onAssetDetailReady();
-            } else {
-                showToast("The folder is empty");
+        if (null != result && result.size() > 0) {
+            for (int i = 0; i<result.size(); i++) {
+                Asset asset = parseAssetObject(result.get(i));
+                if (null != asset) {
+                    assetList.add(asset);
+                } else {
+                    showToast("The asset is empty");
+                }
             }
+        } if (null != assetList && assetList.size() > 0) {
+            getAssetListener.onAssetDetailReady();
         }
     }
 
-    public String getAssetObject() {
+    public String getAssetObject(String assetId) {
         Log.d(TAG, "getAssetObject() starts");
         String responseBody = "";
         // Instantiate an HttpClient
@@ -184,7 +193,7 @@ public class GetAssetDetail extends AsyncTask<Object, Object, Object> implements
         toast.show();
     }
 
-    protected Asset getAssetDetail(){
-        return asset;
+    protected ArrayList<Asset> getAssetDetail(){
+        return assetList;
     }
 }
