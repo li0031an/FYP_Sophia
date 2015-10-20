@@ -1,31 +1,23 @@
 package com.example.amps.fyp_amps_android_yishan;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.AsyncTask;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TableLayout;
+import android.widget.ImageView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -37,11 +29,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private String projectId;
     private String rootFolderId;
     private Folder rootFolder;
-    private ArrayList<Folder> folderList = new ArrayList<Folder>();
-    private ArrayList<Asset> assetList = new ArrayList<Asset>();
+    private ArrayList<Object> folderList = new ArrayList<Object>();
+    private ArrayList<Object> assetList = new ArrayList<Object>();
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
     GetAsset getAsset;
+    //////
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    //////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +57,33 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         } else {
             getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
             getRootFolderId.execute();
+        }
+        /////
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+
+        // Code to Add an item with default animation
+        //((RecyclerViewAdapter) mAdapter).addItem(obj, index);
+
+        // todo-- Code to remove an item with default animation
+        //((RecyclerViewAdapter) mAdapter).deleteItem(index);
+        /////
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (null != mAdapter) {
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+                    displayAssetList(position);
+                }
+            });
         }
     }
 
@@ -103,7 +127,12 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onClick(View view) {
-        Folder folder = folderList.get(view.getId());
+        displayAssetList(view.getId());
+    }
+
+    protected void displayAssetList(int id){
+        Folder folder = (Folder)folderList.get(id);
+        showToast("folder name: " + folder.getName() + " is opened.");
         Intent intent = new Intent(ProjectDetailsActivity.this, ProjectDetailsActivity.class);
         intent.putExtra("project_id", projectId);
         intent.putExtra("rootFolderId", folder.getFolder_id());
@@ -128,39 +157,72 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onOneLevelChildReady(){
-        folderList = getOneLevelChild.getFolderList();
-        if (null != folderList) {
-            Log.d(TAG, "folderList.getFolder_id: " + folderList.get(0).getFolder_id());
+        ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
+        if (null != arrayfolderList) {
+            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             View v = ProjectDetailsActivity.this
                     .findViewById(android.R.id.content).getRootView();
-            createFolderTableRow(v);
+//            createFolderCardRow(v);
+            for (int i = 0; i<arrayfolderList.size(); i++) {
+                folderList.add((Object) arrayfolderList.get(i));
+            }
+            mAdapter = new RecyclerViewAdapter(this,folderList);
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+                    displayAssetList(position);
+                }
+            });
+            mRecyclerView.setAdapter(mAdapter);
         }
     }
 
     @Override
     public void onAssetReady(){
-        assetList = getAsset.getAssetList();
-        if (null != assetList) {
+        ArrayList<Asset> arrayAssetList = getAsset.getAssetList();
+
+        if (null != arrayAssetList) {
             Log.d(TAG, "assetList is gotten");
+            for (int i = 0; i<arrayAssetList.size(); i++) {
+                assetList.add((Object) arrayAssetList.get(i));
+            }
             View v = ProjectDetailsActivity.this
                     .findViewById(android.R.id.content).getRootView();
-            createAssetTableRow(v);
+            //createAssetCardRow(v);
+            mAdapter = new RecyclerViewAdapter(this,assetList);
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+//                    displayAssetList(position);
+                }
+            });
+            mRecyclerView.setAdapter(mAdapter);
         }
     }
 
-    public void createFolderTableRow(View v) {
-        TableLayout tl = (TableLayout) findViewById(R.id.tableRowFolderList);
+    public void createFolderCardRow(View v) {
+//        CardView tl = (CardView) findViewById(R.id.cardRowFolderList);
 
         for (int i = 0; i < folderList.size(); i++) {
-            Folder folder = folderList.get(i);
+//            Folder folder = folderList.get(i);
             TableRow tr = new TableRow(this);
 
-            if (i % 2 == 0)
-                tr.setBackgroundColor(Color.WHITE);
-
+//            if (i % 2 == 0)
+//                    tr.setBackgroundColor(Color.WHITE);
+//            else {
+//                Resources res = getResources();
+//                tr.setBackgroundColor(res.getColor(R.color.siqi));
+//            }
             tr.setPadding(0, 16, 0, 16);
+
+            ImageView imageView = new ImageView(this);
+            Resources res = getResources();
+            imageView.setImageDrawable(res.getDrawable(R.mipmap.folder));
+
             TextView textViewName = new TextView(this);
-            textViewName.setText(folder.getName());
+//            textViewName.setText(folder.getName());
             textViewName.setGravity(Gravity.CENTER_VERTICAL);
             textViewName.setPadding(16, 16, 16, 16);
             textViewName.setId(i);
@@ -170,36 +232,104 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             tr.addView(textViewName, new TableRow.LayoutParams(0,
                     TableRow.LayoutParams.WRAP_CONTENT, (float) 1));
 
-            tl.addView(tr, new TableLayout.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+//            tl.addView(tr, new TableLayout.LayoutParams(
+//                    TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
         }
     }
 
+//TODO - implement status shown
+
     public void createAssetTableRow(View v) {
-        TableLayout tl = (TableLayout) findViewById(R.id.tableRowFolderList);
+//        TableLayout tl = (TableLayout) findViewById(R.id.tableRowFolderList);
 
         for (int i = 0; i < assetList.size(); i++) {
-            Asset asset = assetList.get(i);
+//            Asset asset = assetList.get(i);
             TableRow tr = new TableRow(this);
 
-            if (i % 2 == 0)
-                tr.setBackgroundColor(Color.WHITE);
+//            if (i % 2 == 0)
+//                tr.setBackgroundColor(Color.WHITE);
+//            else {
+//                Resources res = getResources();
+//                tr.setBackgroundColor(res.getColor(R.color.siqi));
+//            }
 
             tr.setPadding(0, 16, 0, 16);
-            TextView textViewName = new TextView(this);
-            textViewName.setText(asset.getName() + " asset");
-            textViewName.setGravity(Gravity.CENTER_VERTICAL);
-            textViewName.setPadding(16, 16, 16, 16);
-            textViewName.setId(i);
+
+//            ImageView imageView = new ImageView(this);
+//            if(((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
+//                if(null != asset.getBase64_thumbnail() && !asset.getBase64_thumbnail().isEmpty()) {
+//                    byte[] decodedString = Base64.decode(
+//                            asset.getBase64_thumbnail(), Base64.DEFAULT);
+//                    Bitmap decodedByte = BitmapFactory.decodeByteArray(
+//                            decodedString, 0, decodedString.length);
+//                    imageView.setImageBitmap(decodedByte);
+//                } else{
+//                    Resources res = getResources();
+//                    imageView.setImageDrawable(res.getDrawable(R.drawable.content_picture));
+//                }
+//            } else if((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))))){
+//                Resources res = getResources();
+//                imageView.setImageDrawable(res.getDrawable(R.drawable.ic_action_video));
+//            } else {
+//                Resources res = getResources();
+//                imageView.setImageDrawable(res.getDrawable(R.mipmap.no_image));
+//            }
+
+//            TextView textViewName = new TextView(this);
+//
+//            String status = "";
+//            if (null == asset.getStatusid() || asset.getStatusid().equals(null)) {
+//                status = "Unavailable";
+//            } else {
+//                switch (Integer.parseInt(asset.getStatusid())) {
+//                    case 100:
+//                        status = "Pending";
+//                        break;
+//                    case 101:
+//                        status = "In Progress";
+//                        break;
+//                    case 102:
+//                        status = "For Approval";
+//                        break;
+//                    case 103:
+//                        status = "Approved";
+//                        break;
+//                    case 104:
+//                        status = "Completed";
+//                        break;
+//                    case 105:
+//                        status = "Rejected";
+//                        break;
+//                    default:
+//                        status = "";
+//                        break;
+//                }
+//            }
+//
+//            textViewName.setText(asset.getName() + " asset");
+//            textViewName.setGravity(Gravity.CENTER_VERTICAL);
+//            textViewName.setPadding(16, 16, 16, 16);
+//            textViewName.setId(i);
+//
+//            textViewName.setOnClickListener(this);
+//            textViewName.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+//
+//            TextView textViewStatus = new TextView(this);
+//            textViewStatus.setText("Status: " + status);
+//            textViewStatus.setGravity(Gravity.RIGHT);
+//            textViewStatus.setPadding(16, 16, 16, 16);
+//            textViewStatus.setId(i);
+            //textViewStatus.setOnClickListener(this); --todo
+//            textViewStatus.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
             //todo- preview
             //textViewName.setOnClickListener(this);
 
-
-            tr.addView(textViewName, new TableRow.LayoutParams(0,
-                    TableRow.LayoutParams.WRAP_CONTENT, (float) 1));
-
-            tl.addView(tr, new TableLayout.LayoutParams(
-                    TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+//            tr.addView(imageView, new TableRow.LayoutParams(0, 60,(float) 1));
+//            tr.addView(textViewName, new TableRow.LayoutParams(0,
+//                    TableRow.LayoutParams.WRAP_CONTENT, (float) 3));
+//            tr.addView(textViewStatus, new TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, (float) 2));
+//            tl.addView(tr, new TableLayout.LayoutParams(
+//                    TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
         }
     }
 

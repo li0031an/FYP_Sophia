@@ -20,6 +20,9 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
@@ -32,8 +35,15 @@ import android.widget.Toast;
 
 public class ProjectListActivity extends BaseActivity implements Settings,
         View.OnClickListener, GetProjectInfoListener {
-    ArrayList<Project> projectArray;
+    ArrayList<Object> projectArray = new ArrayList<Object>();
     GetProjectInfo task;
+    private static String TAG = "ProjectListActivity";
+
+    //////
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    //////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +53,19 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         settings = getSharedPreferences(SETTINGS, 0);
         task = new GetProjectInfo(this, ProjectListActivity.this, settings);
         task.execute();
+        /////
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+
+        // Code to Add an item with default animation
+        //((RecyclerViewAdapter) mAdapter).addItem(obj, index);
+
+        // todo-- Code to remove an item with default animation
+        //((RecyclerViewAdapter) mAdapter).deleteItem(index);
+        /////
     }
 
     @Override
@@ -52,47 +75,83 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         return true;
     }
 
-    public void createTableRow(View v) {
-        TableLayout tl = (TableLayout) findViewById(R.id.tableRowProjectList);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (null != mAdapter) {
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+                    displayFolderList(position);
+                }
+            });
+        }
+    }
 
-        for (int i = 0; i < projectArray.size(); i++) {
-            Project p = projectArray.get(i);
-            TableRow tr = new TableRow(this);
 
-            if (i % 2 == 0)
-                tr.setBackgroundColor(Color.WHITE);
+//    public void createTableRow(View v) {
+//        TableLayout tl = (TableLayout) findViewById(R.id.tableRowProjectList);
+//
+//        for (int i = 0; i < projectArray.size(); i++) {
+//            Project p = projectArray.get(i);
+//            TableRow tr = new TableRow(this);
+//
+//            if (i % 2 == 0)
+//                tr.setBackgroundColor(Color.WHITE);
+//
+//            tr.setPadding(0, 16, 0, 16);
+//            TextView textViewName = new TextView(this);
+//            textViewName.setText(p.getName());
+//            textViewName.setGravity(Gravity.CENTER_VERTICAL);
+//            textViewName.setPadding(16, 16, 16, 16);
+//            textViewName.setId(i);
+//            textViewName.setOnClickListener(this);
+//
+//            tr.addView(textViewName, new TableRow.LayoutParams(0,
+//                    LayoutParams.WRAP_CONTENT, (float) 1));
+//
+//            tl.addView(tr, new TableLayout.LayoutParams(
+//                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+//        }
+//    }
 
-            tr.setPadding(0, 16, 0, 16);
-            TextView textViewName = new TextView(this);
-            textViewName.setText(p.getName());
-            textViewName.setGravity(Gravity.CENTER_VERTICAL);
-            textViewName.setPadding(16, 16, 16, 16);
-            textViewName.setId(i);
-            textViewName.setOnClickListener(this);
+    @Override
+    public void onClick(View view) {
+        displayFolderList(view.getId());
+    }
 
-            tr.addView(textViewName, new TableRow.LayoutParams(0,
-                    LayoutParams.WRAP_CONTENT, (float) 1));
-
-            tl.addView(tr, new TableLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+    protected void displayFolderList(int id){
+        Object object = projectArray.get(id);
+        if (object instanceof Project) {
+            Project p = (Project) projectArray.get(id);
+            Intent intent = new Intent(ProjectListActivity.this, ProjectDetailsActivity.class);
+            intent.putExtra("project_id", p.getProject_id());
+            startActivity(intent);
+        } else {
+            Log.e(TAG, "object id: "+ id + " is not project in displayFolderList");
         }
     }
 
     @Override
-    public void onClick(View view) {
-        Project p = projectArray.get(view.getId());
-        Intent intent = new Intent(ProjectListActivity.this, ProjectDetailsActivity.class);
-        intent.putExtra("project_id", p.getProject_id());
-        startActivity(intent);
-    }
-
-    @Override
     public void onGetProjectInfoReady(){
-        projectArray = task.getProjectArray();
-        if (null != projectArray && projectArray.size() != 0) {
+        ArrayList<Project> arrayProjectArray = task.getProjectArray();
+        if (null != arrayProjectArray && arrayProjectArray.size() != 0) {
             View v = ProjectListActivity.this
                     .findViewById(android.R.id.content).getRootView();
-            createTableRow(v);
+//            createTableRow(v);
+            for (int i = 0; i<arrayProjectArray.size(); i++) {
+                projectArray.add((Object) arrayProjectArray.get(i));
+            }
+            mAdapter = new RecyclerViewAdapter(this,projectArray);
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+                    displayFolderList(position);
+                }
+            });
+            mRecyclerView.setAdapter(mAdapter);
         } else {
             showToast("No project found via GetProjectInfo");
         }
