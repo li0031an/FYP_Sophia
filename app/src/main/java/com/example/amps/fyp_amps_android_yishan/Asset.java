@@ -20,16 +20,45 @@ public class Asset {
     String revNum;
     String revId;
 
-
-    String n;
     String tracking_status;
     String userid;
     String statusid;
     String stepid;
 
+    String latest_revid;
+    String latest_revnum;
+    double latest_revsize;
     double file_size;
     String assigned_userid;
     String workflow_step_id;
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public String getLatest_revid() {
+        return latest_revid;
+    }
+
+    public void setLatest_revid(String latest_revid) {
+        this.latest_revid = latest_revid;
+    }
+
+    public double getLatest_revsize() {
+        return latest_revsize;
+    }
+
+    public void setLatest_revsize(double latest_revsize) {
+        this.latest_revsize = latest_revsize;
+    }
+
+    public String getLatest_revnum() {
+        return latest_revnum;
+    }
+
+    public void setLatest_revnum(String latest_revnum) {
+        this.latest_revnum = latest_revnum;
+    }
 
     public String getAsset_id() {
         return asset_id;

@@ -83,7 +83,11 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 @Override
                 public void onItemClick(int position, View v) {
                     Log.i(TAG, " Clicked on Item ");
-                    displayAssetList(position);
+                    Log.d(TAG, "start assetDetail activity");
+                    Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+                    intent.putExtra("project_id", projectId);
+                    intent.putExtra("asset", ((Asset)assetList.get(position)).getAsset_id());
+                    startActivity(intent);
                 }
             });
         }
@@ -171,17 +175,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 @Override
                 public void onItemClick(int position, View v) {
                     Log.i(TAG, " Clicked on Item ");
-                    if (currentItemList == folderList) {
-//                        displayAssetList(view.getId());
-                        displayAssetList(position);
+                    displayAssetList(position);
 
-                    } else {
-                        Log.d(TAG, "start assetDetail activity");
-                        Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
-                        intent.putExtra("project_id", projectId);
-//            intent.putExtra("rootFolderId", folder.getFolder_id());
-                        startActivity(intent);
-                    }
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -207,7 +202,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 assetList.add(temp);
             } currentItemList = (Object) assetList;
             if (needThumbNailUpdate) {
-                getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId);
+                String selectAttributes = "[asset_id],[base64_thumbnail],[ext]";
+                getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId, selectAttributes);
                 getAssetDetail.execute();
             }
             mAdapter = new RecyclerViewAdapter(this, assetList);
@@ -215,6 +211,13 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 @Override
                 public void onItemClick(int position, View v) {
                     Log.i(TAG, " Clicked on Item ");
+
+                    Log.d(TAG, "start assetDetail activity");
+                    Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+                    intent.putExtra("project_id", projectId);
+                    intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
+                    startActivity(intent);
+
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -254,6 +257,13 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                         public void onItemClick(int position, View v) {
                             Log.i(TAG, " Clicked on Item ");
 //                    displayAssetList(position);
+
+                            Log.d(TAG, "start assetDetail activity");
+                            Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+                            intent.putExtra("project_id", projectId);
+                            intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
+                            startActivity(intent);
+
                         }
                     });
                     mRecyclerView.setAdapter(mAdapter);

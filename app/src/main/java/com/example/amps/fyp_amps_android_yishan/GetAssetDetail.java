@@ -48,16 +48,20 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
+    String selectAttributes = null;
     ArrayList<String> assetIdList = new ArrayList<String>()  ;
     ArrayList<Asset> assetList = new ArrayList<Asset>();
 
-    public GetAssetDetail(GetAssetListener getAssetListener, Context context, SharedPreferences settings, ArrayList<String> assetIdList, String projectId){
+    public GetAssetDetail(GetAssetListener getAssetListener, Context context,
+                          SharedPreferences settings, ArrayList<String> assetIdList,
+                          String projectId, String selectAttributes){
         Log.d(TAG, "GetAssetDetail constructor starts");
         this.getAssetListener = getAssetListener;
         this.context = context;
         this.settings = settings;
         this.assetIdList = assetIdList;
         this.projectId = projectId;
+        this.selectAttributes = selectAttributes;
     }
 
     @Override
@@ -111,7 +115,7 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
                 .getString("userid", null)));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
         postParameters.add(new BasicNameValuePair("condition", "[asset_id] = '"+assetId+"'"));
-        postParameters.add(new BasicNameValuePair("select", "[asset_id],[base64_thumbnail],[ext]"));
+        postParameters.add(new BasicNameValuePair("select", selectAttributes));
 
         // Instantiate a POST HTTP method
         try {
@@ -142,7 +146,7 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
             }
             data_array = job.getJSONArray("data_array");
             Log.d(TAG, "JSON: " + data_array.toString());
-            if (null != data_array) {
+            if (null != data_array && data_array.length() > 0) {
                 asset = parseAsset(data_array.getJSONObject(0));
                 Log.d(TAG, "asset.id" + asset.getAsset_id());
             }
@@ -178,7 +182,14 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
                 asset.setBase64_thumbnail(data_array.getString("base64_thumbnail"));
             } if (!data_array.isNull("statusid")) {
                 asset.setStatusid(data_array.getString("statusid"));
+            } if (!data_array.isNull("latest_revid")) {
+                asset.setLatest_revid(data_array.getString("latest_revid"));
+            } if (!data_array.isNull("latest_revnum")) {
+                asset.setLatest_revnum(data_array.getString("latest_revnum"));
+            } if (!data_array.isNull("latest_revsize")) {
+                asset.setLatest_revsize(data_array.getDouble("latest_revsize"));
             }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
