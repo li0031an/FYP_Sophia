@@ -199,16 +199,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             }if (needThumbNailUpdate) {
                 getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId);
                 getAssetDetail.execute();
-            } else {
-                mAdapter = new RecyclerViewAdapter(this, assetList);
-                ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                    @Override
-                    public void onItemClick(int position, View v) {
-                        Log.i(TAG, " Clicked on Item ");
-                    }
-                });
-                mRecyclerView.setAdapter(mAdapter);
             }
+            mAdapter = new RecyclerViewAdapter(this, assetList);
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    Log.i(TAG, " Clicked on Item ");
+                }
+            });
+            mRecyclerView.setAdapter(mAdapter);
+
         }
     }
     public void onAssetDetailReady(){
