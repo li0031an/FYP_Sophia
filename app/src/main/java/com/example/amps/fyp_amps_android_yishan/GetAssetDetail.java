@@ -20,22 +20,43 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.util.Log;
+import android.widget.Toast;
 
-public class GetAsset extends AsyncTask<Object, Object, Object> implements Settings{
-    private static String TAG = "GetAsset";
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+public class GetAssetDetail extends AsyncTask<Object, Object, Object> implements Settings{
+    private static String TAG = "GetAssetDetail";
     GetAssetListener getAssetListener;
     Context context;
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String folderId;
-    ArrayList<Asset> assetList = new ArrayList<Asset>();
+    String assetId;
+    Asset asset = null;
 
-    public GetAsset(GetAssetListener getAssetListener, Context context, SharedPreferences settings, String rootId, String projectId){
+    public GetAssetDetail(GetAssetListener getAssetListener, Context context, SharedPreferences settings, String assetId, String projectId){
+        Log.d(TAG, "GetAssetDetail constructor starts");
         this.getAssetListener = getAssetListener;
         this.context = context;
         this.settings = settings;
-        this.folderId = rootId;
+        this.assetId = assetId;
         this.projectId = projectId;
     }
 
@@ -47,6 +68,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
 
     @Override
     protected String doInBackground(Object... arg0) {
+        Log.d(TAG, "doInBackground starts");
         return getAssetObject();
 
     }
@@ -56,9 +78,9 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         dialog.dismiss();
         Log.d(TAG, "onPostExecute starts");
         if (null != result) {
-            assetList = parseAssetObject((String) result);
-            if (null != assetList && assetList.size() != 0) {
-                getAssetListener.onAssetReady();
+            asset = parseAssetObject((String) result);
+            if (null != asset ) {
+                getAssetListener.onAssetDetailReady();
             } else {
                 showToast("The folder is empty");
             }
@@ -66,6 +88,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
     }
 
     public String getAssetObject() {
+        Log.d(TAG, "getAssetObject() starts");
         String responseBody = "";
         // Instantiate an HttpClient
         HttpClient httpclient = new DefaultHttpClient();
@@ -78,11 +101,12 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         postParameters.add(new BasicNameValuePair("userid", settings
                 .getString("userid", null)));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
-        postParameters.add(new BasicNameValuePair("folderid", folderId));
-        postParameters.add(new BasicNameValuePair("SELECT", "[base64_thumbnail]"));
+        postParameters.add(new BasicNameValuePair("condition", "[asset_id] = '"+assetId+"'"));
+        postParameters.add(new BasicNameValuePair("select", "[asset_id],[base64_thumbnail],[ext]"));
 
         // Instantiate a POST HTTP method
         try {
+            Log.d(TAG, "postParameters: " + postParameters.toString());
             httppost.setEntity(new UrlEncodedFormEntity(postParameters));
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             responseBody = httpclient.execute(httppost, responseHandler);
@@ -93,10 +117,10 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         return responseBody;
     }
 
-    public ArrayList<Asset> parseAssetObject(String responseBody) {
+    public Asset parseAssetObject(String responseBody) {
         JSONArray json, data_array;
         JSONObject job;
-        ArrayList<Asset> assetArrayList = new ArrayList<Asset>();
+        Asset asset = null;
         try {
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
@@ -105,24 +129,18 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));
-                assetArrayList = null;
+                asset = null;
             }
-
             data_array = job.getJSONArray("data_array");
             Log.d(TAG, "JSON: " + data_array.toString());
             if (null != data_array) {
-                for (int i = 0; i < data_array.length(); i++) {
-                    Asset asset = parseAsset(data_array.getJSONObject(i));
-                    Log.d(TAG, "asset.id" + asset.getAsset_id());
-                    if (null != asset) {
-                        assetArrayList.add(asset);
-                    }
-                }
+                asset = parseAsset(data_array.getJSONObject(0));
+                Log.d(TAG, "asset.id" + asset.getAsset_id());
             }
         }catch(JSONException e){
-                e.printStackTrace();
+            e.printStackTrace();
         }
-        return assetArrayList;
+        return asset;
     }
 
     private Asset parseAsset(JSONObject data_array){
@@ -147,8 +165,8 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
                 asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
             } if (!data_array.isNull("updated_datetime")) {
                 asset.setUpdated_datetime(data_array.getString("updated_datetime"));
-            } if (!data_array.isNull("getBase64_thumbnail")) {
-                asset.setBase64_thumbnail(data_array.getString("getBase64_thumbnail"));
+            } if (!data_array.isNull("base64_thumbnail")) {
+                asset.setBase64_thumbnail(data_array.getString("base64_thumbnail"));
             } if (!data_array.isNull("statusid")) {
                 asset.setStatusid(data_array.getString("statusid"));
             }
@@ -166,7 +184,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         toast.show();
     }
 
-    protected ArrayList<Asset> getAssetList(){
-        return assetList;
+    protected Asset getAssetDetail(){
+        return asset;
     }
 }

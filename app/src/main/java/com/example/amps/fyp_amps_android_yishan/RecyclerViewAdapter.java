@@ -77,13 +77,15 @@ public class RecyclerViewAdapter extends RecyclerView
             holder.label.setText(asset.getName());
 
             if(((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
-                if(null != asset.getBase64_thumbnail() && !asset.getBase64_thumbnail().isEmpty()) {
+                if(null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
+                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
                             asset.getBase64_thumbnail(), Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(
                             decodedString, 0, decodedString.length);
                     holder.image.setImageBitmap(decodedByte);
                 } else{
+                    Log.d(TAG, "don't get Base64_thumbnail");
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
                 }

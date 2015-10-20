@@ -34,6 +34,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
     GetAsset getAsset;
+    GetAssetDetail getAssetDetail;
     //////
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -184,12 +185,52 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
         if (null != arrayAssetList) {
             Log.d(TAG, "assetList is gotten");
+            Boolean needThumbNailUpdate = false;
             for (int i = 0; i<arrayAssetList.size(); i++) {
-                assetList.add((Object) arrayAssetList.get(i));
+                Asset temp  = arrayAssetList.get(i);
+                Log.d(TAG, "array type: " + temp.getExt());
+                if(((temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))))) {
+                    Log.d(TAG, "call GetAssetDetail()");
+                    needThumbNailUpdate = true;
+                    getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, temp.asset_id, projectId);
+                    getAssetDetail.execute();
+                } //Todo -- if several images are calling GetAssetDetail() at almost the same time
+                assetList.add(temp);
+            } if (!needThumbNailUpdate) {
+                mAdapter = new RecyclerViewAdapter(this, assetList);
+                ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                    @Override
+                    public void onItemClick(int position, View v) {
+                        Log.i(TAG, " Clicked on Item ");
+                    }
+                });
+                mRecyclerView.setAdapter(mAdapter);
             }
-            View v = ProjectDetailsActivity.this
-                    .findViewById(android.R.id.content).getRootView();
-            //createAssetCardRow(v);
+        }
+    }
+    public void onAssetDetailReady(){
+        Asset assetDetail = getAssetDetail.getAssetDetail();
+        boolean newAssetUsed = false;
+        if (null != assetDetail) {
+            Log.d(TAG, "assetDetail is gotten");
+            for (int i = 0; i<assetList.size(); i++) {
+                Asset temp = (Asset)assetList.get(i);
+                if (temp.getAsset_id().equalsIgnoreCase(assetDetail.getAsset_id())){
+                    String base64_thumbnail = assetDetail.getBase64_thumbnail();
+                    if (null == base64_thumbnail) {
+                        Log.d(TAG, "base64_thumbnail is null");
+                    }
+                    ((Asset) assetList.get(i)).setBase64_thumbnail(base64_thumbnail);
+                    newAssetUsed = true;
+                    if (null != ((Asset) assetList.get(i)).getBase64_thumbnail()) {
+                        Log.d(TAG, "Base64_thumbnail is available");
+                    }
+                    break;
+                }
+            } if (!newAssetUsed) {
+                Log.d(TAG, "new asset is not used, asset id: " + assetDetail.getAsset_id());
+                Log.d(TAG, "new asset is not used, asset type: " + assetDetail.getExt());
+            }
             mAdapter = new RecyclerViewAdapter(this,assetList);
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
