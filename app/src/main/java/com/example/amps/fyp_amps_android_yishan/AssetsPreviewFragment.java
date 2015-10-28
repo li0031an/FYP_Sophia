@@ -39,6 +39,8 @@ import android.net.TrafficStats;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,7 +54,8 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener {
+public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, View.OnClickListener {
+    private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
     ProgressDialog dialog;
@@ -73,6 +76,11 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     TextView tvFileSize2;
     String fileSizeUnit;
     byte[] decodedString;
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
     DecimalFormat twoDP = new DecimalFormat("#.##");
 
     public void setUserid(String userid) {
@@ -113,23 +121,30 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        imageViewPreview = (ImageView) getActivity().findViewById(
-                R.id.imageViewPreview);
-        textViewRevisionNo2 = (TextView) getActivity().findViewById(
-                R.id.textViewRevisionNo2);
-        textViewUploadedBy2 = (TextView) getActivity().findViewById(
-                R.id.textViewUploadedBy2);
-        textViewUploadedDate2 = (TextView) getActivity().findViewById(
-                R.id.textViewUploadedDate2);
-        textViewComment2 = (TextView) getActivity().findViewById(
-                R.id.textViewComment2);
-        tvFileSize2 = (TextView)getActivity().findViewById(R.id.tvFileSize2);
+//        imageViewPreview = (ImageView) getActivity().findViewById(
+//                R.id.imageViewPreview);
+//        textViewRevisionNo2 = (TextView) getActivity().findViewById(
+//                R.id.textViewRevisionNo2);
+//        textViewUploadedBy2 = (TextView) getActivity().findViewById(
+//                R.id.textViewUploadedBy2);
+//        textViewUploadedDate2 = (TextView) getActivity().findViewById(
+//                R.id.textViewUploadedDate2);
+//        textViewComment2 = (TextView) getActivity().findViewById(
+//                R.id.textViewComment2);
+//        tvFileSize2 = (TextView)getActivity().findViewById(R.id.tvFileSize2);
         settings = getActivity().getSharedPreferences(SETTINGS, 0);
         String selectAttributes = "[asset_id], [name], [ext], [file_size], [latest_revid], [latest_revnum], [updated_userid], [updated_datetime], [base64_thumbnail], [latest_revsize]";
         ArrayList<String> assetIdList = new ArrayList<>();
         assetIdList.add(asset_id);
         getAssetDetail = new GetAssetDetail(this, getActivity(), settings, assetIdList, project_id, selectAttributes);
         getAssetDetail.execute();
+
+        /////
+        mRecyclerView = (RecyclerView) getActivity().findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        /////
     }
 
 //    public void onClick(View view) {
@@ -223,64 +238,33 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     }
 
 
+    @Override
+    public void onClick(View view) {
+        Log.i(TAG, " Clicked on Item ");
+
+    }
+
     public void onAssetReady(){
 
     }
 
     public void onAssetDetailReady(){
         asset = getAssetDetail.getAssetDetail().get(0);
-        if (null != asset) {
-            DecimalFormat df = new DecimalFormat("#.###");
-            if (asset.getFile_size() < 1024)
-            {
-                fileSizeUnit = "B";
-                tvFileSize2.setText(asset.getFile_size()+fileSizeUnit);
-            }
-            else if (asset.getFile_size() < 1024 * 1024)
-            {
-                asset.setFile_size(Double.parseDouble(df.format(asset.getFile_size() / (1024.000))));
-                fileSizeUnit = "kB";
-                tvFileSize2.setText(asset.getFile_size() + fileSizeUnit);
-            }
+        ArrayList<Object> arrayList = new ArrayList<>();
+        arrayList.add(asset);
+        mAdapter = new PreviewRecyclerViewAdapter(getActivity(),arrayList);
+        ((PreviewRecyclerViewAdapter) mAdapter).setOnItemClickListener(new PreviewRecyclerViewAdapter.MyClickListener() {
+            @Override
+            public void onItemClick(int position, View v) {
+                Log.i(TAG, " Clicked on Item ");
 
-            else if (asset.getFile_size() >= 1024 * 1024){
-                asset.setFile_size(Double.parseDouble(df.format(asset.getFile_size() / (1024.000 * 1024.000))));
-                fileSizeUnit = "MB";
-                tvFileSize2.setText(asset.getFile_size() + fileSizeUnit);
             }
+        });
+        mRecyclerView.setAdapter(mAdapter);
 
-            else if((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))))){
-                if(null != asset.videoUrl){
-                    asset.videoUrl = video_url;
-                }
-                else{
-                    asset.videoUrl = null;
-                }
-            }
-            if((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif"))))){
-                if(null != asset.getBase64_thumbnail() && !asset.getBase64_thumbnail().isEmpty()){
-                    decodedString = Base64.decode(asset.getBase64_thumbnail(),Base64.DEFAULT);
-                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString,0, decodedString.length);
-                    System.out.println(decodedByte.getConfig());
-                    imageViewPreview.setImageBitmap(decodedByte);
-                }
-                else{
-                    Resources res = getResources();
-                    imageViewPreview.setImageDrawable(res.getDrawable(R.drawable.content_picture));
-                }
-            }
-            else if((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))))){
-                Resources res = getResources(); /** from an Activity */
-                imageViewPreview.setImageDrawable(res.getDrawable(R.drawable.ic_action_video));
-            }
 
-            textViewRevisionNo2.setText("#" + asset.getRevNum());
-            textViewUploadedDate2.setText(asset.getUpdated_datetime());
-            textViewComment2.setText("Comment");
-            //tvFileSize2.setText(String.valueOf(a.getFile_size()));
             GetCreatedUserInfo task = new GetCreatedUserInfo();
             task.execute();
-        }
     }
 
     public class GetCreatedUserInfo extends AsyncTask<Object, Object, Object> {
@@ -335,7 +319,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 job = json.getJSONObject(0);
                 data_array = job.getJSONArray("data_array");
                 JSONObject dataJob = new JSONObject(data_array.getString(0));
-                textViewUploadedBy2.setText(dataJob.getString("username"));
+//                textViewUploadedBy2.setText(dataJob.getString("username"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -445,12 +429,11 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 downloadError.setTitle("Download Status");
                 downloadError.setMessage("Failed to download " + asset.getName() + "." + asset.getExt() + ".. Please try again later..");
                 downloadError.setButton("OK", new DialogInterface.OnClickListener() {
-
-                    @Override
+                @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // TODO Auto-generated method stub
+                    //  TODO Auto-generated method stub
 
-                    }
+                }
                 });
                 downloadError.show();
             }
