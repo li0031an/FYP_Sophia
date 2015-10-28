@@ -87,9 +87,12 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
         ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
         postParameters.add(new BasicNameValuePair("tokenid", settings
                 .getString("tokenid", null)));
+        Log.d(TAG, "tokenid: " + settings.getString("tokenid", null));
         postParameters.add(new BasicNameValuePair("userid", settings
                 .getString("userid", null)));
+        Log.d(TAG, "userid: " + settings.getString("userid", null));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
+        Log.d(TAG, "projectid: " + settings.getString("projectid", null));
 
         // Instantiate a POST HTTP method
         try {

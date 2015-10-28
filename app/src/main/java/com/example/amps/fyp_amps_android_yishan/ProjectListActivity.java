@@ -76,6 +76,18 @@ public class ProjectListActivity extends BaseActivity implements Settings,
     }
 
     @Override
+    protected void onStart(){
+        super.onStart();
+        Log.d(TAG, "onStart()");
+    }
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Log.d(TAG, "onRestart()");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (null != mAdapter) {
@@ -89,6 +101,23 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         }
     }
 
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.d(TAG, "onPause()");
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        Log.d(TAG, "onStop()");
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        Log.d(TAG, "onDestroy()");
+    }
 
 //    public void createTableRow(View v) {
 //        TableLayout tl = (TableLayout) findViewById(R.id.tableRowProjectList);
@@ -127,6 +156,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             Project p = (Project) projectArray.get(id);
             Intent intent = new Intent(ProjectListActivity.this, ProjectDetailsActivity.class);
             intent.putExtra("project_id", p.getProject_id());
+            intent.putExtra("project_name", p.getName());
             startActivity(intent);
         } else {
             Log.e(TAG, "object id: "+ id + " is not project in displayFolderList");

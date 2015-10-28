@@ -108,6 +108,8 @@ public class LoginActivity extends Activity implements Settings {
 
     // -TODO: encode the password before saving, decode the password when needed
     private void onSuccessfulLogin() {
+        SharedPreferences Details = getSharedPreferences("ProjectDetailsActivity", Context.MODE_PRIVATE);
+        Details.edit().putInt("NO", 0).commit();
         if (null == szUsername || szUsername.length() == 0) {
             Log.d(TAG, "szUsername is null in onSuccessfulLogin()");
             return;
