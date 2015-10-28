@@ -1,6 +1,8 @@
 package com.example.amps.fyp_amps_android_yishan;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -37,6 +39,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     GetAsset getAsset;
     GetAssetDetail getAssetDetail;
     //////
+    private static String header;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
@@ -45,20 +48,38 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate()");
         setContentView(R.layout.activity_project_details);
         setTitle("Project folders");
         settings = getSharedPreferences(SETTINGS, 0);
         Intent intent = getIntent();
         projectId = intent.getStringExtra("project_id");
-        String intentRootId = intent.getStringExtra("rootFolderId");
-        if (null != intentRootId) {
-            rootFolderId = intentRootId;
-            Log.d(TAG, "intent - rootFolderId" + rootFolderId);
-            getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
-            getAsset.execute();
+        String projectName = intent.getStringExtra("project_name");
+        String folderName = intent.getStringExtra("folder_name");
+        if (null != projectName) {
+            header = projectName;
+            setTitle(header);
+        } if (null != folderName) {
+            header = folderName;
+            setTitle(header);
+        }
+        if (null != projectId) {
+            String intentRootId = intent.getStringExtra("rootFolderId");
+            if (null != intentRootId) {
+                rootFolderId = intentRootId;
+                Log.d(TAG, "intent - rootFolderId" + rootFolderId);
+                getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getAsset.execute();
+            } else {
+                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+                getRootFolderId.execute();
+            }
         } else {
-            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-            getRootFolderId.execute();
+            if (null == savedInstanceState) {
+                Log.e(TAG, "savedInstanceState is null");
+            } else {
+                onRestoreInstanceState(savedInstanceState);
+            }
         }
         /////
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -76,8 +97,40 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     @Override
+    protected void onStart(){
+        super.onStart();
+        Log.d(TAG, "onStart()");
+    }
+
+    @Override
+    protected void onRestart(){
+        super.onRestart();
+        Log.d(TAG, "onRestart()");
+        ((RecyclerViewAdapter)mAdapter).clearData();
+        SharedPreferences details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        projectId = details.getString("projectId", null);
+        Log.d(TAG, "projectId: " + projectId);
+        String intentRootId = details.getString("header", null);
+        if (null != intentRootId) {
+            Log.d(TAG, "rootFolderId: " + intentRootId);
+            rootFolderId = intentRootId;
+            getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+            getAsset.execute();
+        } else {
+            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+            Log.d(TAG, "CALL - GetRootFolderId");
+            getRootFolderId.execute();
+        }
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume()");
         if (null != mAdapter) {
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
@@ -87,10 +140,60 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                     intent.putExtra("project_id", projectId);
                     intent.putExtra("asset", ((Asset)assetList.get(position)).getAsset_id());
+                    intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
                     startActivity(intent);
                 }
             });
         }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        Log.d(TAG, "onPause()");
+        if (null != mAdapter) {
+            ((RecyclerViewAdapter) mAdapter).clearData();
+        }
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        Log.d(TAG, "onStop()");
+        if (null != mAdapter) {
+            ((RecyclerViewAdapter) mAdapter).clearData();
+        }
+        SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        if (null != projectId) {
+            Details.edit().putString("projectId", projectId).commit();
+        }
+        if (null != rootFolderId) {
+            Details.edit().putString("rootFolderId", header).commit();
+        }
+        Bundle savedInstanceState = new Bundle();
+        onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        Log.d(TAG, "onDestroy()");
+        Bundle savedInstanceState = new Bundle();
+        onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString("projectId", projectId);
+        savedInstanceState.putString("rootFolderId", rootFolderId);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        projectId = savedInstanceState.getString("projectId");
+        rootFolderId = savedInstanceState.getString("rootFolderId");
     }
 
     @Override
@@ -103,9 +206,18 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             Log.d(TAG, "onNewIntent - project_id" + projectId);
         }
         String intentRootId = newIntent.getStringExtra("rootFolderId");
+        String intentProjectName = newIntent.getStringExtra("project_name");
+        String intentFolderName = newIntent.getStringExtra("folder_name");
         if (null != intentRootId) {
             rootFolderId = intentRootId;
-            Log.d(TAG, "onNewIntent - rootFolderId" + rootFolderId);
+            Log.d(TAG, "new intent - rootFolderId: " + rootFolderId);
+        }
+        if (null != intentFolderName) {
+            header = intentFolderName;
+            Log.d(TAG, "new intent - header: intentFolderName: " + intentFolderName);
+        }if (null != intentProjectName) {
+            header = intentProjectName;
+            Log.d(TAG, "new intent - header: intentProjectName: " + intentProjectName);
         }
     }
 
@@ -142,6 +254,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         Intent intent = new Intent(ProjectDetailsActivity.this, ProjectDetailsActivity.class);
         intent.putExtra("project_id", projectId);
         intent.putExtra("rootFolderId", folder.getFolder_id());
+        intent.putExtra("folder_name", folder.getName());
         startActivity(intent);
     }
 
@@ -176,7 +289,6 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 public void onItemClick(int position, View v) {
                     Log.i(TAG, " Clicked on Item ");
                     displayAssetList(position);
-
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -216,6 +328,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                     intent.putExtra("project_id", projectId);
                     intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
+                    intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
                     startActivity(intent);
 
                 }
@@ -262,6 +375,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                             Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                             intent.putExtra("project_id", projectId);
                             intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
+                            intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
                             startActivity(intent);
 
                         }
