@@ -110,8 +110,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         SharedPreferences details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         projectId = details.getString("projectId", null);
         Log.d(TAG, "projectId: " + projectId);
-        String intentRootId = details.getString("header", null);
+        int layerNo = details.getInt("NO", 0);
+        Log.d(TAG, "layerNo: onRestart: " + layerNo);
+        String intentRootId = null;
+        if (layerNo > 1) {
+            intentRootId = details.getString(String.valueOf(layerNo), null);
+        } else if (layerNo == 1) {
+            details.edit().putInt("NO", layerNo - 1).commit();
+        }
         if (null != intentRootId) {
+            details.edit().putInt("NO", layerNo-1).commit();
             Log.d(TAG, "rootFolderId: " + intentRootId);
             rootFolderId = intentRootId;
             getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
@@ -149,6 +157,15 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     protected void onPause(){
+        SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        if (null != rootFolderId) {
+            int layerNo = Details.getInt("NO", 0);
+            String stringNo = String.valueOf(layerNo+1);
+            Details.edit().putInt("NO", layerNo + 1)
+                    .putString(stringNo, rootFolderId).commit();
+            Log.d(TAG, "NO: onPause: " + String.valueOf(layerNo + 1));
+        }
+        Details.edit().putString("projectId", projectId).commit();
         super.onPause();
         Log.d(TAG, "onPause()");
         if (null != mAdapter) {
@@ -165,10 +182,6 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         }
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         if (null != projectId) {
-            Details.edit().putString("projectId", projectId).commit();
-        }
-        if (null != rootFolderId) {
-            Details.edit().putString("rootFolderId", header).commit();
         }
         Bundle savedInstanceState = new Bundle();
         onSaveInstanceState(savedInstanceState);
@@ -180,6 +193,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         Log.d(TAG, "onDestroy()");
         Bundle savedInstanceState = new Bundle();
         onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        int layerNo = Details.getInt("NO", 0);
+        Details.edit().putInt("NO", layerNo-1).commit();
+        Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo-1));
+        ProjectDetailsActivity.super.onBackPressed();
+        finish();
     }
 
     @Override
