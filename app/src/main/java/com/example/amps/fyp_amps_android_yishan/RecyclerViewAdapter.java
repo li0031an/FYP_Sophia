@@ -109,6 +109,12 @@ public class RecyclerViewAdapter extends RecyclerView
         notifyItemRemoved(index);
     }
 
+    public void clearData(){
+        for (int i = 0; i < mDataset.size(); i++) {
+            deleteItem(i);
+        }
+    }
+
     @Override
     public int getItemCount() {
         return mDataset.size();
