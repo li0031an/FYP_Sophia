@@ -119,6 +119,9 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
                     }
                 }
             }
+            if (null != assetArrayList && assetArrayList.size() == 0) {
+                showToast("the folder is empty.");
+            }
         }catch(JSONException e){
                 e.printStackTrace();
         }

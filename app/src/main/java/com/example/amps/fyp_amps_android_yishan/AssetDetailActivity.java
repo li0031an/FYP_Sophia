@@ -176,8 +176,11 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
                 case R.id.imageButtonDownload:
                     previewFragment.onClick(view);
                     break;
+                case R.id.imageButtonDelete:
+                    previewFragment.onClick(view);
+                    break;
                 default:
-                    finish();
+                    Log.e(TAG, "no matching in onClick()");
                     break;
             }
         } catch (Exception e) {

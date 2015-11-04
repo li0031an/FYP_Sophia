@@ -54,7 +54,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, View.OnClickListener {
+public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, DeleteAssetListener, View.OnClickListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
@@ -183,17 +183,20 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 //                    getActivity().startActivity(uploadImage);
                     break;
                 case R.id.imageButtonDownload:
-                    String assetFullName = asset.getName() + "." + asset.getExt();
+                    String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                     DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
-                            , asset.asset_id, project_id, assetFullName, asset.getRevId());
+                            , asset.asset_id, project_id, assetFullNameDownloaded, asset.getRevId());
                     taskDownload.execute();
                     break;
                 case R.id.imageButtonDelete:
-                    DeleteAsset taskDelete = new DeleteAsset();
+                    String assetFullNameDeleted = asset.getName() + "." + asset.getExt();
+                    DeleteAsset taskDelete = new DeleteAsset(getActivity(), this, settings
+                            , asset.asset_id, project_id, assetFullNameDeleted);
                     taskDelete.execute();
                     break;
                 default:
-                    getActivity().finish();
+//                    getActivity().finish();
+                    Log.e(TAG, "no case matched in onClick()");
                     break;
             }
         } catch (Exception e) {
@@ -201,6 +204,9 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         }
     }
 
+    public void onDeleteAsset(){
+        getActivity().finish();
+    }
     public int getCameraPhotoOrientation(Context context, Uri imageUri,
                                          String imagePath) {
         int rotate = 0;
@@ -318,53 +324,4 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         }
     }
 
-    public class DeleteAsset extends AsyncTask<Object, Object, Object> {
-
-        @Override
-        protected void onPreExecute() {
-            dialog = ProgressDialog.show(AssetsPreviewFragment.this.getActivity(),
-                    "Deleting Asset", "Please wait...", true);
-        }
-
-        @Override
-        protected String doInBackground(Object... arg0) {
-            return deleteAsset();
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            dialog.dismiss();
-            parseJSONResponse((String) result);
-
-        }
-
-        public String deleteAsset() {
-            String responseBody = "";
-            // Instantiate an HttpClient
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost(SZAAPIURL + "delAsset");
-
-            // Post parameters
-            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-            postParameters.add(new BasicNameValuePair("tokenid", tokenid));
-            postParameters.add(new BasicNameValuePair("userid", userid));
-            postParameters.add(new BasicNameValuePair("projectid", project_id));
-            postParameters.add(new BasicNameValuePair("assetid_list", asset_id));
-
-            // Instantiate a POST HTTP method
-            try {
-                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                responseBody = httpclient.execute(httppost, responseHandler);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return responseBody;
-        }
-
-        public void parseJSONResponse(String responseBody) {
-            Intent intent = new Intent(AssetsPreviewFragment.this.getActivity(), ProjectDetailsActivity.class);
-            startActivity(intent);
-        }
-    }
 }
