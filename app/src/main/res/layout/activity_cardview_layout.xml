@@ -16,7 +16,7 @@
         android:layout_gravity="center"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
+        android:layout_margin="2dp"
         >
 
         <!--card_view:cardCornerRadius="2dp"-->
@@ -25,7 +25,9 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="@color/lightgrey"
+            android:alpha="0.8">
 
             <ImageView
                 android:id="@+id/cardImage"
@@ -37,7 +39,7 @@
 
             <TextView
                 android:id="@+id/cardText"
-                android:textColor="@color/LimeGreen"
+                android:textColor="@color/ForestGreen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
