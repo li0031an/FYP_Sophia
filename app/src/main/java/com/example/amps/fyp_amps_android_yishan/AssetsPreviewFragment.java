@@ -81,8 +81,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    DecimalFormat twoDP = new DecimalFormat("#.##");
-
     public void setUserid(String userid) {
         this.userid = userid;
     }
@@ -147,29 +145,28 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         /////
     }
 
-//    public void onClick(View view) {
-//        try {
-//            switch (view.getId()) {
-//                case R.id.imageButtonReview:
-//                    if((a.getExt().equals("jpg") || (a.getExt().equals("png") || (a.getExt().equals("jpeg")) || (a.getExt().equals("gif"))))){
-//
-//                        ImageButton imageButtonReview = (ImageButton)getActivity().findViewById(R.id.imageButtonReview);
-//                        imageButtonReview.setOnTouchListener(new OnTouchListener(){
-//                            @Override
-//                            public boolean onTouch(View arg0, MotionEvent event) {
-//                                int action = event.getAction();
-//                                switch (action) {
-//                                    case MotionEvent.ACTION_UP:
+    public void onClick(View view) {
+        try {
+            switch (view.getId()) {
+                case R.id.imageButtonReview:
+                    if ((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif"))))) {
+
+                        ImageButton imageButtonReview = (ImageButton) getActivity().findViewById(R.id.imageButtonReview);
+                        imageButtonReview.setOnTouchListener(new OnTouchListener() {
+                            @Override
+                            public boolean onTouch(View arg0, MotionEvent event) {
+                                int action = event.getAction();
+                                switch (action) {
+                                    case MotionEvent.ACTION_UP:
 //                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
 //                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
 //                                        getActivity().startActivity(reviewImageFullScreen);
 //                                        break;
-//                                }
-//                                return true;
-//                            }
-//                        });
-//                    }
-//                    else if((a.getExt().equals("avi") || (a.getExt().equals("flv") || (a.getExt().equals("3gp")) || (a.getExt().equals("webm"))))){
+                                }
+                                return true;
+                            }
+                        });
+                    } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("3gp")) || (asset.getExt().equals("webm"))))) {
 //                        Intent i = new Intent(getActivity(), VideoPlayerActivity.class);
 //                        i.putExtra("asset_id", asset_id);
 //                        i.putExtra("token_id", tokenid);
@@ -177,30 +174,32 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 //                        i.putExtra("project_id", project_id);
 //                        i.putExtra("revNum",a.getRevNum());
 //                        startActivity(i);
-//                    }
-//                    break;
-//                case R.id.imageButtonUpload:
+                    }
+                    break;
+                case R.id.imageButtonUpload:
 //                    Intent uploadImage = new Intent(getActivity(),ImageUploadActivity.class);
 //                    uploadImage.putExtra("asset_id", asset_id);
 //                    uploadImage.putExtra("project_id", project_id);
 //                    getActivity().startActivity(uploadImage);
-//                    break;
-//                case R.id.imageButtonDownload:
-//                    DownloadAsset taskDownload = new DownloadAsset();
-//                    taskDownload.execute();
-//                    break;
-//                case R.id.imageButtonDelete:
-//                    DeleteAsset taskDelete = new DeleteAsset();
-//                    taskDelete.execute();
-//                    break;
-//                default:
-//                    getActivity().finish();
-//                    break;
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+                    break;
+                case R.id.imageButtonDownload:
+                    String assetFullName = asset.getName() + "." + asset.getExt();
+                    DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
+                            , asset.asset_id, project_id, assetFullName, asset.getRevId());
+                    taskDownload.execute();
+                    break;
+                case R.id.imageButtonDelete:
+                    DeleteAsset taskDelete = new DeleteAsset();
+                    taskDelete.execute();
+                    break;
+                default:
+                    getActivity().finish();
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public int getCameraPhotoOrientation(Context context, Uri imageUri,
                                          String imagePath) {
@@ -237,22 +236,15 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         return rotate;
     }
 
-
-    @Override
-    public void onClick(View view) {
-        Log.i(TAG, " Clicked on Item ");
+    public void onAssetReady() {
 
     }
 
-    public void onAssetReady(){
-
-    }
-
-    public void onAssetDetailReady(){
+    public void onAssetDetailReady() {
         asset = getAssetDetail.getAssetDetail().get(0);
         ArrayList<Object> arrayList = new ArrayList<>();
         arrayList.add(asset);
-        mAdapter = new PreviewRecyclerViewAdapter(getActivity(),arrayList);
+        mAdapter = new PreviewRecyclerViewAdapter(getActivity(), arrayList);
         ((PreviewRecyclerViewAdapter) mAdapter).setOnItemClickListener(new PreviewRecyclerViewAdapter.MyClickListener() {
             @Override
             public void onItemClick(int position, View v) {
@@ -263,8 +255,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         mRecyclerView.setAdapter(mAdapter);
 
 
-            GetCreatedUserInfo task = new GetCreatedUserInfo();
-            task.execute();
+        GetCreatedUserInfo task = new GetCreatedUserInfo();
+        task.execute();
     }
 
     public class GetCreatedUserInfo extends AsyncTask<Object, Object, Object> {
@@ -324,175 +316,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 e.printStackTrace();
             }
         }
-    }
-
-    public class DownloadAsset extends AsyncTask<Object, String, Object> {
-        @Override
-        protected void onPreExecute() {
-            /**
-             dialog = ProgressDialog.show(
-             WorkingAssetsPreviewFragment.this.getActivity(),
-             "Downloading Asset", "Please wait...", true);
-             **/
-            //After end user clicks download button,
-            //the progress bar will pop out and show its progress(%) and speed
-            //super.onPreExecute();
-            downloadDialog = new ProgressDialog(AssetsPreviewFragment.this.getActivity());
-            downloadDialog.setMessage("Downloading " + asset.getName() + "." + asset.getExt() + ".. Please wait..");
-            downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            //downloadDialog.setMax(100);
-            downloadDialog.setProgressNumberFormat("0 MB/s");
-            downloadDialog.setIndeterminate(false);
-            downloadDialog.setCancelable(false);
-            downloadDialog.show();
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        protected String doInBackground(Object... arg0) {
-            //return downloadAsset();
-            int count;
-            String req = SZAAPIURL + "downloadAsset?tokenid=" + tokenid +
-                    "&userid=" + userid +
-                    "&projectid=" + project_id +
-                    "&assetid_lst=" + asset_id +
-                    "&revid=" + asset.getRevId() ;
-            String downloadedFileName = asset.getName() + "." + asset.getExt();
-            //TrafficStats traffic = new TrafficStats();
-            //double totalNetworkBytes = traffic.getTotalTxBytes();
-            try{
-                URL url = new URL(req);
-                long startTime = System.currentTimeMillis();
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setDoOutput(true);
-                connection.connect();
-
-                File downloadLocation = new File(
-                        Environment.getExternalStoragePublicDirectory
-                                (Environment.DIRECTORY_DOWNLOADS),
-                        downloadedFileName);
-                //get downloaded data
-                //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
-                OutputStream fileOutput = new FileOutputStream (downloadLocation);
-
-                //get data from internet
-                InputStream inputStream = connection.getInputStream();
-
-                //total size of the file
-                int totalSize = connection.getContentLength();
-                long total = 0;
-                String unit = "";
-                double newSpeed = 0.00;
-                //create buffer...
-                byte[] data = new byte[1024];
-                long elapsedTime = System.currentTimeMillis() - startTime;
-                //long startTime = System.nanoTime();	//Initialise the time for download speed
-                //final double downloadSpeedPerSec = 1000000000.00;
-                //final float bytesPerMib = 1024 * 1024;
-                while ((count = inputStream.read(data)) != -1)
-                {
-                    total += count;
-                    //calculate speed
-                    double speed = total * 1000.0f / elapsedTime;
-
-                    if (speed < 1024)
-                    {
-                        newSpeed = Double.parseDouble(twoDP.format(speed));
-                        unit = "Bytes/ sec";
-                    }
-                    else if (speed < 1024*1024){
-                        newSpeed = Double.parseDouble(twoDP.format(speed / 1024));
-                        unit = "kB/s";
-                    }
-                    else
-                    {
-                        newSpeed = Double.parseDouble(twoDP.format((speed / 1024 * 1024)/1000000));
-                        unit = "MB/s";
-                    }
-
-                    downloadDialog.setProgressNumberFormat(newSpeed + unit);
-                    //increase from 0-100%
-                    publishProgress("" + (int)((total*100)/totalSize));
-                    fileOutput.write(data, 0, count);
-                }
-
-                //close connection
-                fileOutput.flush();
-                fileOutput.close();
-                inputStream.close();
-            }
-            catch(Exception e){
-                //e.printStackTrace();
-                downloadDialog.dismiss();
-                AlertDialog downloadError = new AlertDialog.Builder(getActivity()).create();
-                downloadError.setTitle("Download Status");
-                downloadError.setMessage("Failed to download " + asset.getName() + "." + asset.getExt() + ".. Please try again later..");
-                downloadError.setButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    //  TODO Auto-generated method stub
-
-                }
-                });
-                downloadError.show();
-            }
-
-            return null;
-        }
-
-        //Updating Progress Bar
-        //Focus:
-        protected void onProgressUpdate(String... progress){
-            //Log.d("",progress[0]);
-            //super.onProgressUpdate(progress);
-            downloadDialog.setProgress(Integer.parseInt(progress[0]));
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        protected void onPostExecute(Object result) {
-            /**
-             dialog.dismiss();
-             Toast toast = Toast.makeText(
-             WorkingAssetsPreviewFragment.this.getActivity(),
-             "Downloaded successfully!", Toast.LENGTH_LONG);
-             toast.show();
-             **/
-            downloadDialog.dismiss();
-            AlertDialog downloadComplete = new AlertDialog.Builder(getActivity()).create();
-            downloadComplete.setTitle("Download Status");
-            downloadComplete.setMessage(asset.getName() + "." + asset.getExt() + " is downloaded successfully.");
-            downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // TODO Auto-generated method stub
-
-                }
-            });
-            downloadComplete.show();
-        }
-
-        /**
-         public String downloadAsset() {
-         String req = SZAAPIURL + "downloadAsset?tokenid=" + tokenid +
-         "&userid=" + userid +
-         "&projectid=" + project_id +
-         "&assetid_lst=" + asset_id +
-         "&revid=" + a.getRevId() ;
-         try {
-         DownloadManager downloadManager;
-         downloadManager = (DownloadManager)WorkingAssetsPreviewFragment.this.getActivity().getSystemService("download");
-         Uri uri = Uri.parse(req);
-         DownloadManager.Request request = new DownloadManager.Request(uri);
-         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, a.getName() + "." + a.getExt());
-         downloadManager.enqueue(request);
-         } catch (Exception e) {
-         e.printStackTrace();
-         }
-         return null;
-         }**/
     }
 
     public class DeleteAsset extends AsyncTask<Object, Object, Object> {

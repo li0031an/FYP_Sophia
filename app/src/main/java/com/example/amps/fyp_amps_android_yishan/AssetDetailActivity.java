@@ -164,24 +164,24 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
         }
     }
 
-//    public void onClick(View view) {
-//        try {
-//            switch (view.getId()) {
-//                case R.id.imageButtonReview:
-//                    previewFragment.onClick(view);
-//                    break;
-//                case R.id.imageButtonUpload:
-//                    previewFragment.onClick(view);
-//                    break;
-//                case R.id.imageButtonDownload:
-//                    previewFragment.onClick(view);
-//                    break;
-//                default:
-//                    finish();
-//                    break;
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void onClick(View view) {
+        try {
+            switch (view.getId()) {
+                case R.id.imageButtonReview:
+                    previewFragment.onClick(view);
+                    break;
+                case R.id.imageButtonUpload:
+                    previewFragment.onClick(view);
+                    break;
+                case R.id.imageButtonDownload:
+                    previewFragment.onClick(view);
+                    break;
+                default:
+                    finish();
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
