@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -15,6 +16,9 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -91,6 +95,30 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
     }
 
     public void parseJSONResponse(String responseBody) {
-        deleteAssetListener.onDeleteAsset();
+        Log.d(TAG, "responseBody: " + responseBody);
+        JSONArray json;
+        JSONObject job;
+        try {
+            json = new JSONArray(responseBody);
+            job = json.getJSONObject(0);
+            int errorCode = job.getInt("error_code");
+            if (errorCode == 0) {
+                showToast("the asset is deleted successfully");
+                deleteAssetListener.onDeleteAsset();
+            } else {
+                String errorMsg = job.getString("error_messages");
+                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+            }
+        }catch (JSONException e) {
+                e.printStackTrace();
+            }
+    }
+
+    public void showToast(String info){
+        Toast toast = Toast.makeText(
+                activity,
+                info,
+                Toast.LENGTH_LONG);
+        toast.show();
     }
 }
