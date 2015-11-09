@@ -149,6 +149,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     intent.putExtra("project_id", projectId);
                     intent.putExtra("asset", ((Asset)assetList.get(position)).getAsset_id());
                     intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                    intent.putExtra("folderId", rootFolderId);
                     startActivity(intent);
                 }
             });
@@ -200,7 +201,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         int layerNo = Details.getInt("NO", 0);
         Details.edit().putInt("NO", layerNo-1).commit();
-        Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo-1));
+        Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo - 1));
         ProjectDetailsActivity.super.onBackPressed();
         finish();
     }
@@ -208,8 +209,12 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putString("projectId", projectId);
-        savedInstanceState.putString("rootFolderId", rootFolderId);
+        if (null != projectId) {
+            savedInstanceState.putString("projectId", projectId);
+        }
+        if (null != rootFolderId) {
+            savedInstanceState.putString("rootFolderId", rootFolderId);
+        }
     }
 
     @Override
@@ -352,6 +357,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     intent.putExtra("project_id", projectId);
                     intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
                     intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                    intent.putExtra("folderId", rootFolderId);
                     startActivity(intent);
 
                 }
@@ -399,6 +405,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                             intent.putExtra("project_id", projectId);
                             intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
                             intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                            intent.putExtra("folderId", rootFolderId);
                             startActivity(intent);
 
                         }

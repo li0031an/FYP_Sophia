@@ -1,12 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -23,38 +17,28 @@ import org.json.JSONObject;
 
 //import com.example.amps.mediaPlayer.VideoPlayerActivity;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.SharedPreferences;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.net.TrafficStats;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
-public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, DeleteAssetListener, View.OnClickListener {
+public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, ModifyAssetListener, View.OnClickListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
@@ -64,7 +48,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     String userid;
     String tokenid;
     String asset_id;
-    String project_id;
+    String project_id, folderId;
     String video_url;
     String revId;
     double fileSize;
@@ -95,6 +79,9 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 
     public void setProject_id(String project_id) {
         this.project_id = project_id;
+    }
+    public void setFolderId(String folderId) {
+        this.folderId = folderId;
     }
 
     public void setVideo_Url(String video_url){
@@ -177,10 +164,12 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                     }
                     break;
                 case R.id.imageButtonUpload:
-//                    Intent uploadImage = new Intent(getActivity(),ImageUploadActivity.class);
-//                    uploadImage.putExtra("asset_id", asset_id);
-//                    uploadImage.putExtra("project_id", project_id);
-//                    getActivity().startActivity(uploadImage);
+                    Intent uploadImage = new Intent(getActivity(),AssetUploadActivity.class);
+                    uploadImage.putExtra("asset_id", asset_id);
+                    uploadImage.putExtra("project_id", project_id);
+                    uploadImage.putExtra("folder_id", folderId);
+                    Log.d("AssetUploadActivity", "pass to folder_id: "+folderId);
+                    getActivity().startActivity(uploadImage);
                     break;
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();

@@ -25,7 +25,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
     AssetsRevisionsFragment revisionsFragment;
     AssetsLogHistoryFragment logHistoryFragment;
     private String asset_id;
-    private String project_id;
+    private String project_id, folderId;
     private String videoUrl;
 
     @Override
@@ -40,6 +40,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
         if (extras != null) {
             asset_id = extras.getString("asset_id");
             project_id = extras.getString("project_id");
+            folderId = extras.getString("folderId");
             videoUrl = extras.getString("videoUrl");
         }
 
@@ -112,6 +113,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
             previewFragment = new AssetsPreviewFragment();
             previewFragment.setUserid(settings.getString("userid", null));
             previewFragment.setTokenid(settings.getString("tokenid", null));
+            previewFragment.setFolderId(folderId);
             previewFragment.setAsset_id(asset_id);
             previewFragment.setProject_id(project_id);
             previewFragment.setVideo_Url(videoUrl);

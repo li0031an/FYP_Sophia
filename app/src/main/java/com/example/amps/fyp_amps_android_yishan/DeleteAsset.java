@@ -2,7 +2,6 @@ package com.example.amps.fyp_amps_android_yishan;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -20,14 +19,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Settings{
 
     private static String TAG = "DeleteAsset";
     Activity activity;
-    DeleteAssetListener deleteAssetListener;
+    ModifyAssetListener modifyAssetListener;
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
@@ -37,10 +35,10 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
 //    int progressInt = 0;
 //    ProgressDialog deleteDialog;
 
-    public DeleteAsset(Activity activity, DeleteAssetListener deleteAssetListener, SharedPreferences settings, String assetid
+    public DeleteAsset(Activity activity, ModifyAssetListener modifyAssetListener, SharedPreferences settings, String assetid
             , String projectId, String assetFullName){
         this.activity = activity;
-        this.deleteAssetListener = deleteAssetListener;
+        this.modifyAssetListener = modifyAssetListener;
         this.settings = settings;
         this.assetid = assetid;
         this.projectId = projectId;
@@ -104,7 +102,7 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
             int errorCode = job.getInt("error_code");
             if (errorCode == 0) {
                 showToast("the asset is deleted successfully");
-                deleteAssetListener.onDeleteAsset();
+                modifyAssetListener.onDeleteAsset();
             } else {
                 String errorMsg = job.getString("error_messages");
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));

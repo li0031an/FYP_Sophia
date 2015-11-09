@@ -6,6 +6,8 @@
          todo- need to implement style for other api versions, can refer to previous app
      -->
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:textColor">@color/ForestGreen</item>
+        <item name="android:typeface">serif</item>
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
