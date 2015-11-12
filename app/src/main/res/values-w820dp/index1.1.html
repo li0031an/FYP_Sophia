@@ -9,6 +9,30 @@
 <head> <title> The Fruit Shop </title>
     <script type = "text/javascript">
 	  <!--
+
+	  // The event handler function to compute the cost
+
+        function computeCost() {
+
+            var appleT = document.getElementById("apple");
+            var orangeT = document.getElementById("orange");
+            var bananaT = document.getElementById("banana");
+            var costT = document.getElementById("cost");
+
+            // Compute the cost
+
+            if(isNum(appleT.value) && isNum(orangeT.value) && isNum(bananaT.value) {
+                var apple = appleT.value;
+                var orange = orangeT.value;
+                var banana = bananaT.value;
+                var totalCost = apple * 0.69 + orange * 0.59 + banana * 0.39;
+                costT.value = totalCost;
+            } else {
+                costT.value = "NaN";
+            }
+
+        }  //* end of computeCost
+
         function isNum(value){
         if (value.match(/^\d+$/))
             return true;
@@ -38,29 +62,6 @@
     function paymentChoice (payment) {
 		alert("You are going to pay by " + payment.value + " !");
 	}
-
-// The event handler function to compute the cost
-
-    function computeCost() {
-
-        var appleT = document.getElementById("apple");
-        var orangeT = document.getElementById("orange");
-        var bananaT = document.getElementById("banana");
-        var costT = document.getElementById("cost")
-
-        // Compute the cost
-
-        if(isNum(appleT.value) && isNum(orangeT.value) && isNum(bananaT.value) {
-            var apple = appleT.value;
-            var orange = orangeT.value;
-            var banana = bananaT.value;
-            var totalCost = apple * 0.69 + orange * 0.59 + banana * 0.39;
-            costT.value = totalCost;
-        } else {
-            costT.value = "NaN";
-        }
-
-    }  //* end of computeCost
 
 // function to check whether all required fields are filled with valid input
 	function reminder(){
