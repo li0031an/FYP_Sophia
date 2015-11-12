@@ -41,7 +41,7 @@
                 }
                 if (!isNum(input.value)){
                     alert("The quantity you entered: "+ input.id + ": " + input.value +" is not a valid digit. \n"
-                      + "Please go back and input a valid quantity.");
+                      + "Please go back and input an integer quantity.");
                     setTimeout(function(){input.focus();}, 1);
                 }
             }
@@ -108,19 +108,19 @@
                     <th> Apple </th>
                     <td> 69 cents </td>
                     <td> <input type = "text"  id = "apple"  name = "appleQuantity"
-                                size ="2" onchange = "chkDigit(this)" /> </td>
+                                size ="2" onchange = "chkDigit(this)" onblur = "chkDigit(this)" /> </td>
                 </tr>
                 <tr>
                     <th> Orange </th>
                     <td> 59 cents </td>
                     <td> <input type = "text"  id = "orange" name = "orangeQuantity"
-                                size = "2" onchange = "chkDigit(this)" /> </td>
+                                size = "2" onchange = "chkDigit(this)" onblur = "chkDigit(this)"/> </td>
                 </tr>
                 <tr>
                     <th> Banana </th>
                     <td> 39 cents </td>
                     <td> <input type = "text"  id = "banana" name = "bananaQuantity"
-                                size = "2" onchange = "chkDigit(this)" /> </td>
+                                size = "2" onchange = "chkDigit(this)" onblur = "chkDigit(this)"/> </td>
                 </tr>
             </table>
 
