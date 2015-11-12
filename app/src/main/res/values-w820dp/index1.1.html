@@ -34,11 +34,11 @@
             }
 
             function chkDigit(input) {
-            // if ((!input.value){
-            //   alert("Fruit quantity "+ input.id + " cannot be empty.");
-            //   setTimeout(function(){input.focus();}, 1);
-            //   return;
-            // }
+                if (!(input.value)){
+                   alert("Fruit quantity "+ input.id + " cannot be empty.");
+                   setTimeout(function(){input.focus();}, 1);
+                   return;
+                }
                 if (!isNum(input.value)){
                     alert("The quantity you entered: "+ input.id + ": " + input.value +" is not a valid digit. \n"
                       + "Please go back and input a valid quantity.");
