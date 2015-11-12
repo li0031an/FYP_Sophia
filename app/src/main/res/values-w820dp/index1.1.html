@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//w3c//DTD XHTML 1.1//EN"
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<!-- nochange.html
+     This document illustrates using the focus event
+     to prevent the user from changing a text field
+     -->
+<html xmlns = "http://www.w3.org/1999/xhtml">
+<head> <title> The Fruit Shop </title>
+    <script type = "text/javascript">
+	  <!--
+        function isNum(value){
+        if (value.match(/^\d+$/))
+            return true;
+        else
+            return false;
+        }
+
+        function chkDigit(input) {
+            if ((!input.value){
+                alert("Fruit quantity "+ input.id + " cannot be empty.");
+                setTimeout(function(){input.focus();}, 1);
+                return false;
+            }
+
+            if (!isNum(input.value)){
+                alert("The quantity you entered: "+ input.id + ": " + input.value +" is not a valid digit. \n"
+                  + "Please go back and input a valid quantity.");
+                setTimeout(function(){input.focus();}, 1);
+                return false;
+            }
+
+            return true;
+        }
+
+// The event handler for a radio button collection
+
+    function paymentChoice (payment) {
+		alert("You are going to pay by " + payment.value + " !");
+	}
+
+// The event handler function to compute the cost
+
+    function computeCost() {
+
+        var appleT = document.getElementById("apple");
+        var orangeT = document.getElementById("orange");
+        var bananaT = document.getElementById("banana");
+        var costT = document.getElementById("cost")
+
+        // Compute the cost
+
+        if(isNum(appleT.value) && isNum(orangeT.value) && isNum(bananaT.value) {
+            var apple = appleT.value;
+            var orange = orangeT.value;
+            var banana = bananaT.value;
+            var totalCost = apple * 0.69 + orange * 0.59 + banana * 0.39;
+            costT.value = totalCost;
+        } else {
+            costT.value = "NaN";
+        }
+
+    }  //* end of computeCost
+
+// function to check whether all required fields are filled with valid input
+	function reminder(){
+		var apple = document.getElementById("apple").value;
+		var orange = document.getElementById("orange").value;
+        var banana = document.getElementById("banana").value;
+		var name = document.getElementById("name").value;
+		if (!name){
+			alert("Name field cannot be empty!");
+			return false;
+		}
+		if (!name.match(/^[a-z]+$/)){ //name must be alphabetic
+			alert("Please input a valid name!");
+			return false;
+		}
+		if ((!orange)||(!apple)||(!banana)){
+			alert("Fruit quantity cannot be empty!");
+			return false;
+		}
+		if ((!isNum(orange))||(!isNum(apple))||(!isNum(banana))){
+			alert("Please input valid quantity!");
+			return false;
+		}
+
+	    if ((!document.getElementById("Visa").checked)&&(!document.getElementById("MasterCard").checked)&&(!document.getElementById("Discover").checked)){
+			alert("Please select a payment method!");
+			return false;
+		}
+		if (!confirm("Please ensure all your input are correct!\nConfirm submission?")) {
+			return false;
+			}
+	}
+    // -->
+    </script>
+</head>
+
+<body>
+<form action = "receiptOrder.php" method = "post">
+    <h3> Fruit Order Form </h3>
+
+    <h4> Your name: <input type = "text"  id = "name"  name = "userName"
+                           size ="10" /> </h4>
+
+    <table border = "border">
+        <tr>
+            <th> Fruit Name </th>
+            <th> Price </th>
+            <th> Quantity </th>
+        </tr>
+        <tr>
+            <th> Apple </th>
+            <td> 69 cents </td>
+            <td> <input type = "text"  id = "apple"  name = "appleQuantity"
+                        size ="2" onchange = "chkDigit(this)" onblur = "chkDigit(this)" /> </td>
+        </tr>
+        <tr>
+            <th> Orange </th>
+            <td> 59 cents </td>
+            <td> <input type = "text"  id = "orange" name = "orangeQuantity"
+                        size = "2" onchange = "chkDigit(this)" /> </td>
+        </tr>
+        <tr>
+            <th> Banana </th>
+            <td> 39 cents </td>
+            <td> <input type = "text"  id = "banana" name = "bananaQuantity"
+                        size = "2" onchange = "chkDigit(this)" /> </td>
+        </tr>
+    </table>
+
+    <!-- Button for computing real-time total cost -->
+    <!-- registration way 1: event handler by onclick-->
+
+    <p>
+        <input type = "button"  value = "Total Cost"
+               onclick = "computeCost()" />
+        <input type = "text"  size = "5"  id = "cost"
+               onfocus = "this.blur()" />
+    </p>
+
+    <!-- Radio buttons for payment method -->
+
+    <h4> Please choose your payment method </h4>
+    <p>
+        <input type = "radio"  name = "paymentButton" id = "Visa" value = "Visa" onclick = "paymentChoice(this)"/>
+        Visa
+        <br />
+        <input type = "radio"  name = "paymentButton"  id = "MasterCard" value = "MasterCard" onclick = "paymentChoice(this)" />
+        MasterCard
+        <br />
+        <input type = "radio"  name = "paymentButton"  id = "Discover" value = "Discover" onclick = "paymentChoice(this)" />
+        Discover
+
+    </p>
+
+    <!-- The submit and reset buttons -->
+
+    <p>
+        <input type = "submit"  value = "Submit Order" onclick = "return reminder()"/>
+        <input type = "reset"  value = "Clear Order Form" />
+    </p>
+</form>
+
+<!-- registration way 2: event handler by assigning function object -->
+
+    <script type = "text/javascript">
+      <!--
+        document.getElementById("apple").oninput = computeCost;
+        document.getElementById("orange").oninput = computeCost;
+        document.getElementById("banana").oninput = computeCost;
+      // -->
+    </script>
+
+</body>
+</html>
