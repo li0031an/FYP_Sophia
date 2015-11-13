@@ -21,7 +21,7 @@
                 var orange = orangeT.value;
                 var banana = bananaT.value;
 // Compute the cost
-		        var totalCost = apple * 0.69 + orange * 0.59 + banana * 0.39;
+		        var totalCost = (apple * 69 + orange * 59 + banana * 39)/100; //similar to toFixed(2) method
                 costT.value = totalCost;
 
       }  //* end of computeCost
@@ -100,6 +100,9 @@
                 if (!chkQuantity(banana)) return false;
                 if (!chkPayMode()) return false;
 
+                if (!confirm("Please ensure all your input are correct!\nConfirm submission?")) {
+                    return false;
+                }
                 return true;
             }
         </script>
