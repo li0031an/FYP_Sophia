@@ -55,7 +55,7 @@
                     setTimeout(function(){input.focus();}, 1);
                     return false;
                 }
-                if (!input.value.match(/^[A-Za-z]+ [A-Za-z]+$/)){ //name must be alphabetic
+                if (!input.value.match(/^[A-Za-z]+ [A-Za-z]+ *$/)){ //name must be alphabetic
                     alert("Please input a valid name! \n"
                      + "e.g. John Smith, Amy Green");
                     setTimeout(function(){input.focus();}, 1);

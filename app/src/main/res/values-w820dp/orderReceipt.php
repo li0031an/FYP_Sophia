@@ -55,15 +55,14 @@
 
     <table>
         <tr align = "left">
-            <th>Your total bill is:</th>
-            <td><?php printf ("$ %5.2f", $totalCost) ?></td>
+            <td><?php printf ("Your total bill is: $ %5.2f", $totalCost) ?></td>
         </tr align = "left">
         <tr>
-            <th>Your chosen method of payment is:</th>
-            <td><?php echo $payment?></td>
+            <td><?php printf ("Your chosen method of payment is: %s", $payment)?></td>
         </tr>
 
     </table>
+
 </center>
 
 <?php
@@ -80,6 +79,14 @@
 			/* read in and update the records in later accesses */
 			$openFile = fopen($file, "a+")
 				or die("fail reading from order.txt");
+			/* lock the file */
+		if (!flock($openFile, LOCK_EX | LOCK_NB)) {
+			echo 'unable to obtain lock';
+			echo 'new apple amount order: '. $apple; 
+			echo 'new orange amount order: '. $orange; 
+			echo 'new banana amount order: '. $banana; 
+			exit (-1);
+		}
 			$counter = 0;
 			while (!feof($openFile)) {
 				// read one line
