@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Fruit Store Receipt</title>
+<title>Fruit Shop Receipt</title>
 
 <?php
 
@@ -12,65 +12,54 @@
 		$orange = $_POST['orangeQuantity'];
 		$banana = $_POST['bananaQuantity'];
 
-		$appleCost = $apple * 69;
-		$orangeCost = $orange * 59;
-		$bananaCost = $banana * 39;
+		$appleCost = $apple * 69/100;
+		$orangeCost = $orange * 59/100;
+		$bananaCost = $banana * 39/100;
 
-		$totalCost = ($appleCost + $orangeCost + $bananaCost)/100;
-
-		/*echo "Quantity of apples: $apple";
-		echo "<br/>";
-        echo "Quantity of oranges: $orange";
-        echo "<br/>";
-        echo "Quantity of oranges: $banana";
-        echo "<br/>";
-        echo "Total Cost: $totalCost";
-
-        echo "<br/>";
-        echo "Payment method: $payment";
-        */
+		$totalCost = $appleCost + $orangeCost + $bananaCost;
 
         echo "<h2><center>The Fruit Shop</center></h2>";
-        echo "<h2><center>Receipt for customer: $name</center></h2>";
+        echo "<h3>Dear $name</h3>";
+        echo "<h3>Thanks for purchasing with us!</h3>";
+        echo "<h3>Here is the receipt for you</h3>";
+		
         echo "<hr>";
-
-echo "<br/>";
 ?>
 
 <center>
     <table>
-
-        <tr>
+        <caption> Order Information </caption>
+        <tr align = "center">
             <th>Item </th>
             <th>Quantity</th>
             <th>Cost</th>
         </tr>
-        <tr>
-            <td>&nbsp; Apple</td>
-            <td>&nbsp; <?php echo $apple ?></td>
-            <td>&nbsp;<?php echo$apple?></td>
+        <tr align = "center">
+            <td>Apple</td>
+            <td><?php echo $apple ?></td>
+            <td><?php printf ("$ %4.2f", $appleCost) ?></td>
         </tr>
-        <tr>
-            <td>&nbsp;Orange</td>
-            <td>&nbsp;<?php echo$orange?></td>
-            <td>&nbsp;<?php echo$orange?></td>
+        <tr align = "center">
+            <td>Orange</td>
+            <td><?php echo$orange?></td>
+            <td><?php printf ("$ %4.2f", $orangeCost) ?></td>
         </tr>
-        <tr>
-            <td>&nbsp;Banana</td>
-            <td>&nbsp;<?php echo $banana?></td>
-            <td>&nbsp;<?php echo $banana?></td>
+        <tr align = "center">
+            <td>Banana</td>
+            <td><?php echo $banana?></td>
+            <td><?php printf ("$ %4.2f", $bananaCost) ?></td>
         </tr>
     </table>
 
     <hr>
 
     <table>
+        <tr align = "left">
+            <th>Your total bill is:</th>
+            <td><?php printf ("$ %5.2f", $totalCost) ?></td>
+        </tr align = "left">
         <tr>
-            <th>Total cost:</th>
-            <td><?php echo $totalCost?></td>
-        </tr>
-        <tr>
-            <th>Payment method:</th>
+            <th>Your chosen method of payment is:</th>
             <td><?php echo $payment?></td>
         </tr>
 
