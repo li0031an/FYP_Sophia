@@ -63,18 +63,26 @@
             }
 
             function chkPayMode() {
-
-                if ((!document.getElementById("Visa").checked)
-                    &&(!document.getElementById("MasterCard").checked)
-                    &&(!document.getElementById("Discover").checked)){
+                var returnvalue;
+                if (document.getElementById("Visa").checked) {
+                    highlightPayMode("Visa");
+                    returnvalue = false;
+                } else if (document.getElementById("MasterCard").checked) {
+                    highlightPayMode("MasterCard");
+                    returnvalue = false;
+                } else if (document.getElementById("Discover").checked){
+                    highlightPayMode("Discover");
+                    returnvalue = false;
+                } else {
                     alert("Please select a payment method!");
-                    return false;
+                    returnvalue = false;
                 }
+                return returnvalue;
             }
 
 // The event handler for a radio button collection
-            function paymentChoice (payment) {
-                alert("You are going to pay by " + payment.value + " !");
+            function highlightPayMode (paymode) {
+                alert("You are going to pay by " + paymode + " !");
             }
 
 // function to check whether all required fields are filled with valid input
@@ -93,6 +101,7 @@
                 if (!confirm("Please ensure all your input are correct!\nConfirm submission?")) {
                     return false;
                     }
+                 return true;
             }
         </script>
     </head>
@@ -150,13 +159,13 @@
 
             <h4> Please choose your payment method </h4>
             <p>
-                <input type = "radio"  name = "paymentButton" id = "Visa" value = "Visa" onclick = "paymentChoice(this)"/>
+                <input type = "radio"  name = "paymentButton" id = "Visa" value = "Visa" onclick = "highlightPayMode(this)"/>
                 Visa
                 <br />
-                <input type = "radio"  name = "paymentButton"  id = "MasterCard" value = "MasterCard" onclick = "paymentChoice(this)" />
+                <input type = "radio"  name = "paymentButton"  id = "MasterCard" value = "MasterCard" onclick = "highlightPayMode(this)" />
                 MasterCard
                 <br />
-                <input type = "radio"  name = "paymentButton"  id = "Discover" value = "Discover" onclick = "paymentChoice(this)" />
+                <input type = "radio"  name = "paymentButton"  id = "Discover" value = "Discover" onclick = "highlightPayMode(this)" />
                 Discover
 
             </p>
