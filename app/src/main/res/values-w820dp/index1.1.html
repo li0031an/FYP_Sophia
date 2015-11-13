@@ -62,7 +62,15 @@
                 return true;
             }
 
+            function chkPayMode() {
 
+                if ((!document.getElementById("Visa").checked)
+                    &&(!document.getElementById("MasterCard").checked)
+                    &&(!document.getElementById("Discover").checked)){
+                    alert("Please select a payment method!");
+                    return false;
+                }
+            }
 
 // The event handler for a radio button collection
             function paymentChoice (payment) {
@@ -80,11 +88,8 @@
                 if (!chkQuantity(apple)) return false;
                 if (!chkQuantity(orange)) return false;
                 if (!chkQuantity(banana)) return false;
+                if (!chkPayMode()) return false;
 
-                if ((!document.getElementById("Visa").checked)&&(!document.getElementById("MasterCard").checked)&&(!document.getElementById("Discover").checked)){
-                    alert("Please select a payment method!");
-                    return false;
-                }
                 if (!confirm("Please ensure all your input are correct!\nConfirm submission?")) {
                     return false;
                     }
