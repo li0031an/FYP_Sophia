@@ -35,14 +35,28 @@
 
             function chkQuantity(input) {
                 if (!(input.value)){
-                   alert("Fruit quantity "+ input.id + " cannot be empty.");
+                   alert(input.id + " fruit quantity "+ "cannot be empty. \n"
+                   + "Please input zero instead." );
                    setTimeout(function(){input.focus();}, 1);
-                   return;
+                   return false;
                 }
                 if (!isNum(input.value)){
                     alert("The quantity you entered: "+ input.id + ": " + input.value +" is not a valid digit. \n"
                       + "Please go back and input an integer quantity.");
                     setTimeout(function(){input.focus();}, 1);
+                    return false;
+                }
+            }
+
+            function chkName(input) {
+                if (!input.value){
+                    alert("Name field cannot be empty!");
+                    return false;
+                }
+                if (!input.value.match(/^[a-z]+$/)){ //name must be alphabetic
+                    alert("Please input a valid name! \n"
+                     + "e.g. Li Sophia, Li Sophia Shan");
+                    return false;
                 }
             }
 
@@ -52,27 +66,16 @@
             }
 
 // function to check whether all required fields are filled with valid input
-            function reminder(){
-                var apple = document.getElementById("apple").value;
-                var orange = document.getElementById("orange").value;
-                var banana = document.getElementById("banana").value;
-                var name = document.getElementById("name").value;
-                if (!name){
-                    alert("Name field cannot be empty!");
-                    return false;
-                }
-                if (!name.match(/^[a-z]+$/)){ //name must be alphabetic
-                    alert("Please input a valid name!");
-                    return false;
-                }
-                if ((!orange)||(!apple)||(!banana)){
-                    alert("Fruit quantity cannot be empty!");
-                    return false;
-                }
-                if ((!isNum(orange))||(!isNum(apple))||(!isNum(banana))){
-                    alert("Please input valid quantity!");
-                    return false;
-                }
+            function chkFinal(){
+                var apple = document.getElementById("apple");
+                var orange = document.getElementById("orange");
+                var banana = document.getElementById("banana");
+                var name = document.getElementById("name");
+
+                if (!chkQuantity(apple)) return false;
+                if (!chkQuantity(orange)) return false;
+                if (!chkQuantity(banana)) return false;
+                if (!chkName(name)) return false;
 
                 if ((!document.getElementById("Visa").checked)&&(!document.getElementById("MasterCard").checked)&&(!document.getElementById("Discover").checked)){
                     alert("Please select a payment method!");
@@ -152,7 +155,7 @@
             <!-- The submit and reset buttons -->
 
             <p>
-                <input type = "submit"  value = "Submit Order" onclick = "return reminder()"/>
+                <input type = "submit"  value = "Submit Order" onclick = "return chkFinal()"/>
                 <input type = "reset"  value = "Clear Order Form" />
             </p>
         </form>
