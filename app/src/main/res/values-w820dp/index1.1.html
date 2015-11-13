@@ -52,11 +52,13 @@
             function chkName(input) {
                 if (!input.value){
                     alert("Name field cannot be empty!");
+                    setTimeout(function(){input.focus();}, 1);
                     return false;
                 }
-                if (!input.value.match(/^[a-z]+$/)){ //name must be alphabetic
+                if (!input.value.match(/^[A-Za-z]+ [A-Za-z]+$/)){ //name must be alphabetic
                     alert("Please input a valid name! \n"
-                     + "e.g. Li Sophia, Li Sophia Shan");
+                     + "e.g. John Smith, Amy Green");
+                    setTimeout(function(){input.focus();}, 1);
                     return false;
                 }
                 return true;
@@ -66,13 +68,13 @@
                 var returnvalue;
                 if (document.getElementById("Visa").checked) {
                     highlightPayMode("Visa");
-                    returnvalue = false;
+                    returnvalue = true;
                 } else if (document.getElementById("MasterCard").checked) {
                     highlightPayMode("MasterCard");
-                    returnvalue = false;
+                    returnvalue = true;
                 } else if (document.getElementById("Discover").checked){
                     highlightPayMode("Discover");
-                    returnvalue = false;
+                    returnvalue = true;
                 } else {
                     alert("Please select a payment method!");
                     returnvalue = false;
@@ -98,10 +100,7 @@
                 if (!chkQuantity(banana)) return false;
                 if (!chkPayMode()) return false;
 
-                if (!confirm("Please ensure all your input are correct!\nConfirm submission?")) {
-                    return false;
-                    }
-                 return true;
+                return true;
             }
         </script>
     </head>
@@ -159,13 +158,13 @@
 
             <h4> Please choose your payment method </h4>
             <p>
-                <input type = "radio"  name = "paymentButton" id = "Visa" value = "Visa" onclick = "highlightPayMode(this)"/>
+                <input type = "radio"  name = "paymentButton" id = "Visa" value = "Visa" />
                 Visa
                 <br />
-                <input type = "radio"  name = "paymentButton"  id = "MasterCard" value = "MasterCard" onclick = "highlightPayMode(this)" />
+                <input type = "radio"  name = "paymentButton"  id = "MasterCard" value = "MasterCard" />
                 MasterCard
                 <br />
-                <input type = "radio"  name = "paymentButton"  id = "Discover" value = "Discover" onclick = "highlightPayMode(this)" />
+                <input type = "radio"  name = "paymentButton"  id = "Discover" value = "Discover" />
                 Discover
 
             </p>
