@@ -14,10 +14,12 @@ public class Asset {
     //No getter and setter for videoUrl
     String videoUrl;
     String created_userid;
+    String created_username;
     String created_datetime;
     String updated_userid;
+    String updated_username;
     String updated_datetime;
-    String revNum;
+//    String revNum;
     String revId;
 
     String tracking_status;
@@ -31,6 +33,26 @@ public class Asset {
     double file_size;
     String assigned_userid;
     String workflow_step_id;
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public void setCreated_username(String created_username) {
+        this.created_username = created_username;
+    }
+
+    public void setUpdated_username(String updated_username) {
+        this.updated_username = updated_username;
+    }
+
+    public String getCreated_username() {
+        return created_username;
+    }
+
+    public String getUpdated_username() {
+        return updated_username;
+    }
 
     public String getVideoUrl() {
         return videoUrl;
@@ -236,12 +258,12 @@ public class Asset {
         return revId;
     }
 
-    public String getRevNum() {
-        return revNum;
-    }
-
-    public void setRevNum(String revNum) {
-        this.revNum = revNum;
-    }
+//    public String getRevNum() {
+//        return revNum;
+//    }
+//
+//    public void setRevNum(String revNum) {
+//        this.revNum = revNum;
+//    }
 
 }

@@ -48,7 +48,7 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String selectAttributes = null;
+    String selectAttributes = "[created_username], [updated_username]";
     ArrayList<String> assetIdList = new ArrayList<String>()  ;
     ArrayList<Asset> assetList = new ArrayList<Asset>();
 
@@ -188,6 +188,10 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
                 asset.setLatest_revnum(data_array.getString("latest_revnum"));
             } if (!data_array.isNull("latest_revsize")) {
                 asset.setLatest_revsize(data_array.getDouble("latest_revsize"));
+            } if (!data_array.isNull("created_username")) {
+                asset.setCreated_username(data_array.getString("created_username"));
+            } if (!data_array.isNull("updated_username")) {
+                asset.setUpdated_username(data_array.getString("updated_username"));
             }
 
         } catch (JSONException e) {

@@ -1,7 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,14 +26,14 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
-        TextView revisionNo, uploadedUser, uploadedDate, comment, fileSize;
+        TextView revisionNo, updatedUserName, updatedDate, comment, fileSize;
         ImageView image;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
             revisionNo = (TextView) itemView.findViewById(R.id.cardText1);
-            uploadedUser = (TextView) itemView.findViewById(R.id.cardText2);
-            uploadedDate = (TextView) itemView.findViewById(R.id.cardText3);
+            updatedUserName = (TextView) itemView.findViewById(R.id.cardText2);
+            updatedDate = (TextView) itemView.findViewById(R.id.cardText3);
             comment = (TextView) itemView.findViewById(R.id.cardText4);
             fileSize = (TextView) itemView.findViewById(R.id.cardText5);
             image = (ImageView) itemView.findViewById(R.id.cardImage);
@@ -70,10 +69,26 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
         Asset asset = (Asset) mDataset.get(position);
-        holder.revisionNo.setText("#" + asset.getRevNum());
-        holder.uploadedUser.setText(asset.getUpdated_userid());
-        holder.uploadedDate.setText(asset.getUpdated_datetime());
-        holder.comment.setText("Comment ...");
+
+        holder.revisionNo.setText("revision no not available");
+        holder.updatedUserName.setText("name not available");
+        holder.updatedDate.setText("date not available");
+        holder.comment.setText("No comment yet");
+        //--todo implement comment
+
+        if (null != asset.getLatest_revnum()) {
+            holder.revisionNo.setText("#" + asset.getLatest_revnum());
+        } else {
+            Log.d(TAG, "revisionNo is null.");
+        } if (null != asset.getUpdated_username()) {
+            holder.updatedUserName.setText(asset.getUpdated_username());
+        } else {
+            Log.d(TAG, "updatedUserName is null.");
+        } if (null != asset.getUpdated_datetime()) {
+            holder.updatedDate.setText(asset.getUpdated_datetime());
+        } else {
+            Log.d(TAG, "updatedDate is null.");
+        }
 
         String fileSizeUnit;
         if (null != asset) {
