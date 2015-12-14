@@ -91,19 +91,22 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
         }
 
         String fileSizeUnit;
-        if (null != asset) {
+        if (null != asset && 0 != asset.getLatest_revsize()) {
             DecimalFormat df = new DecimalFormat("#.###");
-            if (asset.getFile_size() < 1024) {
+            Double latestRevSize = asset.getLatest_revsize();
+            if (latestRevSize < 1024) {
                 fileSizeUnit = "B";
-                holder.fileSize.setText(asset.getFile_size() + fileSizeUnit);
-            } else if (asset.getFile_size() < 1024 * 1024) {
-                asset.setFile_size(Double.parseDouble(df.format(asset.getFile_size() / (1024.000))));
+                holder.fileSize.setText(latestRevSize+ " " + fileSizeUnit);
+            } else if (latestRevSize < 1024 * 1024) {
+                double newsize = Double.parseDouble(df.format(latestRevSize / (1024.000)));
+//                asset.setFile_size(Double.parseDouble(df.format(newsize)));
                 fileSizeUnit = "kB";
-                holder.fileSize.setText(asset.getFile_size() + fileSizeUnit);
-            } else if (asset.getFile_size() >= 1024 * 1024) {
-                asset.setFile_size(Double.parseDouble(df.format(asset.getFile_size() / (1024.000 * 1024.000))));
+                holder.fileSize.setText(newsize + " " + fileSizeUnit);
+            } else if (asset.getLatest_revsize() >= 1024 * 1024) {
+                double newsize = Double.parseDouble(df.format(latestRevSize / (1024.000 * 1024.000)));
+//                asset.setFile_size(Double.parseDouble(df.format(newsize)));
                 fileSizeUnit = "MB";
-                holder.fileSize.setText(asset.getFile_size() + fileSizeUnit);
+                holder.fileSize.setText(newsize + " " + fileSizeUnit);
             }
 
 

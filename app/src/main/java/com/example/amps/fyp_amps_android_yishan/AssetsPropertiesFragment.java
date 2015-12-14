@@ -34,7 +34,7 @@ public class AssetsPropertiesFragment extends Fragment implements Settings {
     String tokenid;
     String asset_id;
     String project_id;
-    Asset a = new Asset();
+    Asset asset = new Asset();
     EditText editTextAssetName;
     EditText editTextAssignedUser;
     EditText editTextTrackingStatus;
@@ -100,13 +100,13 @@ public class AssetsPropertiesFragment extends Fragment implements Settings {
         protected void onPostExecute(Object result) {
             dialog.dismiss();
             parseJSONResponse((String) result);
-            editTextAssetName.setText(a.getName());
-            editTextAssignedUser.setText(a.getAssigned_userid());
-            editTextTrackingStatus.setText(a.getTracking_status());
-            editTextEstimatedStart.setText(a.getEstimated_datestart());
-            editTextEstimatedEnd.setText(a.getEstimated_dateend());
-            editTextActualStart.setText(a.getActual_datestart());
-            editTextActualEnd.setText(a.getActual_dateend());
+            editTextAssetName.setText(asset.getName());
+            editTextAssignedUser.setText(asset.getAssigned_userid());
+            editTextTrackingStatus.setText(asset.getTracking_status());
+            editTextEstimatedStart.setText(asset.getEstimated_datestart());
+            editTextEstimatedEnd.setText(asset.getEstimated_dateend());
+            editTextActualStart.setText(asset.getActual_datestart());
+            editTextActualEnd.setText(asset.getActual_dateend());
 			/*GetCreatedUserInfo task = new GetCreatedUserInfo();
 			task.execute();*/
         }
@@ -123,7 +123,12 @@ public class AssetsPropertiesFragment extends Fragment implements Settings {
             postParameters.add(new BasicNameValuePair("userid", userid));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
             postParameters.add(new BasicNameValuePair("select",
-                    "[asset_id], [name], [ext], [estimated_datestart], [estimated_dateend], [tags], [trash], [created_userid], [created_datetime], [updated_userid], [updated_datetime], [actual_datestart], [actual_dateend]"));
+                    "[asset_id], [name], [ext]" +
+                            ", [estimated_datestart], [estimated_dateend], " +
+                            "[tags], [trash], [created_userid], [created_datetime], " +
+                            "[updated_userid], [updated_datetime], " +
+                            "[actual_datestart], [actual_dateend], " +
+                            "[created_username],[updated_username]"));
             postParameters.add(new BasicNameValuePair("condition", "[asset_id] IN ('" + asset_id + "')"));
 
             postParameters.add(new BasicNameValuePair("start_pos", "1"));
@@ -148,13 +153,15 @@ public class AssetsPropertiesFragment extends Fragment implements Settings {
                 job = json.getJSONObject(0);
                 data_array = job.getJSONArray("data_array");
                 JSONObject dataJob = new JSONObject(data_array.getString(0));
-                a.setName(dataJob.getString("name"));
-                a.setAssigned_userid(dataJob.getString("assigned_userid"));
-                a.setTracking_status(dataJob.getString("tracking_status"));
-                a.setEstimated_datestart(dataJob.getString("estimated_datestart"));
-                a.setEstimated_dateend(dataJob.getString("estimated_dateend"));
-                a.setActual_datestart(dataJob.getString("actual_datestart"));
-                a.setActual_dateend(dataJob.getString("actual_dateend"));
+                asset.setName(dataJob.getString("name"));
+                asset.setAssigned_userid(dataJob.getString("assigned_userid"));
+                asset.setCreated_username(dataJob.getString("created_username"));
+                asset.setUpdated_username(dataJob.getString("updated_username"));
+                asset.setTracking_status(dataJob.getString("tracking_status"));
+                asset.setEstimated_datestart(dataJob.getString("estimated_datestart"));
+                asset.setEstimated_dateend(dataJob.getString("estimated_dateend"));
+                asset.setActual_datestart(dataJob.getString("actual_datestart"));
+                asset.setActual_dateend(dataJob.getString("actual_dateend"));
 
             } catch (JSONException e) {
                 e.printStackTrace();

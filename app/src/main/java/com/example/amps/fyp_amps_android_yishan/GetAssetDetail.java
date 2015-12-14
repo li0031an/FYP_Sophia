@@ -48,7 +48,7 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String selectAttributes = "[created_username], [updated_username]";
+    String selectAttributes = "[created_username], [updated_username], [latest_revsize]";
     ArrayList<String> assetIdList = new ArrayList<String>()  ;
     ArrayList<Asset> assetList = new ArrayList<Asset>();
 

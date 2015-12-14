@@ -118,7 +118,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 //                R.id.textViewComment2);
 //        tvFileSize2 = (TextView)getActivity().findViewById(R.id.tvFileSize2);
         settings = getActivity().getSharedPreferences(SETTINGS, 0);
-        String selectAttributes = "[asset_id], [name], [ext], [file_size], [latest_revid], [latest_revnum], [updated_userid], [updated_datetime], [base64_thumbnail], [latest_revsize]";
+        String selectAttributes = "[asset_id], [name], [ext], [file_size]" +
+                ", [latest_revid], [latest_revnum], [updated_userid], [updated_username]" +
+                ", [updated_datetime]" +
+                ", [base64_thumbnail], [latest_revsize]";
         ArrayList<String> assetIdList = new ArrayList<>();
         assetIdList.add(asset_id);
         getAssetDetail = new GetAssetDetail(this, getActivity(), settings, assetIdList, project_id, selectAttributes);
