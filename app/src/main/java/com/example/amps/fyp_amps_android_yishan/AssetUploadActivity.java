@@ -756,7 +756,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                         selectedImagePath.substring(selectedImagePath
                                 .lastIndexOf("/") + 1)));
                 String resumableIdentifier = String.valueOf(fileSize) + "_"+(selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1)).replaceAll(".", "");
+                        .lastIndexOf("/") + 1));
                 postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
             } else {
                 postParameters.add(new BasicNameValuePair("fileName", assetFullName));
@@ -800,6 +800,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                 if (true == isNewRevision) {
                     CreateRevision task = new CreateRevision();
                     task.execute();
+                } else {
+                    Toast toast = Toast.makeText(AssetUploadActivity.this,
+                            "Upload successfully.", Toast.LENGTH_LONG);
+                    toast.show();
                 }
             } catch (JSONException e) {
                 // TODO Auto-generated catch block

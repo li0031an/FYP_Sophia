@@ -173,7 +173,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                     uploadImage.putExtra("folder_id", folderId);
                     uploadImage.putExtra("isNewRevision", true);
                     Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
-                    String assetFullName = asset.getName() + "." + asset.getExt();
+                    String assetFullName = asset.getName() + asset.getExt();
                     uploadImage.putExtra("assetFullName", assetFullName);
                     Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
                     uploadImage.putExtra("latest_revid", asset.getLatest_revid());
