@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
@@ -16,7 +17,10 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +37,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private Folder rootFolder;
     private ArrayList<Object> folderList = new ArrayList<Object>();
     private ArrayList<Object> assetList = new ArrayList<Object>();
+//    private String[] listviewMenu;
     private Object currentItemList;
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
@@ -94,6 +99,15 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         // todo-- Code to remove an item with default animation
         //((RecyclerViewAdapter) mAdapter).deleteItem(index);
         /////
+//        listviewMenu = getResources().getStringArray(R.array.project_details_longclick_items);
+//        ListView listview = (ListView)findViewById(R.id.project_details_layout_listview);
+//        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.project_details_listview_items, listviewMenu);
+//        listview.setAdapter(adapter);
+//        registerForContextMenu(listview);
+        //
+        Button add_button = (Button) findViewById(R.id.add_button);
+        add_button.setOnClickListener(this);
+
     }
 
     @Override
@@ -147,8 +161,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     Log.d(TAG, "start assetDetail activity");
                     Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                     intent.putExtra("project_id", projectId);
-                    intent.putExtra("asset", ((Asset)assetList.get(position)).getAsset_id());
-                    intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                    intent.putExtra("asset", ((Asset) assetList.get(position)).getAsset_id());
+                    intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
                     intent.putExtra("folderId", rootFolderId);
                     startActivity(intent);
                 }
@@ -273,7 +287,30 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onClick(View view) {
-        displayAssetList(view.getId());
+        try {
+            switch (view.getId()) {
+                case R.id.add_button:
+                    Intent uploadImage = new Intent(ProjectDetailsActivity.this, AssetUploadActivity.class);
+//                    uploadImage.putExtra("asset_id", asset_id);
+                    uploadImage.putExtra("project_id", projectId);
+                    uploadImage.putExtra("folder_id", rootFolderId);
+                    uploadImage.putExtra("isNewRevision", false);
+                    Log.d("AssetUploadActivity", "pass to folder_id: " + rootFolderId);
+//                    String assetFullName = asset.getName() + "." + asset.getExt();
+//                    String assetFullName = "";
+//                    uploadImage.putExtra("assetFullName", assetFullName);
+//                    Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
+//                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
+//                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
+                    startActivity(uploadImage);
+                    break;
+                default:
+                    displayAssetList(view.getId());
+                    break;
+            }
+        } catch (Exception e) {
+
+        }
     }
 
     protected void displayAssetList(int id){

@@ -723,6 +723,8 @@ public class AssetUploadActivity extends Activity implements Settings {
         @Override
         protected void onPostExecute(Object result) {
             parseJSONResponse((String) result);
+            anotherDialog.setProgress(100);
+            anotherDialog.dismiss();
 
         }
 
@@ -743,6 +745,9 @@ public class AssetUploadActivity extends Activity implements Settings {
             if (false == isNewRevision) {
                 postParameters.add(new BasicNameValuePair("create_empty_asset", String.valueOf(1)));
             }
+            if (false == isNewRevision) {
+                postParameters.add(new BasicNameValuePair("folderid", folder_id));
+            }
 //            if (null != folder_id) {
 //                postParameters.add(new BasicNameValuePair("folderid", folder_id));
 //            }
@@ -750,9 +755,9 @@ public class AssetUploadActivity extends Activity implements Settings {
                 postParameters.add(new BasicNameValuePair("fileName",
                         selectedImagePath.substring(selectedImagePath
                                 .lastIndexOf("/") + 1)));
-                String resumableIdentifier = String.valueOf(fileSize) + "_"+selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1);
-                postParameters.add(new BasicNameValuePair("resumableIdentifier", resumableIdentifier));
+                String resumableIdentifier = String.valueOf(fileSize) + "_"+(selectedImagePath.substring(selectedImagePath
+                        .lastIndexOf("/") + 1)).replaceAll(".", "");
+                postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
             } else {
                 postParameters.add(new BasicNameValuePair("fileName", assetFullName));
                 String resumableIdentifier = String.valueOf(fileSize) + "_"+assetFullName;
@@ -839,7 +844,11 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("userid", settings
                     .getString("userid", null)));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
-            postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            if (isNewRevision) {
+                postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            } else {
+                postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
+            }
 
             // Instantiate a POST HTTP method
             try {
@@ -913,7 +922,11 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("userid", settings
                     .getString("userid", null)));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
-            postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            if (isNewRevision) {
+                postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            } else {
+                postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
+            }
             postParameters.add(new BasicNameValuePair("revnum", revNum));
             postParameters
                     .add(new BasicNameValuePair(
@@ -983,7 +996,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("userid", settings
                     .getString("userid", null)));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
-//            if (null != folder_id) {
+//            if (false == isNewRevision) {
 //                postParameters.add(new BasicNameValuePair("folderid", folder_id));
 //            }
             postParameters.add(new BasicNameValuePair("assetid", asset_id));
