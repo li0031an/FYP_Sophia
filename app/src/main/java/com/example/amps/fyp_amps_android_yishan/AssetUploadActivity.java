@@ -60,11 +60,13 @@ public class AssetUploadActivity extends Activity implements Settings {
     private String project_id, folder_id;
     private String asset_id;
     private String new_asset_id;
-    private String name;
+    private String assetFullName;
+    private String latest_revid;
     ProgressDialog dialog;
     ProgressDialog anotherDialog;
     private Uri uri;
     private String selectedImagePath;
+    boolean isNewRevision;
     ImageView imageUploaded;
     EditText editTextDescription;
     Bitmap thumbnail;
@@ -87,8 +89,12 @@ public class AssetUploadActivity extends Activity implements Settings {
             asset_id = extras.getString("asset_id");
             project_id = extras.getString("project_id");
             folder_id = extras.getString("folder_id");
+            isNewRevision = extras.getBoolean("isNewRevision");
+            latest_revid = extras.getString("latest_revid");
             Log.d(TAG, "folder_id: GET: "+folder_id);
-            name = extras.getString("name");
+            Log.d(TAG, "isNewRevision: " + String.valueOf(isNewRevision));
+            Log.d(TAG, "latest_revid: " + latest_revid);
+            assetFullName = extras.getString("assetFullName");
         }
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -144,15 +150,16 @@ public class AssetUploadActivity extends Activity implements Settings {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(pathName, options);
+        options.inScaled = false;
+        options.inSampleSize = 1;
+//        BitmapFactory.decodeFile(pathName, options);
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth,
-                reqHeight);
+//        options.inSampleSize = calculateInSampleSie(options, reqWidth,
+//                reqHeight);
 
         // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
+//        options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(pathName, options);
     }
 
@@ -415,21 +422,32 @@ public class AssetUploadActivity extends Activity implements Settings {
                     entity.addPart(new FormBodyPart("folderid", new StringBody(
                             folder_id)));
                     Log.d(TAG, "folderid: " + folder_id);
+                } if (false == isNewRevision) {
+                    entity.addPart(new FormBodyPart("resumableFilename",
+                            new StringBody(
+                                    selectedImagePath.substring(selectedImagePath
+                                            .lastIndexOf("/") + 1))));
+                    String resumableIdentifier = String.valueOf(fileSize) + "_"+selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1);
+                    Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                    entity.addPart(new FormBodyPart("resumableIdentifier",
+                            new StringBody(resumableIdentifier)));
+                    Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1));
+                } else {
+                    entity.addPart(new FormBodyPart("resumableFilename",
+                            new StringBody(assetFullName)));
+                    String resumableIdentifier = String.valueOf(fileSize) + "_"+assetFullName;
+                    Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                    entity.addPart(new FormBodyPart("resumableIdentifier",
+                            new StringBody(resumableIdentifier)));
+                    Log.d(TAG, "resumableFilename: " + assetFullName);
                 }
-                entity.addPart(new FormBodyPart("resumableFilename",
-                        new StringBody(
-                                selectedImagePath.substring(selectedImagePath
-                                        .lastIndexOf("/") + 1))));
-                Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1));
-                String resumableIdentifier = "1_"+selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1);
-                Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                entity.addPart(new FormBodyPart("resumableIdentifier",
-                        new StringBody(resumableIdentifier)));
+
                 /////TESTING
                 entity.addPart(new FormBodyPart("fileSize",
                         new StringBody(String.valueOf(fileSize))));
+                Log.d(TAG, "fileSize: " + fileSize);
                 ////
                 entity.addPart(new FormBodyPart("resumableChunkNumber",
                         new StringBody("1")));
@@ -721,23 +739,32 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("userid", settings
                     .getString("userid", null)));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
-            //TODO: when is 1 or 0, how to define
-            postParameters.add(new BasicNameValuePair("create_empty_asset", String.valueOf(1)));
-            if (null != folder_id) {
-                postParameters.add(new BasicNameValuePair("folderid", folder_id));
+
+            if (false == isNewRevision) {
+                postParameters.add(new BasicNameValuePair("create_empty_asset", String.valueOf(1)));
             }
-            postParameters.add(new BasicNameValuePair("uniqueIdentifier",
-                    "1_"+selectedImagePath.substring(selectedImagePath
-                            .lastIndexOf("/") + 1)));
-            postParameters.add(new BasicNameValuePair("fileName",
-                    selectedImagePath.substring(selectedImagePath
-                            .lastIndexOf("/") + 1)));
+//            if (null != folder_id) {
+//                postParameters.add(new BasicNameValuePair("folderid", folder_id));
+//            }
+            if (false == isNewRevision) {
+                postParameters.add(new BasicNameValuePair("fileName",
+                        selectedImagePath.substring(selectedImagePath
+                                .lastIndexOf("/") + 1)));
+                String resumableIdentifier = String.valueOf(fileSize) + "_"+selectedImagePath.substring(selectedImagePath
+                        .lastIndexOf("/") + 1);
+                postParameters.add(new BasicNameValuePair("resumableIdentifier", resumableIdentifier));
+            } else {
+                postParameters.add(new BasicNameValuePair("fileName", assetFullName));
+                String resumableIdentifier = String.valueOf(fileSize) + "_"+assetFullName;
+                postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
+            }
 //            if (numberOfChunks == 1) {
 //                postParameters.add(new BasicNameValuePair("chunkSize", String
 //                        .valueOf(fileSize)));
 //            } else {
-                postParameters.add(new BasicNameValuePair("chunkSize", String
-                        .valueOf(1 * 1024 * 1024)));
+            postParameters.add(new BasicNameValuePair("chunkSize", String
+                    .valueOf(1 * 1024 * 1024)));
+
 //            }
             postParameters.add(new BasicNameValuePair("fileSize", String
                     .valueOf(fileSize)));
@@ -758,7 +785,6 @@ public class AssetUploadActivity extends Activity implements Settings {
             JSONArray json;
             JSONObject job;
             try {
-                Log.d(TAG, "IMHERE HERE");
                 json = new JSONArray(responseBody);
                 job = json.getJSONObject(0);
                 Log.d(TAG, responseBody);
@@ -766,8 +792,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                         "assetid");
                 System.out.println(assetid);
                 new_asset_id = assetid;
-                GetNumberOfRevision task = new GetNumberOfRevision();
-                task.execute();
+                if (true == isNewRevision) {
+                    CreateRevision task = new CreateRevision();
+                    task.execute();
+                }
             } catch (JSONException e) {
                 // TODO Auto-generated catch block
                 Log.d("className", e.getMessage());
@@ -835,7 +863,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                 String latestRevNum = String
                         .valueOf(Integer.parseInt(revNum) - 1);
                 System.out.println(latestRevNum);
-
                 GetRevision task = new GetRevision(latestRevNum);
                 task.execute();
             } catch (JSONException e) {
@@ -892,7 +919,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                     .add(new BasicNameValuePair(
                             "select",
                             "[revid], [src_revid], [revnum], [iskey], [ismain], [name], [ext], [des], [checkin_userid], [checkin_datetime], [revsize]"));
-
+            Log.d(TAG, "postParameters: " + postParameters.toString());
             // Instantiate a POST HTTP method
             try {
                 httppost.setEntity(new UrlEncodedFormEntity(postParameters));
@@ -912,8 +939,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                 data_array = job.getJSONArray("data_array");
                 JSONObject dataJob = new JSONObject(data_array.getString(0));
                 String revId = dataJob.getString("revid");
-                CreateRevision task = new CreateRevision(revId);
-                task.execute();
             } catch (JSONException e) {
                 // TODO Auto-generated catch block
                 Log.d("className", e.getMessage());
@@ -926,11 +951,6 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public class CreateRevision extends AsyncTask<Object, Object, Object> {
-        String revId;
-
-        public CreateRevision(String revId) {
-            this.revId = revId;
-        }
 
         @Override
         protected void onPreExecute() {
@@ -963,12 +983,12 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("userid", settings
                     .getString("userid", null)));
             postParameters.add(new BasicNameValuePair("projectid", project_id));
-            if (null != folder_id) {
-                postParameters.add(new BasicNameValuePair("folderid", folder_id));
-            }
+//            if (null != folder_id) {
+//                postParameters.add(new BasicNameValuePair("folderid", folder_id));
+//            }
             postParameters.add(new BasicNameValuePair("assetid", asset_id));
             // put the previous resvision id
-            postParameters.add(new BasicNameValuePair("src_revid", revId));
+            postParameters.add(new BasicNameValuePair("src_revid", latest_revid));
             postParameters
                     .add(new BasicNameValuePair("des_revid", new_asset_id));
             postParameters.add(new BasicNameValuePair("des_revfilename",
@@ -977,7 +997,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters.add(new BasicNameValuePair("ismain", "1"));
             postParameters.add(new BasicNameValuePair("des",
                     editTextDescription.getText().toString()));
-
+            Log.d(TAG, "postParameters: " + postParameters.toString());
             // Instantiate a POST HTTP method
             try {
                 httppost.setEntity(new UrlEncodedFormEntity(postParameters));
@@ -997,6 +1017,8 @@ public class AssetUploadActivity extends Activity implements Settings {
                 Log.d(TAG, responseBody);
                 int error_code = job.getInt("error_code");
                 if (error_code == 0) {
+                    GetNumberOfRevision task = new GetNumberOfRevision();
+                    task.execute();
                     anotherDialog.dismiss();
 //                    Intent intent = new Intent(AssetUploadActivity.this,
 //                            WorkingAssetsListActivity.class);
