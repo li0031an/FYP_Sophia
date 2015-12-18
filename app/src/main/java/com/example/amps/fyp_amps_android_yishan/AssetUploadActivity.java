@@ -1,7 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.util.Log;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -49,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     private String latest_revid;
     ProgressDialog dialog;
     ProgressDialog anotherDialog;
-    private Uri uri;
+    private Uri imageUri;
     private String selectedImagePath;
     boolean isNewRevision;
     ImageView imageUploaded;
@@ -74,6 +74,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     int fileSize = 0;
     double totalNetworkBytes = 0.00;
     ByteArrayOutputStream stream;
+    InputStream inputstream;
     int currentChunkNo = 0;
     ArrayList<Bitmap> chunkedImages;
 
@@ -115,17 +116,19 @@ public class AssetUploadActivity extends Activity implements Settings {
         if (resultCode == RESULT_OK) {
             if (requestCode == PICK_IMAGE) {
                 Uri selectedImageUri = data.getData();
-                uri = selectedImageUri;
+                imageUri = selectedImageUri;
+                imageUploaded.setImageURI(imageUri);
                 selectedImagePath = getPath(selectedImageUri);
                 //Try to create another image file as png inside a cache
                 int rotateImage = getCameraPhotoOrientation(
                         AssetUploadActivity.this, selectedImageUri,
                         selectedImagePath);
 
-                Bitmap image = decodeSampledBitmapFromResource(selectedImagePath,250,150);
+                Bitmap image = BitmapFactory.decodeFile(selectedImagePath);
+//                Bitmap image = decodeSampledBitmapFromResource(selectedImagePath,250,150);
                 //Bitmap.createScaledBitmap(image,200,200,true);
                 Log.d(TAG, "image.getConfig(): " + image.getConfig());
-                imageUploaded.setImageBitmap(image);
+//                imageUploaded.setImageBitmap(image);
                 imageUploaded.setAdjustViewBounds(true);
 
                 int width = imageUploaded.getWidth();
@@ -135,9 +138,12 @@ public class AssetUploadActivity extends Activity implements Settings {
                 // imageUploaded.setImageURI(selectedImageUri);
                 Matrix matrix = new Matrix();
                 imageUploaded.setScaleType(ImageView.ScaleType.MATRIX); // required
+//                matrix.postRotate((float) rotateImage, imageUploaded
+//                        .getDrawable().getBounds().width() / 2, imageUploaded
+//                        .getDrawable().getBounds().height() / 2);
                 matrix.postRotate((float) rotateImage, imageUploaded
-                        .getDrawable().getBounds().width() / 2, imageUploaded
-                        .getDrawable().getBounds().height() / 2);
+                        .getDrawable().getBounds().width(), imageUploaded
+                        .getDrawable().getBounds().height());
                 imageUploaded.setImageMatrix(matrix);
 
             }
@@ -241,19 +247,18 @@ public class AssetUploadActivity extends Activity implements Settings {
                                 "Upload fail. Please upload an image and enter a description.",
                                 Toast.LENGTH_LONG);
                 toast.show();
-            } else if ((imageUploaded.getDrawable() == null)
-                    || (editTextDescription.getText().toString().isEmpty())) {
-                if (imageUploaded.getDrawable() == null) {
+            } else if (imageUploaded.getDrawable() == null) {
                     Toast toast = Toast.makeText(AssetUploadActivity.this,
                             "Upload fail. Please upload an image.",
                             Toast.LENGTH_LONG);
                     toast.show();
-                } else {
-                    Toast toast = Toast.makeText(AssetUploadActivity.this,
-                            "Upload fail. Please enter a description.",
-                            Toast.LENGTH_LONG);
-                    toast.show();
-                }
+
+//                } else {
+//                    Toast toast = Toast.makeText(AssetUploadActivity.this,
+//                            "Upload fail. Please enter a description.",
+//                            Toast.LENGTH_LONG);
+//                    toast.show();
+//                }
             } else {
                 int numberOfChunks = readImageFileIntoChunk();
                 if (numberOfChunks > 1) {
