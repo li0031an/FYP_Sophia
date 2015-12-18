@@ -43,6 +43,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -291,15 +292,21 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public int readImageFileIntoChunk() throws IOException {
-        imageUploaded.buildDrawingCache();
-        Bitmap bitmap = imageUploaded.getDrawingCache();
-        stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        fileSize = stream.toByteArray().length;
+//        imageUploaded.buildDrawingCache();
+//        Bitmap bitmap = imageUploaded.getDrawingCache();
+//        stream = new ByteArrayOutputStream();
+//        Log.d(TAG, "stream = new ByteArrayOutputStream();");
+//        Log.d(TAG, "stream size in byte: " + stream.toByteArray().length);
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+//        fileSize = stream.toByteArray().length;
+        InputStream inputStream = new BufferedInputStream(new FileInputStream(
+                selectedImagePath));
+        fileSize = inputStream.available();
+        Log.d(TAG, "bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);");
         Log.d(TAG, "fileSize: " + fileSize);
         int numberOfChunks = 1;
         if (fileSize > 1  * 1024 * 1024) {
-            fileSize = (int) Math.ceil(stream.size());
+//            fileSize = (int) Math.ceil(stream.size());
             numberOfChunks = (fileSize / (1 * 1024 * 1024)) + 1;
             numberOfChunks = (int) Math.ceil(Double.parseDouble(String
                     .valueOf(numberOfChunks)));
@@ -408,11 +415,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                 MultipartEntity entity = new MultipartEntity(
                         HttpMultipartMode.BROWSER_COMPATIBLE);
                 SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                byte[] data = stream.toByteArray();
 //                Log.d(TAG, "data size + " + data.length);
-                String base64 = Base64.encodeToString(data, Base64.CRLF);
-                TrafficStats ts = new TrafficStats();
-                totalNetworkBytes = ts.getTotalTxBytes();
+//                String base64 = Base64.encodeToString(data, Base64.CRLF);
+//                TrafficStats ts = new TrafficStats();
+//                totalNetworkBytes = ts.getTotalTxBytes();
 
                 entity.addPart(new FormBodyPart("tokenid", new StringBody(
                         settings.getString("tokenid", null))));
@@ -458,9 +464,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                         new StringBody("1")));
                 Log.d(TAG, "resumableChunkNumber: "+1);
                 int count;
-                FileInputStream fileInputStream = new FileInputStream(
-                        selectedImagePath);
-
+                InputStream inputStream = new BufferedInputStream(new FileInputStream(
+                        selectedImagePath));
+                Log.d(TAG, "InputStream fileInputStream = new FileInputStream(selectedImagePath);");
+                Log.d(TAG, "InputStream size byte: "+ inputStream.available());
                 long startTime = System.nanoTime();
                 int bytesAvailable = fileSize;
                 byte[] buffer = new byte[1024];
@@ -468,9 +475,11 @@ public class AssetUploadActivity extends Activity implements Settings {
                 long sentBytes=0;
                 String unit = "";
                 double newSpeed = 0.00;
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();;
                 // read file and write it into form...
-                while ((count = fileInputStream.read(buffer)) != -1){
+                while ((count = inputStream.read(buffer)) != -1){
                     // Update progress dialog
+                    byteArrayOutputStream.write(buffer, 0, count);
                     sentBytes += count;
                     //calculate speed
                     long difference = sentBytes - count;
@@ -500,15 +509,15 @@ public class AssetUploadActivity extends Activity implements Settings {
                     System.out.println("New Speed: " + newSpeed);
                     System.out.println("Progress: " + (sentBytes * 100 / bytesAvailable));
                     System.out.println("Bytes Available: " + bytesAvailable);
-                    bytesAvailable = fileInputStream.available();
+                    bytesAvailable = inputStream.available();
                 }
-                fileInputStream.close();
-
-                Log.d(TAG, "data: " + data.toString());
+//                inputStream.close();
+//                byte[] data = stream.toByteArray();
+//                Log.d(TAG, "data: " + data.toString());
 //                entity.addPart(new FormBodyPart("file", new ByteArrayBody(data,
 //                        selectedImagePath.substring(selectedImagePath
 //                                .lastIndexOf("/") + 1))));
-                entity.addPart(new FormBodyPart("file", new ByteArrayBody(data,
+                entity.addPart(new FormBodyPart("file", new ByteArrayBody(byteArrayOutputStream.toByteArray(),
                         "blob")));
 
                 httpPost.setEntity(entity);
