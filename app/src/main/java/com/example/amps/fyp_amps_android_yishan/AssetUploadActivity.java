@@ -74,8 +74,6 @@ public class AssetUploadActivity extends Activity implements Settings {
     DecimalFormat formatter = new DecimalFormat("#.##");
     int fileSize = 0;
     double totalNetworkBytes = 0.00;
-    ByteArrayOutputStream stream;
-    InputStream inputstream;
     int currentChunkNo = 0;
     ArrayList<Bitmap> chunkedImages;
 
@@ -125,18 +123,8 @@ public class AssetUploadActivity extends Activity implements Settings {
                         AssetUploadActivity.this, selectedImageUri,
                         selectedImagePath);
 
-                Bitmap image = BitmapFactory.decodeFile(selectedImagePath);
-//                Bitmap image = decodeSampledBitmapFromResource(selectedImagePath,250,150);
-                //Bitmap.createScaledBitmap(image,200,200,true);
-                Log.d(TAG, "image.getConfig(): " + image.getConfig());
-//                imageUploaded.setImageBitmap(image);
                 imageUploaded.setAdjustViewBounds(true);
 
-                int width = imageUploaded.getWidth();
-                int height = imageUploaded.getHeight();
-                //Bitmap newImage = decodeSampledBitmapFromResource(selectedImagePath,width,height);
-                //imageUploaded.setImageBitmap(newImage);
-                // imageUploaded.setImageURI(selectedImageUri);
                 Matrix matrix = new Matrix();
                 imageUploaded.setScaleType(ImageView.ScaleType.MATRIX); // required
 //                matrix.postRotate((float) rotateImage, imageUploaded
@@ -292,13 +280,6 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public int readImageFileIntoChunk() throws IOException {
-//        imageUploaded.buildDrawingCache();
-//        Bitmap bitmap = imageUploaded.getDrawingCache();
-//        stream = new ByteArrayOutputStream();
-//        Log.d(TAG, "stream = new ByteArrayOutputStream();");
-//        Log.d(TAG, "stream size in byte: " + stream.toByteArray().length);
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-//        fileSize = stream.toByteArray().length;
         InputStream inputStream = new BufferedInputStream(new FileInputStream(
                 selectedImagePath));
         fileSize = inputStream.available();
@@ -306,7 +287,6 @@ public class AssetUploadActivity extends Activity implements Settings {
         Log.d(TAG, "fileSize: " + fileSize);
         int numberOfChunks = 1;
         if (fileSize > 1  * 1024 * 1024) {
-//            fileSize = (int) Math.ceil(stream.size());
             numberOfChunks = (fileSize / (1 * 1024 * 1024)) + 1;
             numberOfChunks = (int) Math.ceil(Double.parseDouble(String
                     .valueOf(numberOfChunks)));
@@ -415,10 +395,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                 MultipartEntity entity = new MultipartEntity(
                         HttpMultipartMode.BROWSER_COMPATIBLE);
                 SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-//                Log.d(TAG, "data size + " + data.length);
-//                String base64 = Base64.encodeToString(data, Base64.CRLF);
-//                TrafficStats ts = new TrafficStats();
-//                totalNetworkBytes = ts.getTotalTxBytes();
 
                 entity.addPart(new FormBodyPart("tokenid", new StringBody(
                         settings.getString("tokenid", null))));
@@ -471,7 +447,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                 long startTime = System.nanoTime();
                 int bytesAvailable = fileSize;
                 byte[] buffer = new byte[1024];
-                long beforeSentBytes = 0;
                 long sentBytes=0;
                 String unit = "";
                 double newSpeed = 0.00;
