@@ -48,11 +48,13 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 //@TargetApi(19)
 public class AssetUploadActivity extends Activity implements Settings {
@@ -80,8 +82,8 @@ public class AssetUploadActivity extends Activity implements Settings {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_asset_upload);
+        setTitle("Upload Asset");
         imageUploaded = (ImageView) findViewById(R.id.fileUploaded);
         editTextDescription = (EditText) findViewById(R.id.revision_desc);
         Bundle extras = getIntent().getExtras();
@@ -116,8 +118,13 @@ public class AssetUploadActivity extends Activity implements Settings {
             if (requestCode == PICK_IMAGE) {
                 Uri selectedImageUri = data.getData();
                 imageUri = selectedImageUri;
-                imageUploaded.setImageURI(imageUri);
                 selectedImagePath = getPath(selectedImageUri);
+                if (readImageFileIntoChunk() > 1) {
+                    Bitmap bit = decodeSampleBitmapFromLargeImage(selectedImagePath);
+                    imageUploaded.setImageBitmap(bit);
+                } else {
+                    imageUploaded.setImageURI(imageUri);
+                }
                 //Try to create another image file as png inside a cache
                 int rotateImage = getCameraPhotoOrientation(
                         AssetUploadActivity.this, selectedImageUri,
@@ -139,47 +146,54 @@ public class AssetUploadActivity extends Activity implements Settings {
         }
     }
 
+    public static Bitmap decodeSampleBitmapFromLargeImage(String imagePath) {
+        int ample_size = 16;
+        // change ample_size to 32 or any power of 2 to increase or decrease bitmap size of image
 
-    public static Bitmap decodeSampledBitmapFromResource(String pathName,
-                                                         int reqWidth, int reqHeight) {
+        Bitmap bitmap = null;
+        BitmapFactory.Options bitoption = new BitmapFactory.Options();
+        bitoption.inSampleSize = ample_size;
 
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        options.inSampleSize = 1;
-//        BitmapFactory.decodeFile(pathName, options);
+        Bitmap bitmapPhoto = BitmapFactory.decodeFile(imagePath, bitoption);
 
-        // Calculate inSampleSize
-//        options.inSampleSize = calculateInSampleSie(options, reqWidth,
-//                reqHeight);
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(imagePath);
+        } catch (IOException e) {
+            // Auto-generated catch block
+            e.printStackTrace();
+        }
+        int orientation = exif
+                .getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
+        Matrix matrix = new Matrix();
 
-        // Decode bitmap with inSampleSize set
-//        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(pathName, options);
-    }
+        if ((orientation == 3)) {
+            matrix.postRotate(180);
+            bitmap = Bitmap.createBitmap(bitmapPhoto, 0, 0,
+                    bitmapPhoto.getWidth(), bitmapPhoto.getHeight(), matrix,
+                    true);
 
-    public static int calculateInSampleSize(BitmapFactory.Options options,
-                                            int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
+        } else if (orientation == 6) {
+            matrix.postRotate(90);
+            bitmap = Bitmap.createBitmap(bitmapPhoto, 0, 0,
+                    bitmapPhoto.getWidth(), bitmapPhoto.getHeight(), matrix,
+                    true);
 
-        if (height > reqHeight || width > reqWidth) {
+        } else if (orientation == 8) {
+            matrix.postRotate(270);
+            bitmap = Bitmap.createBitmap(bitmapPhoto, 0, 0,
+                    bitmapPhoto.getWidth(), bitmapPhoto.getHeight(), matrix,
+                    true);
 
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
+        } else {
+            matrix.postRotate(0);
+            bitmap = Bitmap.createBitmap(bitmapPhoto, 0, 0,
+                    bitmapPhoto.getWidth(), bitmapPhoto.getHeight(), matrix,
+                    true);
 
-            // Calculate the largest inSampleSize value that is a power of 2 and
-            // keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
         }
 
-        return inSampleSize;
+        return bitmap;
     }
 
     public String getPath(Uri uri) {
@@ -217,7 +231,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                     rotate = 0;
                     break;
             }
-
             Log.i("RotateImage", "Exif orientation: " + orientation);
             Log.i("RotateImage", "Rotate value: " + rotate);
         } catch (Exception e) {
@@ -237,17 +250,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                                 Toast.LENGTH_LONG);
                 toast.show();
             } else if (imageUploaded.getDrawable() == null) {
-                    Toast toast = Toast.makeText(AssetUploadActivity.this,
-                            "Upload fail. Please upload an image.",
-                            Toast.LENGTH_LONG);
-                    toast.show();
-
-//                } else {
-//                    Toast toast = Toast.makeText(AssetUploadActivity.this,
-//                            "Upload fail. Please enter a description.",
-//                            Toast.LENGTH_LONG);
-//                    toast.show();
-//                }
+                Toast toast = Toast.makeText(AssetUploadActivity.this,
+                        "Upload fail. Please upload an image.",
+                        Toast.LENGTH_LONG);
+                toast.show();
             } else {
                 int numberOfChunks = readImageFileIntoChunk();
                 if (numberOfChunks > 1) {
@@ -262,16 +268,15 @@ public class AssetUploadActivity extends Activity implements Settings {
                     else if ((numberOfChunks > 2) && (numberOfChunks < 10)) {
                         numberOfChunks = 4;
                     }
-                    splitImage(imageUploaded, numberOfChunks);
                     UploadAsset task = new UploadAsset();
                     task.numberOfChunks = numberOfChunks;
                     task.execute();
-                }
-                else {
+                } else if (numberOfChunks == 1) {
                     UploadAsset task = new UploadAsset();
                     task.numberOfChunks = 1;
-                    chunkedImages = new ArrayList<Bitmap>(0);
                     task.execute();
+                } else {
+                    Log.e(TAG, "readImageFileIntoChunk() returns 0.");
                 }
             }
         } catch (Exception e) {
@@ -279,22 +284,27 @@ public class AssetUploadActivity extends Activity implements Settings {
         }
     }
 
-    public int readImageFileIntoChunk() throws IOException {
-        InputStream inputStream = new BufferedInputStream(new FileInputStream(
-                selectedImagePath));
-        fileSize = inputStream.available();
-        Log.d(TAG, "bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);");
-        Log.d(TAG, "fileSize: " + fileSize);
-        int numberOfChunks = 1;
-        if (fileSize > 1  * 1024 * 1024) {
-            numberOfChunks = (fileSize / (1 * 1024 * 1024)) + 1;
-            numberOfChunks = (int) Math.ceil(Double.parseDouble(String
-                    .valueOf(numberOfChunks)));
-        }
+    public int readImageFileIntoChunk() {
+        try {
 
-        Log.d(TAG, "fileSize: " + fileSize);
-        Log.d(TAG, "numberOfChunks: " + numberOfChunks);
-        return numberOfChunks;
+            InputStream inputStream = new BufferedInputStream(new FileInputStream(
+                    selectedImagePath));
+
+            fileSize = inputStream.available();
+            Log.d(TAG, "bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);");
+            Log.d(TAG, "fileSize: " + fileSize);
+            int numberOfChunks = 1;
+            if (fileSize > 1  * 1024 * 1024) {
+                numberOfChunks = (fileSize / (1 * 1024 * 1024));
+            }
+            Log.d(TAG, "fileSize: " + fileSize);
+            Log.d(TAG, "numberOfChunks: " + numberOfChunks);
+            return numberOfChunks;
+        } catch (Exception e) {
+            Log.e(TAG, "IOException in readImageFileIntoChunk");
+            e.printStackTrace();
+        } return 0;
+
     }
 
     private void splitImage(ImageView image, int chunkNumbers) {
@@ -333,13 +343,8 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public class UploadAsset extends AsyncTask<Object, String, Object> {
-        Handler updateBarHandler;
+        //        Handler updateBarHandler;
         int numberOfChunks;
-        int incrementalForMultipleChunks;
-
-		/*public UploadAsset(int numberOfChunks) {
-			this.numberOfChunks = numberOfChunks;
-		}*/
 
         @Override
         protected void onPreExecute() {
@@ -355,7 +360,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             else{
                 dialog = new ProgressDialog(AssetUploadActivity.this);
                 dialog.setCancelable(false);
-                dialog.setMessage("Uploading Asset ("+ (currentChunkNo + 1)+" of " + numberOfChunks + ")...");
+                dialog.setMessage("Uploading Asset (" + (currentChunkNo + 1) + " of " + numberOfChunks + ")...");
                 dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 dialog.setProgressNumberFormat("0 MB/s");
                 dialog.show();
@@ -367,23 +372,21 @@ public class AssetUploadActivity extends Activity implements Settings {
             if (numberOfChunks == 1) {
                 return uploadFile();
             } else {
-                return uploadMultipleChunks();
+                String response = uploadMultipleChunks();
+                return response;
             }
         }
         protected void onProgressUpdate(String... progress){
-//            Log.d("",progress[0]);
-            //super.onProgressUpdate(progress);
             dialog.setProgress(Integer.parseInt(progress[0]));
         }
         @Override
         protected void onPostExecute(Object result) {
-            // dialog.dismiss();
+             dialog.dismiss();
             if (numberOfChunks == 1) {
                 parseJSONResponse((String) result);
             } else {
                 parseJSONChunksResponse((String) result);
             }
-
         }
 
         public String uploadFile() {
@@ -409,7 +412,8 @@ public class AssetUploadActivity extends Activity implements Settings {
                     entity.addPart(new FormBodyPart("folderid", new StringBody(
                             folder_id)));
                     Log.d(TAG, "folderid: " + folder_id);
-                } if (false == isNewRevision) {
+                }
+                if (false == isNewRevision) {
                     entity.addPart(new FormBodyPart("resumableFilename",
                             new StringBody(
                                     selectedImagePath.substring(selectedImagePath
@@ -430,16 +434,13 @@ public class AssetUploadActivity extends Activity implements Settings {
                             new StringBody(resumableIdentifier)));
                     Log.d(TAG, "resumableFilename: " + assetFullName);
                 }
-
-                /////TESTING
                 entity.addPart(new FormBodyPart("fileSize",
                         new StringBody(String.valueOf(fileSize))));
                 Log.d(TAG, "fileSize: " + fileSize);
-                ////
                 entity.addPart(new FormBodyPart("resumableChunkNumber",
                         new StringBody("1")));
                 Log.d(TAG, "resumableChunkNumber: "+1);
-                int count;
+
                 InputStream inputStream = new BufferedInputStream(new FileInputStream(
                         selectedImagePath));
                 Log.d(TAG, "InputStream fileInputStream = new FileInputStream(selectedImagePath);");
@@ -452,6 +453,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                 double newSpeed = 0.00;
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();;
                 // read file and write it into form...
+                int count;
                 while ((count = inputStream.read(buffer)) != -1){
                     // Update progress dialog
                     byteArrayOutputStream.write(buffer, 0, count);
@@ -461,17 +463,13 @@ public class AssetUploadActivity extends Activity implements Settings {
                     long elapsedTime = System.nanoTime() - startTime;
                     double speed = (sentBytes * 1000000000.000f/ elapsedTime);
                     System.out.println("Bytes send/seconds: " + difference);
-                    if (speed > 1000.00 * 1000.00)
-                    {
+                    if (speed > 1000.00 * 1000.00) {
                         newSpeed = Double.parseDouble(formatter.format(speed / (1000.00 * 1000.00)));
                         unit = " MB/s";
-                    }
-                    else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)){
+                    } else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)){
                         newSpeed = Double.parseDouble(formatter.format(speed / 1000.00));
                         unit = " kB/s";
-                    }
-                    else
-                    {
+                    } else {
                         newSpeed = Double.parseDouble(formatter.format(speed));
                         unit = " bytes/s";
                     }
@@ -486,12 +484,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                     System.out.println("Bytes Available: " + bytesAvailable);
                     bytesAvailable = inputStream.available();
                 }
-//                inputStream.close();
-//                byte[] data = stream.toByteArray();
-//                Log.d(TAG, "data: " + data.toString());
-//                entity.addPart(new FormBodyPart("file", new ByteArrayBody(data,
-//                        selectedImagePath.substring(selectedImagePath
-//                                .lastIndexOf("/") + 1))));
                 entity.addPart(new FormBodyPart("file", new ByteArrayBody(byteArrayOutputStream.toByteArray(),
                         "blob")));
 
@@ -512,115 +504,194 @@ public class AssetUploadActivity extends Activity implements Settings {
 
         public String uploadMultipleChunks() {
             String sResponse = "";
+            boolean isLast;
             try {
-                long startTime = (System.currentTimeMillis() / 1000);
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost(SZAAPIURL + "uploadChunk");
+                Boolean isSuccess = true;
+                String response = "";
+                InputStream fileInputStream = new BufferedInputStream(new FileInputStream(new File(
+                        selectedImagePath)));
+                for (int resumableChunkNumber = 1; resumableChunkNumber < numberOfChunks; resumableChunkNumber++) {
+                    if (isSuccess) {
+                        if (resumableChunkNumber == numberOfChunks - 1)
+                            isLast = true;
+                        else
+                            isLast = false;
+                        Log.d(TAG, resumableChunkNumber + "-isLast: " + isLast);
+                    } else break;
 
-                MultipartEntity entity = new MultipartEntity(
-                        HttpMultipartMode.BROWSER_COMPATIBLE);
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpPost httpPost = new HttpPost(SZAAPIURL + "uploadChunk");
 
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                Log.d(TAG, "currentChunkNo: " + currentChunkNo);
-                Bitmap bitmap = chunkedImages.get(currentChunkNo);
-                bitmap.compress(Bitmap.CompressFormat.JPEG,100, bos);
-                byte[] data = bos.toByteArray();
-                TrafficStats ts = new TrafficStats();
-                totalNetworkBytes = ts.getTotalTxBytes();
+                    MultipartEntity entity = new MultipartEntity(
+                            HttpMultipartMode.BROWSER_COMPATIBLE);
+                    SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
 
-                entity.addPart(new FormBodyPart("tokenid", new StringBody(settings.getString("tokenid", null))));
-                Log.d(TAG, "projectid" + settings.getString("tokenid", null));
-                entity.addPart(new FormBodyPart("userid", new StringBody(settings.getString("userid", null))));
-                Log.d(TAG, "projectid" + settings.getString("userid", null));
-                entity.addPart(new FormBodyPart("projectid", new StringBody(project_id)));
-                Log.d(TAG,"projectid"+project_id);
-                if (null != folder_id) {
-                    entity.addPart(new FormBodyPart("folderid", new StringBody(
-                            folder_id)));
-                    Log.d(TAG, "folder_id"+folder_id);
-                }
-                String resumableFilename=selectedImagePath.substring(selectedImagePath.lastIndexOf("/") + 1);
-                Log.d(TAG, "resumableFilename: "+resumableFilename);
-                entity.addPart(new FormBodyPart("resumableFilename", new StringBody(resumableFilename)));
-                String resumableIdentifier=fileSize+"-"+selectedImagePath.substring(selectedImagePath.lastIndexOf("/") + 1);
-                Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                entity.addPart(new FormBodyPart("resumableIdentifier", new StringBody(resumableIdentifier)));
-                Log.d(TAG, "resumableChunkNumber: " + String.valueOf(currentChunkNo + 1));
-                entity.addPart(new FormBodyPart("resumableChunkNumber",new StringBody(String.valueOf(currentChunkNo + 1))));
-                Log.d(TAG, "in uploadMultipleChunks()");
-                Log.d(TAG, "entity: " + entity.toString());
+                    entity.addPart(new FormBodyPart("resumableChunkNumber", new StringBody(
+                            String.valueOf(resumableChunkNumber))));
 
-                int count;
-                FileInputStream fileInputStream = new FileInputStream(
-                        selectedImagePath);
-                Log.d(TAG, "fileInputStream: "+ fileInputStream.toString());
-                int bytesAvailable = fileSize;
-                byte[] buffer = new byte[1024];
-                long sentBytes=0;
-                String unit = "";
-                double newSpeed = 0.00;
-                double seconds = 1.00;
-                // read file and write it into form...
-                while ((count = fileInputStream.read(buffer)) != -1){
-                    // Update progress dialog
-                    sentBytes += count;
-                    //calculate speed
-                    int difference = (int) (sentBytes - count);
-                    long elapsedTime =(long) (((System.currentTimeMillis()/1000.00) - startTime) + seconds);
-                    double speed = Math.random() * (difference * 1.0 / elapsedTime);
-                    seconds += 1;
+                    int resumableChunkSize = 1048576 ;
+                    entity.addPart(new FormBodyPart("resumableChunkSize", new StringBody(
+                            String.valueOf(resumableChunkSize))));
 
-                    if (speed > 1000.00 * 1000.00)
-                    {
-                        newSpeed = Double.parseDouble(formatter.format(speed / 1000.00 * 1000.00));
-                        unit = " MB/s";
+                    int resumableCurrentChunkSize = resumableChunkSize;
+                    if (isLast) {
+                        resumableCurrentChunkSize = fileSize - resumableChunkSize * (resumableChunkNumber - 1);
                     }
-                    else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)){
+                    entity.addPart(new FormBodyPart("resumableCurrentChunkSize", new StringBody(
+                            String.valueOf(resumableCurrentChunkSize))));
+
+                    entity.addPart(new FormBodyPart("resumableTotalSize", new StringBody(
+                            String.valueOf(fileSize))));
+
+                    entity.addPart(new FormBodyPart("tokenid", new StringBody(
+                            settings.getString("tokenid", null))));
+                    Log.d(TAG, "tokenid: " + settings.getString("tokenid", null));
+                    entity.addPart(new FormBodyPart("userid", new StringBody(
+                            settings.getString("userid", null))));
+                    Log.d(TAG, "userid: " + settings.getString("userid", null));
+                    entity.addPart(new FormBodyPart("projectid", new StringBody(
+                            project_id)));
+                    Log.d(TAG, "projectid: " + project_id);
+                    if (null != folder_id) {
+                        entity.addPart(new FormBodyPart("folderid", new StringBody(
+                                folder_id)));
+                        Log.d(TAG, "folderid: " + folder_id);
+                    }
+                    if (false == isNewRevision) {
+                        entity.addPart(new FormBodyPart("resumableFilename",
+                                new StringBody(
+                                        selectedImagePath.substring(selectedImagePath
+                                                .lastIndexOf("/") + 1))));
+                        String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedImagePath.substring(selectedImagePath
+                                .lastIndexOf("/") + 1);
+                        Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                        entity.addPart(new FormBodyPart("resumableIdentifier",
+                                new StringBody(resumableIdentifier)));
+                        Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
+                                .lastIndexOf("/") + 1));
+                        entity.addPart(new FormBodyPart("resumableRelativePath",
+                                new StringBody(resumableIdentifier)));
+                        Log.d(TAG, "resumableRelativePath: " + selectedImagePath.substring(selectedImagePath
+                                .lastIndexOf("/") + 1));
+                    } else {
+                        entity.addPart(new FormBodyPart("resumableFilename",
+                                new StringBody(assetFullName)));
+                        String resumableIdentifier = String.valueOf(fileSize) + "_" + assetFullName;
+                        Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                        entity.addPart(new FormBodyPart("resumableIdentifier",
+                                new StringBody(resumableIdentifier)));
+                        Log.d(TAG, "resumableFilename: " + assetFullName);
+                        entity.addPart(new FormBodyPart("resumableRelativePath",
+                                new StringBody(resumableIdentifier)));
+                        Log.d(TAG, "resumableRelativePath: " + assetFullName);
+                    }
+
+                    entity.addPart(new FormBodyPart("fileSize",
+                            new StringBody(String.valueOf(fileSize))));
+                    Log.d(TAG, "fileSize: " + fileSize);
+
+                    entity.addPart(new FormBodyPart("resumableChunkNumber",
+                            new StringBody("1")));
+                    Log.d(TAG, "resumableChunkNumber: " + 1);
+                    long startTime = System.nanoTime();
+                    int bytesAvailable = fileSize;
+                    int bufferSize = resumableCurrentChunkSize;
+                    byte[] buffer = new byte[bufferSize];
+                    long sentBytes = 0;
+                    String unit = "";
+                    double newSpeed = 0.00;
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+                    // read file and write it into form...
+                    int startRead=(resumableChunkNumber-1)*resumableChunkSize;
+                    int endRead = resumableCurrentChunkSize + startRead;
+                    int bytesRead;
+
+                    try {
+                        fileInputStream.skip(resumableChunkSize * (resumableChunkNumber - 1));
+                        Log.d(TAG, "skip unit: " + resumableChunkSize*(resumableChunkNumber-1));
+//                        while ((bytesRead = fileInputStream.read(buffer, 0, bufferSize)) != -1) {
+//                    int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                        int bytesReadAccum = 0;
+                        while (bytesReadAccum < bufferSize) {
+                            bytesRead = fileInputStream.read(buffer, 0, bufferSize - bytesReadAccum);
+                            bytesReadAccum = bytesReadAccum + bytesRead;
+                            Log.d(TAG, "bytesRead: " + bytesRead);
+                            while (bytesRead > 0) {
+                                try {
+                                    byteArrayOutputStream.write(buffer, 0, bytesRead);
+                                } catch (OutOfMemoryError e) {
+                                    e.printStackTrace();
+                                    response = "outofmemoryerror";
+                                    return response;
+                                }
+                                bytesAvailable = fileInputStream.available();
+                                Log.d(TAG, "bytesAvailable: " + bytesAvailable);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        response = "";
+                        return response;
+                    }
+//                        String lineEnd = "\r\n";
+//                        String twoHyphens = "--";
+//                        String boundary = "*****";
+//                        byteArrayOutputStream.write(lineEnd);
+//                        byteArrayOutputStream.write(twoHyphens + boundary + twoHyphens
+//                                + lineEnd);
+
+//                    startRead += bytesRead;
+                    sentBytes += bufferSize;
+                    //calculate speed
+                    long difference = sentBytes - startRead;
+                    ;
+                    long elapsedTime = System.nanoTime() - startTime;
+                    double speed = (sentBytes * 1000000000.000f / elapsedTime);
+                    System.out.println("Bytes send/seconds: " + difference);
+                    if (speed > 1000.00 * 1000.00) {
+                        newSpeed = Double.parseDouble(formatter.format(speed / (1000.00 * 1000.00)));
+                        unit = " MB/s";
+                    } else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)) {
                         newSpeed = Double.parseDouble(formatter.format(speed / 1000.00));
                         unit = " kB/s";
-                    }
-                    else
-                    {
+                    } else {
                         newSpeed = Double.parseDouble(formatter.format(speed));
                         unit = " bytes/s";
                     }
 
                     dialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
-                    publishProgress("" + (int)(sentBytes * 100 / bytesAvailable));
-                    System.out.println("Start Time: " + startTime);
-                    System.out.println("Elapsed Time: " + elapsedTime);
+                    publishProgress("" + (int) (sentBytes * 100 / bytesAvailable));
+                    System.out.println("Elpased Time: " + elapsedTime);
                     System.out.println("Speed: " + speed);
                     System.out.println("New Speed: " + newSpeed);
                     System.out.println("Progress: " + (sentBytes * 100 / bytesAvailable));
                     System.out.println("Bytes Available: " + bytesAvailable);
                     bytesAvailable = fileInputStream.available();
+
+                    entity.addPart(new FormBodyPart("file", new ByteArrayBody(byteArrayOutputStream.toByteArray(),
+                            "blob")));
+
+                    httpPost.setEntity(entity);
+
+                    HttpResponse responseBody = httpClient.execute(httpPost);
+                    isSuccess = parseJSONResponse(responseBody.toString());
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(
+                                    responseBody.getEntity().getContent(), "UTF-8"));
+
+                    sResponse = reader.readLine();
                 }
-                fileInputStream.close();
-
-                int currentChunk = 1;
-               // while (currentChunk <= )
-                Log.d(TAG, "data: " +data.toString());
-                
-                entity.addPart(new FormBodyPart("file", new ByteArrayBody(data,
-                        selectedImagePath.substring(selectedImagePath.lastIndexOf("/") + 1))));
-
-                httpPost.setEntity(entity);
-
-                HttpResponse response = httpClient.execute(httpPost);
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-
-                sResponse = reader.readLine();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return sResponse;
         }
 
-        public void parseJSONResponse(String responseBody) {
+        public boolean parseJSONResponse(String responseBody) {
             JSONArray json;
+            Boolean success = false;
             try {
                 json = new JSONArray(responseBody);
                 JSONObject job = json.getJSONObject(0);
@@ -628,9 +699,11 @@ public class AssetUploadActivity extends Activity implements Settings {
                 int error_code = job.getInt("error_code");
                 dialog.dismiss();
                 if (error_code == 0) {
+                    success = true;
                     FinalizeAsset task = new FinalizeAsset(numberOfChunks);
                     task.execute();
                 } else {
+                    success = false;
                     Toast toast = Toast.makeText(AssetUploadActivity.this,
                             "Upload fail. Please upload again.",
                             Toast.LENGTH_LONG);
@@ -638,12 +711,14 @@ public class AssetUploadActivity extends Activity implements Settings {
                 }
             } catch (JSONException e) {
                 // TODO Auto-generated catch block
+                success = false;
                 Log.d("className", e.getMessage());
                 Toast toast = Toast.makeText(AssetUploadActivity.this,
                         "Upload fail. Please upload again.", Toast.LENGTH_LONG);
                 toast.show();
                 e.printStackTrace();
             }
+            return success;
         }
 
         public void parseJSONChunksResponse(String responseBody) {
