@@ -60,6 +60,7 @@ import java.util.Arrays;
 public class AssetUploadActivity extends Activity implements Settings {
     private static String TAG = "AssetUploadActivity";
     private static final int PICK_IMAGE = 1;
+    private static final int MAX_CONTENT_SIZE = 1024; //1024byte = 1KB
     private String project_id, folder_id;
     private String asset_id;
     private String new_asset_id;
@@ -69,14 +70,14 @@ public class AssetUploadActivity extends Activity implements Settings {
     ProgressDialog anotherDialog;
     private Uri imageUri;
     private String selectedImagePath;
+    private int numberOfChunks;
     boolean isNewRevision;
     ImageView imageUploaded;
     EditText editTextDescription;
-    Bitmap thumbnail;
     DecimalFormat formatter = new DecimalFormat("#.##");
     int fileSize = 0;
     double totalNetworkBytes = 0.00;
-    int currentChunkNo = 0;
+    int currentChunkNo = 1;
     ArrayList<Bitmap> chunkedImages;
 
     @Override
@@ -269,11 +270,9 @@ public class AssetUploadActivity extends Activity implements Settings {
                         numberOfChunks = 4;
                     }
                     UploadAsset task = new UploadAsset();
-                    task.numberOfChunks = numberOfChunks;
                     task.execute();
                 } else if (numberOfChunks == 1) {
                     UploadAsset task = new UploadAsset();
-                    task.numberOfChunks = 1;
                     task.execute();
                 } else {
                     Log.e(TAG, "readImageFileIntoChunk() returns 0.");
@@ -285,18 +284,17 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public int readImageFileIntoChunk() {
+        if (0 < numberOfChunks) return numberOfChunks;
         try {
 
             InputStream inputStream = new BufferedInputStream(new FileInputStream(
                     selectedImagePath));
 
             fileSize = inputStream.available();
-            Log.d(TAG, "bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);");
             Log.d(TAG, "fileSize: " + fileSize);
-            int numberOfChunks = 1;
-            if (fileSize > 1  * 1024 * 1024) {
-                numberOfChunks = (fileSize / (1 * 1024 * 1024));
-            }
+            if (fileSize > MAX_CONTENT_SIZE) {
+                numberOfChunks = (fileSize / MAX_CONTENT_SIZE);
+            } else numberOfChunks = 1;
             Log.d(TAG, "fileSize: " + fileSize);
             Log.d(TAG, "numberOfChunks: " + numberOfChunks);
             return numberOfChunks;
@@ -307,44 +305,8 @@ public class AssetUploadActivity extends Activity implements Settings {
 
     }
 
-    private void splitImage(ImageView image, int chunkNumbers) {
-
-        // For the number of rows and columns of the grid to be displayed
-        int rows, cols;
-
-        // For height and width of the small image chunks
-        int chunkHeight, chunkWidth;
-
-        // To store all the small image chunks in bitmap format in this list
-        chunkedImages = new ArrayList<Bitmap>(chunkNumbers);
-
-        // Getting the scaled bitmap of the source image
-        BitmapDrawable drawable = (BitmapDrawable) image.getDrawable();
-        Bitmap bitmap = drawable.getBitmap();
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
-                bitmap.getWidth(), bitmap.getHeight(), true);
-
-        rows = cols = (int) Math.sqrt(chunkNumbers);
-        chunkHeight = bitmap.getHeight() / rows;
-        chunkWidth = bitmap.getWidth() / cols;
-
-        // xCoord and yCoord are the pixel positions of the image chunks
-        int yCoord = 0;
-        for (int x = 0; x < rows; x++) {
-            int xCoord = 0;
-            for (int y = 0; y < cols; y++) {
-                chunkedImages.add(Bitmap.createBitmap(scaledBitmap, xCoord,
-                        yCoord, chunkWidth, chunkHeight));
-                xCoord += chunkWidth;
-            }
-            yCoord += chunkHeight;
-        }
-        Log.d(TAG, "chunkedImages.size()" + chunkedImages.size());
-    }
-
     public class UploadAsset extends AsyncTask<Object, String, Object> {
         //        Handler updateBarHandler;
-        int numberOfChunks;
 
         @Override
         protected void onPreExecute() {
@@ -529,7 +491,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                     entity.addPart(new FormBodyPart("resumableChunkNumber", new StringBody(
                             String.valueOf(resumableChunkNumber))));
 
-                    int resumableChunkSize = 1048576 ;
+                    int resumableChunkSize = MAX_CONTENT_SIZE ;
                     entity.addPart(new FormBodyPart("resumableChunkSize", new StringBody(
                             String.valueOf(resumableChunkSize))));
 
@@ -731,13 +693,12 @@ public class AssetUploadActivity extends Activity implements Settings {
                 dialog.dismiss();
                 if(!dialog.isShowing()){
                     if (error_code == 0) {
-                        if(currentChunkNo == chunkedImages.size() - 1){
+                        if(currentChunkNo == numberOfChunks){
                             FinalizeAsset task = new FinalizeAsset(numberOfChunks);
                             task.execute();
                         }
                         else{
                             UploadAsset task = new UploadAsset();
-                            task.numberOfChunks = numberOfChunks;
                             currentChunkNo += 1;
                             task.execute();
                         }
@@ -832,7 +793,7 @@ public class AssetUploadActivity extends Activity implements Settings {
 //                        .valueOf(fileSize)));
 //            } else {
             postParameters.add(new BasicNameValuePair("chunkSize", String
-                    .valueOf(1 * 1024 * 1024)));
+                    .valueOf(MAX_CONTENT_SIZE)));
 
 //            }
             postParameters.add(new BasicNameValuePair("fileSize", String
