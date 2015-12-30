@@ -23,6 +23,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -30,7 +31,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-public class DownloadAsset extends AsyncTask<Object, String, Object> implements Settings{
+public class DownloadAsset extends AsyncTask<Object, String, Object> implements Settings {
 
     private static String TAG = "DownloadAsset";
     Activity activity;
@@ -46,7 +47,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     ProgressDialog downloadDialog;
 
     public DownloadAsset(Activity activity, SharedPreferences settings, String assetidLst
-            , String projectId, String assetFullName, String revid){
+            , String projectId, String assetFullName, String revid) {
         this.activity = activity;
         this.settings = settings;
         this.assetidLst = assetidLst;
@@ -83,74 +84,94 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         String downloadedFileName = assetFullName;
         //TrafficStats traffic = new TrafficStats();
         //double totalNetworkBytes = traffic.getTotalTxBytes();
-        try{
-            URL url = new URL(req);
-            Log.d(TAG, "URL: " + req);
-            long startTime = System.currentTimeMillis();
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestMethod("GET");
-            connection.setDoOutput(true);
-            connection.connect();
 
-            File downloadLocation = new File(
-                    Environment.getExternalStoragePublicDirectory
-                            (Environment.DIRECTORY_DOWNLOADS),
-                    downloadedFileName);
-            //get downloaded data
-            //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
-            OutputStream fileOutput = new FileOutputStream(downloadLocation);
-
-            //get data from internet
-            InputStream inputStream = connection.getInputStream();
-
-            //total size of the file
-            int totalSize = connection.getContentLength();
-            long total = 0;
-            String unit = "";
-            double newSpeed = 0.00;
-            //create buffer...
-            byte[] data = new byte[1024];
-            long elapsedTime = System.currentTimeMillis() - startTime;
-            //long startTime = System.nanoTime();	//Initialise the time for download speed
-            //final double downloadSpeedPerSec = 1000000000.00;
-            //final float bytesPerMib = 1024 * 1024;
-            Log.d(TAG, "inputStream: " + inputStream.toString());
-            while ((count = inputStream.read(data)) != -1)
-            {
-                total += count;
-                //calculate speed
-                double speed = total * 1000.0f / elapsedTime;
-
-                if (speed < 1024)
-                {
-                    newSpeed = Double.parseDouble(twoDP.format(speed));
-                    unit = "Bytes/ sec";
-                }
-                else if (speed < 1024*1024){
-                    newSpeed = Double.parseDouble(twoDP.format(speed / 1024));
-                    unit = "kB/s";
-                }
-                else
-                {
-                    newSpeed = Double.parseDouble(twoDP.format((speed / 1024 * 1024)/1000000));
-                    unit = "MB/s";
-                }
-
-                downloadDialog.setProgressNumberFormat(newSpeed + unit);
-                //increase from 0-100%
-                publishProgress("" + (int)((total*100)/totalSize));
-                fileOutput.write(data, 0, count);
-            }
-
-            //close connection
-            fileOutput.flush();
-            fileOutput.close();
-            inputStream.close();
+        File downloadFolder = new File(Environment.getExternalStorageDirectory() + "/AMPS");
+        boolean folderExist = true;
+        if (!downloadFolder.exists()) {
+            folderExist = downloadFolder.mkdir();
         }
-        catch(Exception e){
-            e.printStackTrace();
-            Log.d(TAG, "ERROR");
+        if (folderExist) {
+            File downloadLocation = new File(downloadFolder, downloadedFileName);
+            Log.d(TAG, "downloadLocation: " + downloadLocation.toString());
+            InputStream inputStream = null;
+            OutputStream fileOutput = null;
+            try {
+                URL url = new URL(req);
+                Log.d(TAG, "URL: " + req);
+                long startTime = System.currentTimeMillis();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestMethod("GET");
+                connection.setDoOutput(true);
+                connection.connect();
+                //get downloaded data
+                //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
+                fileOutput = new FileOutputStream(downloadLocation);
+
+                //get data from internet
+                inputStream = connection.getInputStream();
+
+                //total size of the file
+                int totalSize = connection.getContentLength();
+                long total = 0;
+                String unit = "";
+                double newSpeed = 0.00;
+                //create buffer...
+                byte[] data = new byte[1024];
+                long elapsedTime = System.currentTimeMillis() - startTime;
+                //long startTime = System.nanoTime();	//Initialise the time for download speed
+                //final double downloadSpeedPerSec = 1000000000.00;
+                //final float bytesPerMib = 1024 * 1024;
+                Log.d(TAG, "inputStream: " + inputStream.toString());
+                while ((count = inputStream.read(data)) != -1) {
+                    total += count;
+                    //calculate speed
+                    double speed = total * 1000.0f / elapsedTime;
+
+                    if (speed < 1024) {
+                        newSpeed = Double.parseDouble(twoDP.format(speed));
+                        unit = "Bytes/ sec";
+                    } else if (speed < 1024 * 1024) {
+                        newSpeed = Double.parseDouble(twoDP.format(speed / 1024));
+                        unit = "kB/s";
+                    } else {
+                        newSpeed = Double.parseDouble(twoDP.format((speed / 1024 * 1024) / 1000000));
+                        unit = "MB/s";
+                    }
+
+                    downloadDialog.setProgressNumberFormat(newSpeed + unit);
+                    //increase from 0-100%
+                    publishProgress("" + (int) ((total * 100) / totalSize));
+                    fileOutput.write(data, 0, count);
+                }
+
+                //close connection
+                fileOutput.flush();
+                fileOutput.close();
+                inputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d(TAG, "ERROR");
+            } finally {
+                if (null != inputStream) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "inputStream cannot be closed.");
+                        e.printStackTrace();
+                    }
+                }
+                if (null != fileOutput) {
+                    try {
+                        fileOutput.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "fileOutput cannot be closed.");
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } else {
+            Log.e(TAG, "folder AMPS cannot be created");
         }
 
         return null;
@@ -158,7 +179,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
     //Updating Progress Bar
     //Focus:
-    protected void onProgressUpdate(String... progress){
+    protected void onProgressUpdate(String... progress) {
         //Log.d("",progress[0]);
         //super.onProgressUpdate(progress);
         progressInt = Integer.parseInt(progress[0]);
@@ -168,20 +189,13 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     @SuppressWarnings("deprecation")
     @Override
     protected void onPostExecute(Object result) {
-        /**
-         dialog.dismiss();
-         Toast toast = Toast.makeText(
-         WorkingAssetsPreviewFragment.this.getActivity(),
-         "Downloaded successfully!", Toast.LENGTH_LONG);
-         toast.show();
-         **/
         downloadDialog.dismiss();
-        String location = Environment.DIRECTORY_DOWNLOADS.toString();
-        showToast("downloaded to " + location);
+        File downloadFolder = new File(Environment.getExternalStorageDirectory() + "/AMPS");
+        Log.d(TAG, "downloaded to " + downloadFolder);
         if (progressInt == 100) {
             AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
             downloadComplete.setTitle("Download Status");
-            downloadComplete.setMessage(assetFullName + " is downloaded successfully.");
+            downloadComplete.setMessage(assetFullName + " is downloaded to folder Pictures/AMPS successfully.");
             downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
 
                 @Override
@@ -205,30 +219,32 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             downloadError.show();
         }
     }
+
     /**
-     public String downloadAsset() {
-     String req = SZAAPIURL + "downloadAsset?tokenid=" + tokenid +
-     "&userid=" + userid +
-     "&projectid=" + project_id +
-     "&assetid_lst=" + asset_id +
-     "&revid=" + a.getRevId() ;
-     try {
-     DownloadManager downloadManager;
-     downloadManager = (DownloadManager)WorkingAssetsPreviewFragment.this.getActivity().getSystemService("download");
-     Uri uri = Uri.parse(req);
-     DownloadManager.Request request = new DownloadManager.Request(uri);
-     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, a.getName() + "." + a.getExt());
-     downloadManager.enqueue(request);
-     } catch (Exception e) {
-     e.printStackTrace();
-     }
-     return null;
-     }**/
-    public void showToast(String info){
+     * public String downloadAsset() {
+     * String req = SZAAPIURL + "downloadAsset?tokenid=" + tokenid +
+     * "&userid=" + userid +
+     * "&projectid=" + project_id +
+     * "&assetid_lst=" + asset_id +
+     * "&revid=" + a.getRevId() ;
+     * try {
+     * DownloadManager downloadManager;
+     * downloadManager = (DownloadManager)WorkingAssetsPreviewFragment.this.getActivity().getSystemService("download");
+     * Uri uri = Uri.parse(req);
+     * DownloadManager.Request request = new DownloadManager.Request(uri);
+     * request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, a.getName() + "." + a.getExt());
+     * downloadManager.enqueue(request);
+     * } catch (Exception e) {
+     * e.printStackTrace();
+     * }
+     * return null;
+     * }
+     **/
+    public void showToast(String info) {
         Toast toast = Toast.makeText(
                 activity,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 
