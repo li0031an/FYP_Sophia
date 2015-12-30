@@ -299,11 +299,12 @@ public class AssetUploadActivity extends Activity implements Settings {
 
         @Override
         protected String doInBackground(Object... arg0) {
-            if (numberOfChunks == 1) {
-                return uploadFile();
-            } else {
-                return uploadMultipleChunks();
-            }
+//            if (numberOfChunks == 1) {
+//                return uploadMultipleChunks();
+//            } else {
+//                return uploadMultipleChunks();
+//            }
+            return uploadMultipleChunks();
         }
 
         protected void onProgressUpdate(String... progress) {
@@ -322,121 +323,121 @@ public class AssetUploadActivity extends Activity implements Settings {
             else showToast(ERR_MSG_UPLOAD_FAIL);
         }
 
-        public String uploadFile() {
-            String sResponse = "";
-            try {
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost(SZAAPIURL + "uploadChunk");
-
-                MultipartEntity entity = new MultipartEntity(
-                        HttpMultipartMode.BROWSER_COMPATIBLE);
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-
-                entity.addPart(new FormBodyPart("tokenid", new StringBody(
-                        settings.getString("tokenid", null))));
-                Log.d(TAG, "tokenid: " + settings.getString("tokenid", null));
-
-                entity.addPart(new FormBodyPart("userid", new StringBody(
-                        settings.getString("userid", null))));
-                Log.d(TAG, "userid: " + settings.getString("userid", null));
-
-                entity.addPart(new FormBodyPart("projectid", new StringBody(
-                        project_id)));
-                Log.d(TAG, "projectid: " + project_id);
-
-                if (null != folder_id) {
-                    entity.addPart(new FormBodyPart("folderid", new StringBody(
-                            folder_id)));
-                    Log.d(TAG, "folderid: " + folder_id);
-                }
-
-                String resumableFilename = selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1);
-                entity.addPart(new FormBodyPart("resumableFilename",
-                        new StringBody(resumableFilename)));
-                Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1));
-
-                entity.addPart(new FormBodyPart("resumableRelativePath",
-                        new StringBody(resumableFilename)));
-                Log.d(TAG, "resumableRelativePath: " + resumableFilename);
-
-                String resumableIdentifier = String.valueOf(fileSize) + "_" + resumableFilename;
-                Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                entity.addPart(new FormBodyPart("resumableIdentifier",
-                        new StringBody(resumableIdentifier)));
-
-
-                entity.addPart(new FormBodyPart("fileSize",
-                        new StringBody(String.valueOf(fileSize))));
-                Log.d(TAG, "fileSize: " + fileSize);
-
-                entity.addPart(new FormBodyPart("resumableChunkNumber",
-                        new StringBody("1")));
-                Log.d(TAG, "resumableChunkNumber: " + 1);
-
-                InputStream inputStream = new BufferedInputStream(new FileInputStream(
-                        selectedImagePath));
-                Log.d(TAG, "InputStream fileInputStream = new FileInputStream(selectedImagePath);");
-                Log.d(TAG, "InputStream size byte: " + inputStream.available());
-
-                long startTime = System.nanoTime();
-//                int bytesAvailable = fileSize;
-                byte[] buffer = new byte[fileSize];
-                long sentBytes = 0;
-                String unit = "";
-                double newSpeed = 0.00;
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                // read file and write it into form...
-                int count; //read no of bytes every time
-                while ((count = inputStream.read(buffer)) != -1) {
-
-                    byteArrayOutputStream.write(buffer, 0, count);
-                    sentBytes += count;
-
-                    long difference = sentBytes - count;
-                    long elapsedTime = System.nanoTime() - startTime;
-                    double speed = (sentBytes * 1000000000.000f / elapsedTime);
-                    Log.d(TAG, "Bytes send/seconds: " + difference);
-
-                    if (speed > 1000.00 * 1000.00) {
-                        newSpeed = Double.parseDouble(formatter.format(speed / (1000.00 * 1000.00)));
-                        unit = " MB/s";
-                    } else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)) {
-                        newSpeed = Double.parseDouble(formatter.format(speed / 1000.00));
-                        unit = " kB/s";
-                    } else {
-                        newSpeed = Double.parseDouble(formatter.format(speed));
-                        unit = " bytes/s";
-                    }
-
-                    dialog.setProgressNumberFormat(newSpeed + unit);
-                    //increase from 0-100%
-                    publishProgress("" + (int) (sentBytes * 100 / fileSize));
-                    System.out.println("Elpased Time: " + elapsedTime);
-                    System.out.println("Speed: " + speed);
-                    System.out.println("New Speed: " + newSpeed);
-                    System.out.println("Progress: " + (sentBytes * 100 / fileSize));
-                    System.out.println("Bytes Available: " + fileSize);
-//                    bytesAvailable = inputStream.available();
-                }
-                entity.addPart(new FormBodyPart("file", new ByteArrayBody(byteArrayOutputStream.toByteArray(),
-                        "blob")));
-
-                httpPost.setEntity(entity);
-
-                HttpResponse response = httpClient.execute(httpPost);
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(
-                                response.getEntity().getContent(), "UTF-8"));
-
-                sResponse = reader.readLine();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            Log.d(TAG, "sResponse: " + sResponse);
-            return sResponse;
-        }
+//        public String uploadFile() {
+//            String sResponse = "";
+//            try {
+//                HttpClient httpClient = new DefaultHttpClient();
+//                HttpPost httpPost = new HttpPost(SZAAPIURL + "uploadChunk");
+//
+//                MultipartEntity entity = new MultipartEntity(
+//                        HttpMultipartMode.BROWSER_COMPATIBLE);
+//                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
+//
+//                entity.addPart(new FormBodyPart("tokenid", new StringBody(
+//                        settings.getString("tokenid", null))));
+//                Log.d(TAG, "tokenid: " + settings.getString("tokenid", null));
+//
+//                entity.addPart(new FormBodyPart("userid", new StringBody(
+//                        settings.getString("userid", null))));
+//                Log.d(TAG, "userid: " + settings.getString("userid", null));
+//
+//                entity.addPart(new FormBodyPart("projectid", new StringBody(
+//                        project_id)));
+//                Log.d(TAG, "projectid: " + project_id);
+//
+//                if (null != folder_id) {
+//                    entity.addPart(new FormBodyPart("folderid", new StringBody(
+//                            folder_id)));
+//                    Log.d(TAG, "folderid: " + folder_id);
+//                }
+//
+//                String resumableFilename = selectedImagePath.substring(selectedImagePath
+//                        .lastIndexOf("/") + 1);
+//                entity.addPart(new FormBodyPart("resumableFilename",
+//                        new StringBody(resumableFilename)));
+//                Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
+//                        .lastIndexOf("/") + 1));
+//
+//                entity.addPart(new FormBodyPart("resumableRelativePath",
+//                        new StringBody(resumableFilename)));
+//                Log.d(TAG, "resumableRelativePath: " + resumableFilename);
+//
+//                String resumableIdentifier = String.valueOf(fileSize) + "_" + resumableFilename;
+//                Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+//                entity.addPart(new FormBodyPart("resumableIdentifier",
+//                        new StringBody(resumableIdentifier)));
+//
+//
+//                entity.addPart(new FormBodyPart("fileSize",
+//                        new StringBody(String.valueOf(fileSize))));
+//                Log.d(TAG, "fileSize: " + fileSize);
+//
+//                entity.addPart(new FormBodyPart("resumableChunkNumber",
+//                        new StringBody("1")));
+//                Log.d(TAG, "resumableChunkNumber: " + 1);
+//
+//                InputStream inputStream = new BufferedInputStream(new FileInputStream(
+//                        selectedImagePath));
+//                Log.d(TAG, "InputStream fileInputStream = new FileInputStream(selectedImagePath);");
+//                Log.d(TAG, "InputStream size byte: " + inputStream.available());
+//
+//                long startTime = System.nanoTime();
+////                int bytesAvailable = fileSize;
+//                byte[] buffer = new byte[fileSize];
+//                long sentBytes = 0;
+//                String unit = "";
+//                double newSpeed = 0.00;
+//                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                // read file and write it into form...
+//                int count; //read no of bytes every time
+//                while ((count = inputStream.read(buffer)) != -1) {
+//
+//                    byteArrayOutputStream.write(buffer, 0, count);
+//                    sentBytes += count;
+//
+//                    long difference = sentBytes - count;
+//                    long elapsedTime = System.nanoTime() - startTime;
+//                    double speed = (sentBytes * 1000000000.000f / elapsedTime);
+//                    Log.d(TAG, "Bytes send/seconds: " + difference);
+//
+//                    if (speed > 1000.00 * 1000.00) {
+//                        newSpeed = Double.parseDouble(formatter.format(speed / (1000.00 * 1000.00)));
+//                        unit = " MB/s";
+//                    } else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)) {
+//                        newSpeed = Double.parseDouble(formatter.format(speed / 1000.00));
+//                        unit = " kB/s";
+//                    } else {
+//                        newSpeed = Double.parseDouble(formatter.format(speed));
+//                        unit = " bytes/s";
+//                    }
+//
+//                    dialog.setProgressNumberFormat(newSpeed + unit);
+//                    //increase from 0-100%
+//                    publishProgress("" + (int) (sentBytes * 100 / fileSize));
+//                    System.out.println("Elpased Time: " + elapsedTime);
+//                    System.out.println("Speed: " + speed);
+//                    System.out.println("New Speed: " + newSpeed);
+//                    System.out.println("Progress: " + (sentBytes * 100 / fileSize));
+//                    System.out.println("Bytes Available: " + fileSize);
+////                    bytesAvailable = inputStream.available();
+//                }
+//                entity.addPart(new FormBodyPart("file", new ByteArrayBody(byteArrayOutputStream.toByteArray(),
+//                        "blob")));
+//
+//                httpPost.setEntity(entity);
+//
+//                HttpResponse response = httpClient.execute(httpPost);
+//                BufferedReader reader = new BufferedReader(
+//                        new InputStreamReader(
+//                                response.getEntity().getContent(), "UTF-8"));
+//
+//                sResponse = reader.readLine();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            Log.d(TAG, "sResponse: " + sResponse);
+//            return sResponse;
+//        }
 
         public String uploadMultipleChunks() {
             String sResponse = "";
