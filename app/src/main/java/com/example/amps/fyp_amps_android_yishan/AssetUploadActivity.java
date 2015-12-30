@@ -67,7 +67,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     private String assetFullName;
     private String latest_revid;
     ProgressDialog dialog;
-    ProgressDialog anotherDialog;
+//    ProgressDialog dialog;
     private Uri imageUri;
     private String selectedImagePath;
     private int numberOfChunks;
@@ -366,27 +366,19 @@ public class AssetUploadActivity extends Activity implements Settings {
                             folder_id)));
                     Log.d(TAG, "folderid: " + folder_id);
                 }
-                if (false == isNewRevision) {
-                    entity.addPart(new FormBodyPart("resumableFilename",
-                            new StringBody(
-                                    selectedImagePath.substring(selectedImagePath
-                                            .lastIndexOf("/") + 1))));
-                    String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedImagePath.substring(selectedImagePath
-                            .lastIndexOf("/") + 1);
-                    Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                    entity.addPart(new FormBodyPart("resumableIdentifier",
-                            new StringBody(resumableIdentifier)));
-                    Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
-                            .lastIndexOf("/") + 1));
-                } else {
-                    entity.addPart(new FormBodyPart("resumableFilename",
-                            new StringBody(assetFullName)));
-                    String resumableIdentifier = String.valueOf(fileSize) + "_" + assetFullName;
-                    Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                    entity.addPart(new FormBodyPart("resumableIdentifier",
-                            new StringBody(resumableIdentifier)));
-                    Log.d(TAG, "resumableFilename: " + assetFullName);
-                }
+                String resumableFilename = selectedImagePath.substring(selectedImagePath
+                        .lastIndexOf("/") + 1);
+                entity.addPart(new FormBodyPart("resumableFilename",
+                        new StringBody(resumableFilename)));
+                entity.addPart(new FormBodyPart("resumableRelativePath",
+                        new StringBody(resumableFilename)));
+                Log.d(TAG, "resumableRelativePath: " + resumableFilename);
+                String resumableIdentifier = String.valueOf(fileSize) + "_" + resumableFilename;
+                Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                entity.addPart(new FormBodyPart("resumableIdentifier",
+                        new StringBody(resumableIdentifier)));
+                Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
+                        .lastIndexOf("/") + 1));
                 entity.addPart(new FormBodyPart("fileSize",
                         new StringBody(String.valueOf(fileSize))));
                 Log.d(TAG, "fileSize: " + fileSize);
@@ -514,34 +506,20 @@ public class AssetUploadActivity extends Activity implements Settings {
                                 folder_id)));
                         Log.d(TAG, "folderid: " + folder_id);
                     }
-                    if (false == isNewRevision) {
-                        entity.addPart(new FormBodyPart("resumableFilename",
-                                new StringBody(
-                                        selectedImagePath.substring(selectedImagePath
-                                                .lastIndexOf("/") + 1))));
-                        String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedImagePath.substring(selectedImagePath
-                                .lastIndexOf("/") + 1);
-                        Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                        entity.addPart(new FormBodyPart("resumableIdentifier",
-                                new StringBody(resumableIdentifier)));
-                        Log.d(TAG, "resumableFilename: " + selectedImagePath.substring(selectedImagePath
-                                .lastIndexOf("/") + 1));
-                        entity.addPart(new FormBodyPart("resumableRelativePath",
-                                new StringBody(resumableIdentifier)));
-                        Log.d(TAG, "resumableRelativePath: " + selectedImagePath.substring(selectedImagePath
-                                .lastIndexOf("/") + 1));
-                    } else {
-                        entity.addPart(new FormBodyPart("resumableFilename",
-                                new StringBody(assetFullName)));
-                        String resumableIdentifier = String.valueOf(fileSize) + "_" + assetFullName;
-                        Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
-                        entity.addPart(new FormBodyPart("resumableIdentifier",
-                                new StringBody(resumableIdentifier)));
-                        Log.d(TAG, "resumableFilename: " + assetFullName);
-                        entity.addPart(new FormBodyPart("resumableRelativePath",
-                                new StringBody(resumableIdentifier)));
-                        Log.d(TAG, "resumableRelativePath: " + assetFullName);
-                    }
+
+                    String resumableFilename =  selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1);
+                    entity.addPart(new FormBodyPart("resumableFilename",
+                            new StringBody(resumableFilename)));
+                    String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1);
+                    Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
+                    entity.addPart(new FormBodyPart("resumableIdentifier",
+                            new StringBody(resumableIdentifier)));
+                    Log.d(TAG, "resumableFilename: " + resumableFilename);
+                    entity.addPart(new FormBodyPart("resumableRelativePath",
+                            new StringBody(resumableFilename)));
+                    Log.d(TAG, "resumableRelativePath: " + resumableFilename);
 
                     entity.addPart(new FormBodyPart("fileSize",
                             new StringBody(String.valueOf(fileSize))));
@@ -651,7 +629,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                 JSONObject job = json.getJSONObject(0);
                 Log.d(TAG, responseBody);
                 int error_code = job.getInt("error_code");
-                dialog.dismiss();
                 if (error_code == 0) {
                     success = true;
                 }
@@ -680,14 +657,14 @@ public class AssetUploadActivity extends Activity implements Settings {
             @Override
             protected void onPreExecute() {
                 Log.d(TAG, "FinalizeAsset starts");
-                anotherDialog = new ProgressDialog(AssetUploadActivity.this);
-                anotherDialog.setCancelable(true);
-                anotherDialog.setMessage("Finalizing Asset ...");
-                anotherDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                anotherDialog.setProgress(0);
-                anotherDialog.setMax(100);
-                anotherDialog.setProgressNumberFormat("");
-                anotherDialog.show();
+                dialog = new ProgressDialog(AssetUploadActivity.this);
+                dialog.setCancelable(true);
+                dialog.setMessage("Finalizing Asset ...");
+                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                dialog.setProgress(0);
+                dialog.setMax(100);
+                dialog.setProgressNumberFormat("");
+                dialog.show();
             }
 
             @Override
@@ -698,8 +675,8 @@ public class AssetUploadActivity extends Activity implements Settings {
             @Override
             protected void onPostExecute(Object result) {
                 parseJSONResponse((String) result);
-                anotherDialog.setProgress(100);
-                anotherDialog.dismiss();
+                dialog.setProgress(100);
+                dialog.dismiss();
 
             }
 
@@ -726,18 +703,12 @@ public class AssetUploadActivity extends Activity implements Settings {
 //            if (null != folder_id) {
 //                postParameters.add(new BasicNameValuePair("folderid", folder_id));
 //            }
-                if (false == isNewRevision) {
-                    postParameters.add(new BasicNameValuePair("fileName",
-                            selectedImagePath.substring(selectedImagePath
-                                    .lastIndexOf("/") + 1)));
-                    String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedImagePath.substring(selectedImagePath
-                            .lastIndexOf("/") + 1));
-                    postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
-                } else {
-                    postParameters.add(new BasicNameValuePair("fileName", assetFullName));
-                    String resumableIdentifier = String.valueOf(fileSize) + "_" + assetFullName;
-                    postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
-                }
+                postParameters.add(new BasicNameValuePair("fileName",
+                        selectedImagePath.substring(selectedImagePath
+                                .lastIndexOf("/") + 1)));
+                String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedImagePath.substring(selectedImagePath
+                        .lastIndexOf("/") + 1));
+                postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
 //            if (numberOfChunks == 1) {
 //                postParameters.add(new BasicNameValuePair("chunkSize", String
 //                        .valueOf(fileSize)));
@@ -796,7 +767,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             @Override
             protected void onPreExecute() {
                 Log.d(TAG, "GetNumberOfRevision starts");
-                anotherDialog.setProgress(25);
+                dialog.setProgress(25);
             }
 
             @Override
@@ -874,7 +845,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             @Override
             protected void onPreExecute() {
                 Log.d(TAG, "GetRevision starts");
-                anotherDialog.setProgress(50);
+                dialog.setProgress(50);
             }
 
             @Override
@@ -947,7 +918,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             @Override
             protected void onPreExecute() {
                 Log.d(TAG, "CreateRevision starts");
-                anotherDialog.setProgress(75);
+                dialog.setProgress(75);
             }
 
             @Override
@@ -957,7 +928,7 @@ public class AssetUploadActivity extends Activity implements Settings {
 
             @Override
             protected void onPostExecute(Object result) {
-                anotherDialog.setProgress(100);
+                dialog.setProgress(100);
                 parseJSONResponse((String) result);
 
             }
@@ -1011,7 +982,6 @@ public class AssetUploadActivity extends Activity implements Settings {
                     if (error_code == 0) {
                         GetNumberOfRevision task = new GetNumberOfRevision();
                         task.execute();
-                        anotherDialog.dismiss();
 //                    Intent intent = new Intent(AssetUploadActivity.this,
 //                            WorkingAssetsListActivity.class);
 //                    startActivity(intent);
