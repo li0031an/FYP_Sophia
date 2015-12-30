@@ -55,7 +55,6 @@ public class AssetUploadActivity extends Activity implements Settings {
     private static String TAG = "AssetUploadActivity";
     private static final int PICK_IMAGE = 1;
     private static final int MAX_CONTENT_SIZE = 1024*1024; //1024*1024byte = 1MB
-    private static final int MAX_BUFFER_SIZE = 1024; //1024byte = 1KB
     private static final String ERR_MSG_UPLOAD_FAIL = "Upload fail. Please upload again.";
     private static final String ERR_MSG_NO_IMAGE_SELECTED = "Upload fail. Please upload an image.";
     private static final String ERR_MSG_NO_IMAGE_NO_DES = "Upload fail. Please upload an image and enter a description.";
@@ -94,6 +93,10 @@ public class AssetUploadActivity extends Activity implements Settings {
             Log.d(TAG, "GET from intent isNewRevision: " + String.valueOf(isNewRevision));
             Log.d(TAG, "GET from intent latest_revid: " + latest_revid);
         }
+        startPickImageIntent();
+    }
+
+    private void startPickImageIntent(){
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_PICK);
@@ -235,6 +238,17 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_upload: checkUpload(); break;
+            case R.id.btn_reset:
+                startPickImageIntent();
+                editTextDescription.setText("");
+                break;
+            default: //do nothing;
+        }
+    }
+
+    private void checkUpload(){
         try {
             if ((imageUploaded.getDrawable() == null)
                     && (editTextDescription.getText().toString().isEmpty())) {
@@ -263,10 +277,12 @@ public class AssetUploadActivity extends Activity implements Settings {
             // do nothing
         } else {
             numberOfChunks = 0;
+            InputStream inputStream = null;
             try {
-                InputStream inputStream = new BufferedInputStream(new FileInputStream(
+                inputStream = new BufferedInputStream(new FileInputStream(
                         selectedImagePath));
                 fileSize = inputStream.available();
+                inputStream.close();
                 Log.d(TAG, "fileSize: " + fileSize);
                 if (fileSize > MAX_CONTENT_SIZE) {
                     numberOfChunks = (int) Math.floor((fileSize / MAX_CONTENT_SIZE));  //the last section is between [BUFFER_SIZE, 2*BUFFER_SIZE)
@@ -279,6 +295,15 @@ public class AssetUploadActivity extends Activity implements Settings {
             } catch (Exception e) {
                 Log.e(TAG, "IOException in readImageFileIntoChunk");
                 e.printStackTrace();
+            } finally {
+                if (null != inputStream) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "inputStream cannot be closed.");
+                        e.printStackTrace();
+                    }
+                }
             }
         } return numberOfChunks;
     }
@@ -304,6 +329,7 @@ public class AssetUploadActivity extends Activity implements Settings {
 //            } else {
 //                return uploadMultipleChunks();
 //            }
+            // uploadMultipleChunks() function works for single or multiple chunks
             return uploadMultipleChunks();
         }
 
@@ -320,7 +346,10 @@ public class AssetUploadActivity extends Activity implements Settings {
                 FinalizeAsset task = new FinalizeAsset(numberOfChunks);
                 task.execute();
             }
-            else showToast(ERR_MSG_UPLOAD_FAIL);
+            else {
+                showToast(ERR_MSG_UPLOAD_FAIL);
+                finish();
+            }
         }
 
 //        public String uploadFile() {
@@ -442,9 +471,11 @@ public class AssetUploadActivity extends Activity implements Settings {
         public String uploadMultipleChunks() {
             String sResponse = "";
             boolean isLast;
+            InputStream fileInputStream = null;
+            ByteArrayOutputStream byteArrayOutputStream = null;
             try {
                 Boolean isSuccess = true;
-                InputStream fileInputStream = new BufferedInputStream(new FileInputStream(new File(
+                fileInputStream = new BufferedInputStream(new FileInputStream(new File(
                         selectedImagePath)));
                 for (int resumableChunkNumber = 1; resumableChunkNumber <= numberOfChunks; resumableChunkNumber++) {
                     if (isSuccess) {
@@ -528,29 +559,25 @@ public class AssetUploadActivity extends Activity implements Settings {
                     long sentBytes = startRead;
                     String unit = "";
                     double newSpeed = 0.00;
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byteArrayOutputStream = new ByteArrayOutputStream();
 
                     // read file and write it into form...
-                    try {
-                        int bytesReadAccum = 0;
-                        int bytesRead = 0;
-                        while (bytesReadAccum < bufferSize) {
-                            bytesRead = fileInputStream.read(buffer, 0, bufferSize - bytesReadAccum);
-                            if (bytesRead == -1) break;
-                            bytesReadAccum = bytesReadAccum + bytesRead;
-                            Log.d(TAG, "resumableChunkNumber, bytesRead, bytesReadAccum, bufferSize: " + resumableChunkNumber + ", " + bytesRead + ", " + bytesReadAccum + ", " + bufferSize);
-                            while (bytesRead > 0) {
-                                try {
-                                    byteArrayOutputStream.write(buffer, 0, bytesRead);
-                                    bytesRead = 0;
-                                } catch (OutOfMemoryError e) {
-                                    e.printStackTrace();
-                                    sResponse = "outofmemoryerror";
-                                }
+                    int bytesReadAccum = 0;
+                    int bytesRead = 0;
+                    while (bytesReadAccum < bufferSize) {
+                        bytesRead = fileInputStream.read(buffer, 0, bufferSize - bytesReadAccum);
+                        if (bytesRead == -1) break;
+                        bytesReadAccum = bytesReadAccum + bytesRead;
+                        Log.d(TAG, "resumableChunkNumber, bytesRead, bytesReadAccum, bufferSize: " + resumableChunkNumber + ", " + bytesRead + ", " + bytesReadAccum + ", " + bufferSize);
+                        while (bytesRead > 0) {
+                            try {
+                                byteArrayOutputStream.write(buffer, 0, bytesRead);
+                                bytesRead = 0;
+                            } catch (OutOfMemoryError e) {
+                                e.printStackTrace();
+                                sResponse = "outofmemoryerror";
                             }
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
 
                     sentBytes += bufferSize;
@@ -596,6 +623,23 @@ public class AssetUploadActivity extends Activity implements Settings {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (null != fileInputStream) {
+                    try {
+                        fileInputStream.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "fileInputStream cannot be closed.");
+                        e.printStackTrace();
+                    }
+                }
+                if (null != byteArrayOutputStream) {
+                    try {
+                        byteArrayOutputStream.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "byteArrayOutputStream cannot be closed.");
+                        e.printStackTrace();
+                    }
+                }
             }
             return sResponse;
         }
@@ -718,12 +762,14 @@ public class AssetUploadActivity extends Activity implements Settings {
                         task.execute();
                     } else {
                         showToast(MSG_SUCCESS);
+                        finish();
                     }
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     Log.d("className", e.getMessage());
                     showToast(ERR_MSG_UPLOAD_FAIL);
                     e.printStackTrace();
+                    finish();
                 }
             }
         }
@@ -795,6 +841,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                     Log.d(TAG, e.getMessage());
                     showToast(ERR_MSG_UPLOAD_FAIL);
                     e.printStackTrace();
+                    finish();
                 }
             }
         }
@@ -871,6 +918,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                     Log.d(TAG, e.getMessage());
                     showToast(ERR_MSG_UPLOAD_FAIL);
                     e.printStackTrace();
+                    finish();
                 }
             }
         }
@@ -950,12 +998,14 @@ public class AssetUploadActivity extends Activity implements Settings {
 //                    startActivity(intent);
                     } else {
                         showToast(ERR_MSG_UPLOAD_FAIL);
+                        finish();
                     }
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     Log.d(TAG, e.getMessage());
                     e.printStackTrace();
                 }
+                finish();
             }
         }
 
