@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
@@ -30,9 +32,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     String assetFullName;
     String revid;
     String assetExt;
-    String virtualPath;
-    String physicalPath;
     File downloadFolder;
+    File downloadedFile;
     int progressInt = 0;
     DecimalFormat twoDP = new DecimalFormat("#.##");
     ProgressDialog downloadDialog;
@@ -80,7 +81,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
         downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "AMPS");
-        virtualPath = "Picture/AMPS";
         boolean folderExist = true;
         Log.d(TAG, "downloadFolder.exists(): " + String.valueOf(downloadFolder.exists()));
         Log.d(TAG, "downloadFolder.isDirectory(): " + String.valueOf(downloadFolder.isDirectory()));
@@ -90,8 +90,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             Log.d(TAG, "folderExist: " + String.valueOf(folderExist));
         }
         if (folderExist) {
-            File downloadLocation = new File(downloadFolder, assetFullName);
-            Log.d(TAG, "downloadLocation: " + downloadLocation.toString());
+            downloadedFile = new File(downloadFolder, assetFullName);
+            Log.d(TAG, "downloadedFile: " + downloadedFile.toString());
             InputStream inputStream = null;
             OutputStream fileOutput = null;
             try {
@@ -106,7 +106,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 connection.connect();
                 //get downloaded data
                 //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
-                fileOutput = new FileOutputStream(downloadLocation, false);
+                fileOutput = new FileOutputStream(downloadedFile, false);
 
                 //get data from internet
                 inputStream = new BufferedInputStream(connection.getInputStream());
@@ -122,11 +122,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 int bufferLength = 0;//used to store a temporary size of the buffer
 
                 long elapsedTime = System.currentTimeMillis() - startTime;
-                //long startTime = System.nanoTime();	//Initialise the time for download speed
                 //final double downloadSpeedPerSec = 1000000000.00;
-                //final float bytesPerMib = 1024 * 1024;
                 Log.d(TAG, "inputStream: " + inputStream.toString());
-//                while ((count = inputStream.read(data)) != -1) {
 
                 //now, read through the input buffer and write the contents to the file
                 while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
@@ -216,6 +213,15 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 }
             });
             downloadComplete.show();
+            //make sure the download file appear in the file system immediately
+            MediaScannerConnection.scanFile(activity,
+                    new String[]{downloadedFile.toString()}, null,
+                    new MediaScannerConnection.OnScanCompletedListener() {
+                        public void onScanCompleted(String path, Uri uri) {
+                            Log.i("ExternalStorage", "Scanned " + path + ":");
+                            Log.i("ExternalStorage", "-> uri=" + uri);
+                        }
+                    });
         } else {
             AlertDialog downloadError = new AlertDialog.Builder(activity).create();
             downloadError.setTitle("Download Status");
