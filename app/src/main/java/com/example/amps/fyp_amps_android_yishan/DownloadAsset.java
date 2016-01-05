@@ -31,10 +31,13 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     String assetidLst;
     String assetFullName;
     String revid;
-    String assetExt;
+//    String assetExt;
+    String shortDownloadDirectory;
     File downloadFolder;
     File downloadedFile;
     int progressInt = 0;
+    boolean folderExist = false;
+    FileType filetype;
     DecimalFormat twoDP = new DecimalFormat("#.##");
     ProgressDialog downloadDialog;
 
@@ -45,8 +48,70 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         this.assetidLst = assetidLst;
         this.projectId = projectId;
         this.assetFullName = assetFullName;
-        this.assetExt = assetExt;
+//        this.assetExt = assetExt;
         this.revid = revid;
+        setDownloadedFileFormat(assetExt);
+    }
+
+    public enum FileType {
+        IMAGE,
+        VIDEO,
+        DOCUMENT,
+        OTHER
+    }
+
+    public void setDownloadedFileFormat(String assetExt) {
+        if(((assetExt.equals("jpg") || (assetExt.equals("png") || (assetExt.equals("jpeg")) || (assetExt.equals("gif")))))) {
+            filetype = FileType.IMAGE;
+        } else if((assetExt.equals("avi") || (assetExt.equals("flv") || (assetExt.equals("mp4")) || (assetExt.equals("webm"))))){
+            filetype = FileType.VIDEO;
+        } else if((assetExt.equals("pdf") || (assetExt.equals("txt") || (assetExt.equals("doc")) || (assetExt.equals("xml")) || (assetExt.equals("pptx"))))){
+            filetype = FileType.DOCUMENT;
+        } else {
+            filetype = FileType.OTHER;
+        } Log.d(TAG, "filetype: " + filetype);
+    }
+
+    public boolean setDownloadFolder() {
+        shortDownloadDirectory = "";
+        switch (filetype) {
+            case IMAGE:
+                    downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES), "AMPS");
+                shortDownloadDirectory = Environment.DIRECTORY_PICTURES;
+                break;
+            case VIDEO:
+                downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_MOVIES), "AMPS");
+                shortDownloadDirectory = Environment.DIRECTORY_MOVIES;
+                break;
+            case DOCUMENT:
+                 downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOCUMENTS), "AMPS");
+                shortDownloadDirectory = Environment.DIRECTORY_DOCUMENTS;
+                break;
+            default:
+                downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOWNLOADS), "AMPS");
+                shortDownloadDirectory = Environment.DIRECTORY_DOWNLOADS;
+
+        }
+        boolean downloadFolderExist = true;
+        Log.d(TAG, "shortDownloadDirectory: " + shortDownloadDirectory);
+        Log.d(TAG, "downloadFolder: " + downloadFolder.toString());
+        Log.d(TAG, "downloadFolder.exists(): " + String.valueOf(downloadFolder.exists()));
+        Log.d(TAG, "downloadFolder.isDirectory(): " + String.valueOf(downloadFolder.isDirectory()));
+        if ((!downloadFolder.exists()) || (!downloadFolder.isDirectory())) {
+            if (downloadFolder.canWrite()) {
+                folderExist = downloadFolder.mkdirs();
+                Log.d(TAG, "downloadFolder is created: " + downloadFolder.toString());
+                Log.d(TAG, "folderExist: " + String.valueOf(folderExist));
+            } else {
+                downloadFolderExist = false;
+                showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " is not writable.");
+            }
+        }
+        return downloadFolderExist;
     }
 
     @Override
@@ -60,6 +125,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         downloadDialog.setIndeterminate(false);
         downloadDialog.setCancelable(false);
         downloadDialog.show();
+        folderExist = setDownloadFolder();
     }
 
     @SuppressWarnings("deprecation")
@@ -79,16 +145,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         //TrafficStats traffic = new TrafficStats();
         //double totalNetworkBytes = traffic.getTotalTxBytes();
 
-        downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "AMPS");
-        boolean folderExist = true;
-        Log.d(TAG, "downloadFolder.exists(): " + String.valueOf(downloadFolder.exists()));
-        Log.d(TAG, "downloadFolder.isDirectory(): " + String.valueOf(downloadFolder.isDirectory()));
-        if ((!downloadFolder.exists()) || (!downloadFolder.isDirectory())) {
-            folderExist = downloadFolder.mkdirs();
-            Log.d(TAG, "downloadFolder is created: " + downloadFolder.toString());
-            Log.d(TAG, "folderExist: " + String.valueOf(folderExist));
-        }
         if (folderExist) {
             downloadedFile = new File(downloadFolder, assetFullName);
             Log.d(TAG, "downloadedFile: " + downloadedFile.toString());
@@ -200,40 +256,44 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     protected void onPostExecute(Object result) {
         downloadDialog.dismiss();
         Log.d(TAG, "downloaded to " + downloadFolder.toString());
-        if (progressInt == 100) {
-            AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
-            downloadComplete.setTitle("Download Status");
-            downloadComplete.setMessage(assetFullName + " is downloaded to folder AMPS successfully.");
-            downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
+        if (folderExist) { //to avoid double error msg
+            if (progressInt == 100) {
+                AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
+                downloadComplete.setTitle("Download Status");
+                downloadComplete.setMessage(assetFullName + " is downloaded to directory " + shortDownloadDirectory + "/AMPS successfully.");
+                downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
 
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // TODO Auto-generated method stub
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO Auto-generated method stub
 
-                }
-            });
-            downloadComplete.show();
-            //make sure the download file appear in the file system immediately
-            MediaScannerConnection.scanFile(activity,
-                    new String[]{downloadedFile.toString()}, null,
-                    new MediaScannerConnection.OnScanCompletedListener() {
-                        public void onScanCompleted(String path, Uri uri) {
-                            Log.i("ExternalStorage", "Scanned " + path + ":");
-                            Log.i("ExternalStorage", "-> uri=" + uri);
-                        }
-                    });
+                    }
+                });
+                downloadComplete.show();
+                //make sure the download file appear in the file system immediately
+                MediaScannerConnection.scanFile(activity,
+                        new String[]{downloadedFile.toString()}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+                            public void onScanCompleted(String path, Uri uri) {
+                                Log.i("ExternalStorage", "Scanned " + path + ":");
+                                Log.i("ExternalStorage", "-> uri=" + uri);
+                            }
+                        });
+            } else {
+                AlertDialog downloadError = new AlertDialog.Builder(activity).create();
+                downloadError.setTitle("Download Status");
+                downloadError.setMessage("Failed to download " + assetFullName + ".. Please try again later..");
+                downloadError.setButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //  TODO Auto-generated method stub
+
+                    }
+                });
+                downloadError.show();
+            }
         } else {
-            AlertDialog downloadError = new AlertDialog.Builder(activity).create();
-            downloadError.setTitle("Download Status");
-            downloadError.setMessage("Failed to download " + assetFullName + ".. Please try again later..");
-            downloadError.setButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    //  TODO Auto-generated method stub
-
-                }
-            });
-            downloadError.show();
+            //do nothing
         }
     }
 
