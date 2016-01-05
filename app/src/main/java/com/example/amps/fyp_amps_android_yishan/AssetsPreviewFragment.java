@@ -183,7 +183,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                     DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
-                            , asset.asset_id, project_id, assetFullNameDownloaded, asset.getRevId());
+                            , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid());
                     taskDownload.execute();
                     break;
                 case R.id.imageButtonDelete:
