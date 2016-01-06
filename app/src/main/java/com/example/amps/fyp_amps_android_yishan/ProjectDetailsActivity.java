@@ -7,16 +7,20 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +41,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private Folder rootFolder;
     private ArrayList<Object> folderList = new ArrayList<Object>();
     private ArrayList<Object> assetList = new ArrayList<Object>();
-//    private String[] listviewMenu;
+    //    private String[] listviewMenu;
     private Object currentItemList;
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
@@ -64,7 +68,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         if (null != projectName) {
             header = projectName;
             setTitle(header);
-        } if (null != folderName) {
+        }
+        if (null != folderName) {
             header = folderName;
             setTitle(header);
         }
@@ -106,21 +111,48 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 //        registerForContextMenu(listview);
         //
         Button add_button = (Button) findViewById(R.id.add_button);
-        add_button.setOnClickListener(this);
+//        add_button.setOnClickListener(this);
+        registerForContextMenu(add_button);
 
     }
 
     @Override
-    protected void onStart(){
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_asset_upload, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        //get the context view item selected, e.g. original menu
+//        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        String environment = "";
+        //get the action to do, e.g. upload images or videos
+        switch (item.getItemId()) {
+            case R.id.upload_item_image_or_video:
+                environment = Environment.DIRECTORY_PICTURES;
+                break;
+            case R.id.upload_item_other_types:
+                environment = Environment.DIRECTORY_DOWNLOADS;
+                break;
+            default: // do nothing
+        }
+        callUploadActivity(environment);
+        return super.onContextItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
         super.onStart();
         Log.d(TAG, "onStart()");
     }
 
     @Override
-    protected void onRestart(){
+    protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart()");
-        ((RecyclerViewAdapter)mAdapter).clearData();
+        ((RecyclerViewAdapter) mAdapter).clearData();
         SharedPreferences details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         projectId = details.getString("projectId", null);
         Log.d(TAG, "projectId: " + projectId);
@@ -133,7 +165,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             details.edit().putInt("NO", layerNo - 1).commit();
         }
         if (null != intentRootId) {
-            details.edit().putInt("NO", layerNo-1).commit();
+            details.edit().putInt("NO", layerNo - 1).commit();
             Log.d(TAG, "rootFolderId: " + intentRootId);
             rootFolderId = intentRootId;
             getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
@@ -171,11 +203,11 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         if (null != rootFolderId) {
             int layerNo = Details.getInt("NO", 0);
-            String stringNo = String.valueOf(layerNo+1);
+            String stringNo = String.valueOf(layerNo + 1);
             Details.edit().putInt("NO", layerNo + 1)
                     .putString(stringNo, rootFolderId).commit();
             Log.d(TAG, "NO: onPause: " + String.valueOf(layerNo + 1));
@@ -189,7 +221,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop()");
         if (null != mAdapter) {
@@ -203,7 +235,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy()");
         Bundle savedInstanceState = new Bundle();
@@ -214,7 +246,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     public void onBackPressed() {
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         int layerNo = Details.getInt("NO", 0);
-        Details.edit().putInt("NO", layerNo-1).commit();
+        Details.edit().putInt("NO", layerNo - 1).commit();
         Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo - 1));
         ProjectDetailsActivity.super.onBackPressed();
         finish();
@@ -257,7 +289,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         if (null != intentFolderName) {
             header = intentFolderName;
             Log.d(TAG, "new intent - header: intentFolderName: " + intentFolderName);
-        }if (null != intentProjectName) {
+        }
+        if (null != intentProjectName) {
             header = intentProjectName;
             Log.d(TAG, "new intent - header: intentProjectName: " + intentProjectName);
         }
@@ -285,36 +318,33 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onClick(View view) {
-        try {
-            switch (view.getId()) {
-                case R.id.add_button:
-                    Intent uploadImage = new Intent(ProjectDetailsActivity.this, AssetUploadActivity.class);
+
+    private void callUploadActivity(String environmentVariable) {
+        Intent uploadFile = new Intent(ProjectDetailsActivity.this, AssetUploadActivity.class);
 //                    uploadImage.putExtra("asset_id", asset_id);
-                    uploadImage.putExtra("project_id", projectId);
-                    uploadImage.putExtra("folder_id", rootFolderId);
-                    uploadImage.putExtra("isNewRevision", false);
-                    Log.d("AssetUploadActivity", "pass to folder_id: " + rootFolderId);
+        uploadFile.putExtra("project_id", projectId);
+        uploadFile.putExtra("folder_id", rootFolderId);
+        uploadFile.putExtra("isNewRevision", false);
+        uploadFile.putExtra("environment", environmentVariable);
+        Log.d("AssetUploadActivity", "pass to folder_id: " + rootFolderId);
+        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
 //                    String assetFullName = asset.getName() + "." + asset.getExt();
 //                    String assetFullName = "";
 //                    uploadImage.putExtra("assetFullName", assetFullName);
 //                    Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
 //                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
 //                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
-                    startActivity(uploadImage);
-                    break;
-                default:
-                    displayAssetList(view.getId());
-                    break;
-            }
-        } catch (Exception e) {
-
-        }
+        startActivity(uploadFile);
     }
 
-    protected void displayAssetList(int id){
-        Folder folder = (Folder)folderList.get(id);
+    //
+    @Override
+    public void onClick(View view) {
+        displayAssetList(view.getId());
+    }
+
+    protected void displayAssetList(int id) {
+        Folder folder = (Folder) folderList.get(id);
         showToast("folder name: " + folder.getName() + " is opened.");
         Intent intent = new Intent(ProjectDetailsActivity.this, ProjectDetailsActivity.class);
         intent.putExtra("project_id", projectId);
@@ -325,7 +355,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
 
     @Override
-    public void onGetRootFolderIdReady(){
+    public void onGetRootFolderIdReady() {
         rootFolder = getRootFolderId.getRootFolder();
         if (null != rootFolder) {
             rootFolderId = rootFolder.folder_id;
@@ -333,22 +363,22 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             }
-        }else {
+        } else {
             showToast("Sorry cannot get one level child because root id not found.");
             Log.d(TAG, "rootId not found");
         }
     }
 
     @Override
-    public void onOneLevelChildReady(){
+    public void onOneLevelChildReady() {
         ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
         if (null != arrayfolderList) {
             Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             currentItemList = (Object) arrayfolderList;
-            for (int i = 0; i<arrayfolderList.size(); i++) {
+            for (int i = 0; i < arrayfolderList.size(); i++) {
                 folderList.add(arrayfolderList.get(i));
             }
-            mAdapter = new RecyclerViewAdapter(this,folderList);
+            mAdapter = new RecyclerViewAdapter(this, folderList);
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
@@ -361,23 +391,24 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     @Override
-    public void onAssetReady(){
+    public void onAssetReady() {
         ArrayList<Asset> arrayAssetList = getAsset.getAssetList();
 
         if (null != arrayAssetList) {
             Log.d(TAG, "assetList is gotten");
             Boolean needThumbNailUpdate = false;
             ArrayList<String> assetIdList = new ArrayList<String>();
-            for (int i = 0; i<arrayAssetList.size(); i++) {
-                Asset temp  = arrayAssetList.get(i);
+            for (int i = 0; i < arrayAssetList.size(); i++) {
+                Asset temp = arrayAssetList.get(i);
                 Log.d(TAG, "array type: " + temp.getExt());
-                if(((temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))))) {
+                if (((temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))))) {
                     Log.d(TAG, "call GetAssetDetail()");
                     needThumbNailUpdate = true;
                     assetIdList.add(temp.asset_id);
                 } //Todo -- if several images are calling GetAssetDetail() at almost the same time
                 assetList.add(temp);
-            } currentItemList = (Object) assetList;
+            }
+            currentItemList = (Object) assetList;
             if (needThumbNailUpdate) {
                 String selectAttributes = "[asset_id],[base64_thumbnail],[ext]";
                 getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId, selectAttributes);
@@ -392,8 +423,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     Log.d(TAG, "start assetDetail activity");
                     Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                     intent.putExtra("project_id", projectId);
-                    intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
-                    intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                    intent.putExtra("asset_id", ((Asset) assetList.get(position)).getAsset_id());
+                    intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
                     intent.putExtra("folderId", rootFolderId);
                     startActivity(intent);
 
@@ -403,11 +434,12 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
         }
     }
-    public void onAssetDetailReady(){
+
+    public void onAssetDetailReady() {
         ArrayList<Asset> assetDetailList = getAssetDetail.getAssetDetail();
         boolean newAssetUsed = false;
         if (null != assetDetailList && assetDetailList.size() > 0) {
-            for (int j=0; j<assetDetailList.size(); j++) {
+            for (int j = 0; j < assetDetailList.size(); j++) {
                 Asset assetDetail = assetDetailList.get(j);
                 if (null != assetDetail) {
                     Log.d(TAG, "assetDetail is gotten");
@@ -440,8 +472,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                             Log.d(TAG, "start assetDetail activity");
                             Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
                             intent.putExtra("project_id", projectId);
-                            intent.putExtra("asset_id", ((Asset)assetList.get(position)).getAsset_id());
-                            intent.putExtra("asset_name", ((Asset)assetList.get(position)).getName());
+                            intent.putExtra("asset_id", ((Asset) assetList.get(position)).getAsset_id());
+                            intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
                             intent.putExtra("folderId", rootFolderId);
                             startActivity(intent);
 
@@ -450,7 +482,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     mRecyclerView.setAdapter(mAdapter);
                 }
             }
-        } currentItemList = (Object)assetList;
+        }
+        currentItemList = (Object) assetList;
     }
 
     public void createFolderCardRow(View v) {
@@ -585,7 +618,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
 
-    public void showToast(String info){
+    public void showToast(String info) {
         Toast toast = Toast.makeText(
                 ProjectDetailsActivity.this,
                 info,
