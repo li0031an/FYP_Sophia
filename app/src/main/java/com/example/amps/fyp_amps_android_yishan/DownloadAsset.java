@@ -11,6 +11,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,7 +32,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     String assetidLst;
     String assetFullName;
     String revid;
-//    String assetExt;
+    //    String assetExt;
     String shortDownloadDirectory;
     File downloadFolder;
     File downloadedFile;
@@ -61,55 +62,69 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     }
 
     public void setDownloadedFileFormat(String assetExt) {
-        if(((assetExt.equals("jpg") || (assetExt.equals("png") || (assetExt.equals("jpeg")) || (assetExt.equals("gif")))))) {
+        if (((assetExt.equals("jpg") || (assetExt.equals("png") || (assetExt.equals("jpeg")) || (assetExt.equals("gif")))))) {
             filetype = FileType.IMAGE;
-        } else if((assetExt.equals("avi") || (assetExt.equals("flv") || (assetExt.equals("mp4")) || (assetExt.equals("webm"))))){
+        } else if ((assetExt.equals("avi") || (assetExt.equals("flv") || (assetExt.equals("mp4")) || (assetExt.equals("webm"))))) {
             filetype = FileType.VIDEO;
-        } else if((assetExt.equals("pdf") || (assetExt.equals("txt") || (assetExt.equals("doc")) || (assetExt.equals("xml")) || (assetExt.equals("pptx"))))){
+        } else if ((assetExt.equals("pdf") || (assetExt.equals("txt") || (assetExt.equals("doc")) || (assetExt.equals("xml")) || (assetExt.equals("pptx"))))) {
             filetype = FileType.DOCUMENT;
         } else {
             filetype = FileType.OTHER;
-        } Log.d(TAG, "filetype: " + filetype);
+        }
+        Log.d(TAG, "filetype: " + filetype);
     }
 
     public boolean setDownloadFolder() {
         shortDownloadDirectory = "";
+        File downloadDirectory;
         switch (filetype) {
             case IMAGE:
-                    downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_PICTURES), "AMPS");
                 shortDownloadDirectory = Environment.DIRECTORY_PICTURES;
                 break;
             case VIDEO:
-                downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_MOVIES), "AMPS");
                 shortDownloadDirectory = Environment.DIRECTORY_MOVIES;
                 break;
-            case DOCUMENT:
-                 downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOCUMENTS), "AMPS");
-                shortDownloadDirectory = Environment.DIRECTORY_DOCUMENTS;
-                break;
+//            case DOCUMENT: //only applicable to API 19 and above
+//                shortDownloadDirectory = Environment.DIRECTORY_DOCUMENTS;
+//                break;
             default:
-                downloadFolder = new File(Environment.getExternalStoragePublicDirectory(
-                        Environment.DIRECTORY_DOWNLOADS), "AMPS");
                 shortDownloadDirectory = Environment.DIRECTORY_DOWNLOADS;
-
         }
         boolean downloadFolderExist = true;
-        Log.d(TAG, "shortDownloadDirectory: " + shortDownloadDirectory);
-        Log.d(TAG, "downloadFolder: " + downloadFolder.toString());
-        Log.d(TAG, "downloadFolder.exists(): " + String.valueOf(downloadFolder.exists()));
-        Log.d(TAG, "downloadFolder.isDirectory(): " + String.valueOf(downloadFolder.isDirectory()));
-        if ((!downloadFolder.exists()) || (!downloadFolder.isDirectory())) {
-            if (downloadFolder.canWrite()) {
-                folderExist = downloadFolder.mkdirs();
-                Log.d(TAG, "downloadFolder is created: " + downloadFolder.toString());
-                Log.d(TAG, "folderExist: " + String.valueOf(folderExist));
-            } else {
+        downloadDirectory = new File(Environment.getExternalStorageDirectory(), shortDownloadDirectory);
+        if (!downloadDirectory.exists() || (!downloadDirectory.isDirectory())) {
+            downloadFolderExist = downloadDirectory.mkdir();
+        }
+        if (downloadFolderExist) {
+            if (downloadDirectory.canWrite() || downloadDirectory.setWritable(true, true)) {
+                downloadFolder = new File(downloadDirectory, "/AMPS");
+                Log.d(TAG, "shortDownloadDirectory: " + shortDownloadDirectory);
+                Log.d(TAG, "downloadFolder: " + downloadFolder.toString());
+                Log.d(TAG, "downloadFolder.exists(): " + String.valueOf(downloadFolder.exists()));
+                Log.d(TAG, "downloadFolder.isDirectory(): " + String.valueOf(downloadFolder.isDirectory()));
+                if ((!downloadFolder.exists()) || (!downloadFolder.isDirectory())) {
+                    downloadFolderExist = downloadFolder.mkdirs();
+                    Log.d(TAG, "downloadFolder is created: " + downloadFolder.toString());
+                    Log.d(TAG, "folderExist: " + String.valueOf(folderExist));
+                }
+                if (downloadFolderExist) {
+                    if (downloadFolder.canWrite() || downloadFolder.setWritable(true, true)) {
+                        downloadFolderExist = true;
+                    } else {
+                        downloadFolderExist = false;
+                        showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " is not writable.");
+                    }
+                } else {
+                    downloadFolderExist = false;
+                    showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " cannot be created.");
+                }
+            }else {
                 downloadFolderExist = false;
                 showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " is not writable.");
             }
+        } else {
+            downloadFolderExist = false;
+            showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " cannot be created.");
         }
         return downloadFolderExist;
     }
@@ -182,7 +197,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 Log.d(TAG, "inputStream: " + inputStream.toString());
 
                 //now, read through the input buffer and write the contents to the file
-                while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+                while ((bufferLength = inputStream.read(buffer)) > 0) {
                     //add the data in the buffer to the file in the file output stream (the file on the sd card
                     fileOutput.write(buffer, 0, bufferLength);
                     //add up the size so we know how much is downloaded
