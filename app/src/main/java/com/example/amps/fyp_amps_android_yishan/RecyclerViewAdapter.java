@@ -90,7 +90,7 @@ public class RecyclerViewAdapter extends RecyclerView
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
                 }
             } else if((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
-                    || (asset.getExt().equals("wvm"))))){
+                    || (asset.getExt().equals("wmv"))))){
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.drawable.ic_action_video));
             } else {

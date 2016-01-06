@@ -65,7 +65,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     public void setDownloadedFileFormat(String assetExt) {
         if (((assetExt.equals("jpg") || (assetExt.equals("png") || (assetExt.equals("jpeg")) || (assetExt.equals("gif")))))) {
             filetype = FileType.IMAGE;
-        } else if ((assetExt.equals("avi") || (assetExt.equals("flv") || (assetExt.equals("mp4")) || (assetExt.equals("webm"))))) {
+        } else if ((assetExt.equals("avi") || (assetExt.equals("flv") || (assetExt.equals("mp4")) || (assetExt.equals("webm")) || (assetExt.equals("wmv"))))) {
             filetype = FileType.VIDEO;
         } else if ((assetExt.equals("pdf") || (assetExt.equals("txt") || (assetExt.equals("doc")) || (assetExt.equals("xml")) || (assetExt.equals("pptx"))))) {
             filetype = FileType.DOCUMENT;
