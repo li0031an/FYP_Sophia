@@ -1,5 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
+import android.os.Environment;
 import android.util.Log;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -15,7 +16,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -53,8 +56,8 @@ import java.util.ArrayList;
 //@TargetApi(19)
 public class AssetUploadActivity extends Activity implements Settings {
     private static String TAG = "AssetUploadActivity";
-    private static final int PICK_IMAGE = 1;
-    private static final int MAX_CONTENT_SIZE = 1024*1024; //1024*1024byte = 1MB
+    private static final int PICKFILE_RESULT_CODE = 1;
+    private static final int MAX_CONTENT_SIZE = 1024 * 1024; //1024*1024byte = 1MB
     private static final String ERR_MSG_UPLOAD_FAIL = "Upload fail. Please upload again.";
     private static final String ERR_MSG_NO_IMAGE_SELECTED = "Upload fail. Please upload an image.";
     private static final String ERR_MSG_NO_IMAGE_NO_DES = "Upload fail. Please upload an image and enter a description.";
@@ -67,6 +70,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     ProgressDialog dialog;
     private Uri imageUri;
     private String selectedImagePath;
+    private String pickEnvironment = "";
     private int numberOfChunks;
     private int fileSize = 0;
     boolean isNewRevision;
@@ -89,19 +93,32 @@ public class AssetUploadActivity extends Activity implements Settings {
             folder_id = extras.getString("folder_id");
             isNewRevision = extras.getBoolean("isNewRevision");
             latest_revid = extras.getString("latest_revid");
+            pickEnvironment = extras.getString("environment");
             Log.d(TAG, "GET from intent folder_id: " + folder_id);
             Log.d(TAG, "GET from intent isNewRevision: " + String.valueOf(isNewRevision));
             Log.d(TAG, "GET from intent latest_revid: " + latest_revid);
+            Log.d(TAG, "GET from intent pickEnvironment: " + pickEnvironment);
         }
-        startPickImageIntent();
+        if (pickEnvironment.equalsIgnoreCase("Pictures")) startPickImageVideoIntent();
+        else startPickFileIntent();
     }
 
-    private void startPickImageIntent(){
+    private void startPickImageVideoIntent(){
         Intent intent = new Intent();
-        intent.setType("image/*");
+        intent.setType("video/*, audio/*, video/*");
         intent.setAction(Intent.ACTION_PICK);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"),
-                PICK_IMAGE);
+        startActivityForResult(Intent.createChooser(intent, "Select picture or video"),
+                PICKFILE_RESULT_CODE);
+    }
+
+    private void startPickFileIntent() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//        intent.setType("files/*");
+        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/" + pickEnvironment + "/AMPS/");
+        Log.d(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+        Log.d(TAG, "PATH: " + uri);
+        intent.setDataAndType(uri, "text/csv");
+        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICKFILE_RESULT_CODE);
     }
 
     @Override
@@ -113,9 +130,11 @@ public class AssetUploadActivity extends Activity implements Settings {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE) {
+        if (requestCode == PICKFILE_RESULT_CODE) {
+            if (resultCode == RESULT_OK) {
+//                if (requestCode == PICK_IMAGE) {
                 imageUri = data.getData();
+                Log.d(TAG,"uri: " + imageUri );
                 selectedImagePath = getPath(imageUri);
                 numberOfChunks = readImageFileIntoChunk();
                 if (numberOfChunks > 1) {
@@ -140,6 +159,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                         .getDrawable().getBounds().width(), imageUploaded
                         .getDrawable().getBounds().height());
                 imageUploaded.setImageMatrix(matrix);
+//                }
             }
         }
     }
@@ -195,6 +215,12 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     public String getPath(Uri uri) {
+        // Perform the query on the contact to get the MediaStore column
+        // We don't need a selection or sort order (there's only one result for the given URI)
+        // CAUTION: The query() method should be called from a separate thread to avoid blocking
+        // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
+        // Consider using CursorLoader to perform the query.
+        Log.d(TAG,"uri: " + uri );
         String[] projection = {MediaStore.Images.Media.DATA};
         Cursor cursor = managedQuery(uri, projection, null, null, null);
         int column_index = cursor
@@ -239,16 +265,18 @@ public class AssetUploadActivity extends Activity implements Settings {
 
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_upload: checkUpload(); break;
+            case R.id.btn_upload:
+                checkUpload();
+                break;
             case R.id.btn_reset:
-                startPickImageIntent();
+                startPickFileIntent();
                 editTextDescription.setText("");
                 break;
             default: //do nothing;
         }
     }
 
-    private void checkUpload(){
+    private void checkUpload() {
         try {
             if ((imageUploaded.getDrawable() == null)
                     && (editTextDescription.getText().toString().isEmpty())) {
@@ -305,7 +333,8 @@ public class AssetUploadActivity extends Activity implements Settings {
                     }
                 }
             }
-        } return numberOfChunks;
+        }
+        return numberOfChunks;
     }
 
     public class UploadAsset extends AsyncTask<Object, String, Object> {
@@ -345,8 +374,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             if (isSuccess) {
                 FinalizeAsset task = new FinalizeAsset(numberOfChunks);
                 task.execute();
-            }
-            else {
+            } else {
                 showToast(ERR_MSG_UPLOAD_FAIL);
                 finish();
             }
@@ -416,7 +444,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                         Log.d(TAG, "folderid: " + folder_id);
                     }
 
-                    String resumableFilename =  selectedImagePath.substring(selectedImagePath
+                    String resumableFilename = selectedImagePath.substring(selectedImagePath
                             .lastIndexOf("/") + 1);
                     entity.addPart(new FormBodyPart("resumableFilename",
                             new StringBody(resumableFilename)));
@@ -549,349 +577,349 @@ public class AssetUploadActivity extends Activity implements Settings {
 
     }
 
-        public class FinalizeAsset extends AsyncTask<Object, Object, Object> {
-            int numberOfChunks;
+    public class FinalizeAsset extends AsyncTask<Object, Object, Object> {
+        int numberOfChunks;
 
-            public FinalizeAsset(int numberOfChunks) {
-                this.numberOfChunks = numberOfChunks;
+        public FinalizeAsset(int numberOfChunks) {
+            this.numberOfChunks = numberOfChunks;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "FinalizeAsset starts");
+            dialog = new ProgressDialog(AssetUploadActivity.this);
+            dialog.setCancelable(true);
+            dialog.setMessage("Finalizing Asset ...");
+            dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            dialog.setProgress(0);
+            dialog.setMax(100);
+            dialog.setProgressNumberFormat("");
+            dialog.show();
+        }
+
+        @Override
+        protected String doInBackground(Object... arg0) {
+            return finalizeUploadFile();
+        }
+
+        @Override
+        protected void onPostExecute(Object result) {
+            parseJSONResponse((String) result);
+            dialog.setProgress(100);
+            dialog.dismiss();
+
+        }
+
+        public String finalizeUploadFile() {
+            String responseBody = "";
+            // Instantiate an HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(SZAAPIURL + "finalizeV2");
+            // Post parameters
+            SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
+            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+            postParameters.add(new BasicNameValuePair("tokenid", settings
+                    .getString("tokenid", null)));
+            postParameters.add(new BasicNameValuePair("userid", settings
+                    .getString("userid", null)));
+            postParameters.add(new BasicNameValuePair("projectid", project_id));
+
+            if (false == isNewRevision) {
+                postParameters.add(new BasicNameValuePair("create_empty_asset", String.valueOf(1)));
             }
-
-            @Override
-            protected void onPreExecute() {
-                Log.d(TAG, "FinalizeAsset starts");
-                dialog = new ProgressDialog(AssetUploadActivity.this);
-                dialog.setCancelable(true);
-                dialog.setMessage("Finalizing Asset ...");
-                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                dialog.setProgress(0);
-                dialog.setMax(100);
-                dialog.setProgressNumberFormat("");
-                dialog.show();
+            if (false == isNewRevision) {
+                postParameters.add(new BasicNameValuePair("folderid", folder_id));
             }
-
-            @Override
-            protected String doInBackground(Object... arg0) {
-                return finalizeUploadFile();
-            }
-
-            @Override
-            protected void onPostExecute(Object result) {
-                parseJSONResponse((String) result);
-                dialog.setProgress(100);
-                dialog.dismiss();
-
-            }
-
-            public String finalizeUploadFile() {
-                String responseBody = "";
-                // Instantiate an HttpClient
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(SZAAPIURL + "finalizeV2");
-                // Post parameters
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-                postParameters.add(new BasicNameValuePair("tokenid", settings
-                        .getString("tokenid", null)));
-                postParameters.add(new BasicNameValuePair("userid", settings
-                        .getString("userid", null)));
-                postParameters.add(new BasicNameValuePair("projectid", project_id));
-
-                if (false == isNewRevision) {
-                    postParameters.add(new BasicNameValuePair("create_empty_asset", String.valueOf(1)));
-                }
-                if (false == isNewRevision) {
-                    postParameters.add(new BasicNameValuePair("folderid", folder_id));
-                }
 //            if (null != folder_id) {
 //                postParameters.add(new BasicNameValuePair("folderid", folder_id));
 //            }
-                postParameters.add(new BasicNameValuePair("fileName",
-                        selectedImagePath.substring(selectedImagePath
-                                .lastIndexOf("/") + 1)));
-                String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedImagePath.substring(selectedImagePath
-                        .lastIndexOf("/") + 1));
-                postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
+            postParameters.add(new BasicNameValuePair("fileName",
+                    selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1)));
+            String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedImagePath.substring(selectedImagePath
+                    .lastIndexOf("/") + 1));
+            postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
 
-                postParameters.add(new BasicNameValuePair("chunkSize", String
-                        .valueOf(MAX_CONTENT_SIZE)));
+            postParameters.add(new BasicNameValuePair("chunkSize", String
+                    .valueOf(MAX_CONTENT_SIZE)));
 
-                postParameters.add(new BasicNameValuePair("fileSize", String
-                        .valueOf(fileSize)));
+            postParameters.add(new BasicNameValuePair("fileSize", String
+                    .valueOf(fileSize)));
 
-                Log.d(TAG, "FinalizeAsset: postParameters: " + postParameters);
-                // Instantiate a POST HTTP method
-                try {
-                    httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                    ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                    responseBody = httpclient.execute(httppost, responseHandler);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return responseBody;
+            Log.d(TAG, "FinalizeAsset: postParameters: " + postParameters);
+            // Instantiate a POST HTTP method
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
+                ResponseHandler<String> responseHandler = new BasicResponseHandler();
+                responseBody = httpclient.execute(httppost, responseHandler);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            public void parseJSONResponse(String responseBody) {
-                JSONArray json;
-                JSONObject job;
-                try {
-                    json = new JSONArray(responseBody);
-                    job = json.getJSONObject(0);
-                    Log.d(TAG, responseBody);
-                    String assetid = job.getJSONObject("data_array").getString(
-                            "assetid");
-                    System.out.println(assetid);
-                    new_asset_id = assetid;
-                    if (true == isNewRevision) {
-                        CreateRevision task = new CreateRevision();
-                        task.execute();
-                    } else {
-                        showToast(MSG_SUCCESS);
-                        finish();
-                    }
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    Log.d("className", e.getMessage());
-                    showToast(ERR_MSG_UPLOAD_FAIL);
-                    e.printStackTrace();
-                    finish();
-                }
-            }
+            return responseBody;
         }
 
-        public class GetNumberOfRevision extends AsyncTask<Object, Object, Object> {
-
-            @Override
-            protected void onPreExecute() {
-                Log.d(TAG, "GetNumberOfRevision starts");
-                dialog.setProgress(25);
-            }
-
-            @Override
-            protected String doInBackground(Object... arg0) {
-                return getNumberOfRevision();
-            }
-
-            @Override
-            protected void onPostExecute(Object result) {
-                parseJSONResponse((String) result);
-            }
-
-            public String getNumberOfRevision() {
-                String responseBody = "";
-                // Instantiate an HttpClient
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(SZAAPIURL
-                        + "getNumRevisionsOfAsset");
-                // Post parameters
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-                postParameters.add(new BasicNameValuePair("tokenid", settings
-                        .getString("tokenid", null)));
-                postParameters.add(new BasicNameValuePair("userid", settings
-                        .getString("userid", null)));
-                postParameters.add(new BasicNameValuePair("projectid", project_id));
-                if (isNewRevision) {
-                    postParameters.add(new BasicNameValuePair("assetid", asset_id));
-                } else {
-                    postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
-                }
-
-                // Instantiate a POST HTTP method
-                try {
-                    httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                    ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                    responseBody = httpclient.execute(httppost, responseHandler);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return responseBody;
-            }
-
-            public void parseJSONResponse(String responseBody) {
-                JSONArray json;
-                try {
-                    json = new JSONArray(responseBody);
-                    JSONObject job = json.getJSONObject(0);
-                    Log.d(TAG, responseBody);
-                    String revNum = job.getJSONObject("data_array").getString(
-                            "num_rec");
-                    String latestRevNum = String
-                            .valueOf(Integer.parseInt(revNum) - 1);
-                    System.out.println(latestRevNum);
-                    GetRevision task = new GetRevision(latestRevNum);
+        public void parseJSONResponse(String responseBody) {
+            JSONArray json;
+            JSONObject job;
+            try {
+                json = new JSONArray(responseBody);
+                job = json.getJSONObject(0);
+                Log.d(TAG, responseBody);
+                String assetid = job.getJSONObject("data_array").getString(
+                        "assetid");
+                System.out.println(assetid);
+                new_asset_id = assetid;
+                if (true == isNewRevision) {
+                    CreateRevision task = new CreateRevision();
                     task.execute();
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, e.getMessage());
-                    showToast(ERR_MSG_UPLOAD_FAIL);
-                    e.printStackTrace();
-                    finish();
-                }
-            }
-        }
-
-        public class GetRevision extends AsyncTask<Object, Object, Object> {
-            String revNum;
-
-            public GetRevision(String revNum) {
-                this.revNum = revNum;
-            }
-
-            @Override
-            protected void onPreExecute() {
-                Log.d(TAG, "GetRevision starts");
-                dialog.setProgress(50);
-            }
-
-            @Override
-            protected String doInBackground(Object... arg0) {
-                return getRevision();
-            }
-
-            @Override
-            protected void onPostExecute(Object result) {
-                parseJSONResponse((String) result);
-
-            }
-
-            public String getRevision() {
-                String responseBody = "";
-                // Instantiate an HttpClient
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(SZAAPIURL + "getRevision");
-                // Post parameters
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-                postParameters.add(new BasicNameValuePair("tokenid", settings
-                        .getString("tokenid", null)));
-                postParameters.add(new BasicNameValuePair("userid", settings
-                        .getString("userid", null)));
-                postParameters.add(new BasicNameValuePair("projectid", project_id));
-                if (isNewRevision) {
-                    postParameters.add(new BasicNameValuePair("assetid", asset_id));
                 } else {
-                    postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
-                }
-                postParameters.add(new BasicNameValuePair("revnum", revNum));
-                postParameters
-                        .add(new BasicNameValuePair(
-                                "select",
-                                "[revid], [src_revid], [revnum], [iskey], [ismain], [name], [ext], [des], [checkin_userid], [checkin_datetime], [revsize]"));
-                Log.d(TAG, "postParameters: " + postParameters.toString());
-                // Instantiate a POST HTTP method
-                try {
-                    httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                    ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                    responseBody = httpclient.execute(httppost, responseHandler);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return responseBody;
-            }
-
-            public void parseJSONResponse(String responseBody) {
-                JSONArray json, data_array;
-                try {
-                    json = new JSONArray(responseBody);
-                    JSONObject job = json.getJSONObject(0);
-                    data_array = job.getJSONArray("data_array");
-                    JSONObject dataJob = new JSONObject(data_array.getString(0));
-                    String revId = dataJob.getString("revid");
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, e.getMessage());
-                    showToast(ERR_MSG_UPLOAD_FAIL);
-                    e.printStackTrace();
+                    showToast(MSG_SUCCESS);
                     finish();
                 }
-            }
-        }
-
-        public class CreateRevision extends AsyncTask<Object, Object, Object> {
-
-            @Override
-            protected void onPreExecute() {
-                Log.d(TAG, "CreateRevision starts");
-                dialog.setProgress(75);
-            }
-
-            @Override
-            protected String doInBackground(Object... arg0) {
-                return createRevision();
-            }
-
-            @Override
-            protected void onPostExecute(Object result) {
-                dialog.setProgress(100);
-                parseJSONResponse((String) result);
-
-            }
-
-            public String createRevision() {
-                String responseBody = "";
-                // Instantiate an HttpClient
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(SZAAPIURL + "createRevision");
-                // Post parameters
-                SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
-                ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
-                postParameters.add(new BasicNameValuePair("tokenid", settings
-                        .getString("tokenid", null)));
-                postParameters.add(new BasicNameValuePair("userid", settings
-                        .getString("userid", null)));
-                postParameters.add(new BasicNameValuePair("projectid", project_id));
-//            if (false == isNewRevision) {
-//                postParameters.add(new BasicNameValuePair("folderid", folder_id));
-//            }
-                postParameters.add(new BasicNameValuePair("assetid", asset_id));
-                // put the previous resvision id
-                postParameters.add(new BasicNameValuePair("src_revid", latest_revid));
-                postParameters
-                        .add(new BasicNameValuePair("des_revid", new_asset_id));
-                postParameters.add(new BasicNameValuePair("des_revfilename",
-                        selectedImagePath.substring(selectedImagePath
-                                .lastIndexOf("/") + 1)));
-                postParameters.add(new BasicNameValuePair("ismain", "1"));
-                postParameters.add(new BasicNameValuePair("des",
-                        editTextDescription.getText().toString()));
-                Log.d(TAG, "postParameters: " + postParameters.toString());
-                // Instantiate a POST HTTP method
-                try {
-                    httppost.setEntity(new UrlEncodedFormEntity(postParameters));
-                    ResponseHandler<String> responseHandler = new BasicResponseHandler();
-                    responseBody = httpclient.execute(httppost, responseHandler);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return responseBody;
-            }
-
-            public void parseJSONResponse(String responseBody) {
-                JSONArray json;
-                try {
-                    json = new JSONArray(responseBody);
-                    JSONObject job = json.getJSONObject(0);
-                    Log.d(TAG, responseBody);
-                    int error_code = job.getInt("error_code");
-                    if (error_code == 0) {
-                        GetNumberOfRevision task = new GetNumberOfRevision();
-                        task.execute();
-                        showToast(MSG_SUCCESS);
-//                    Intent intent = new Intent(AssetUploadActivity.this,
-//                            WorkingAssetsListActivity.class);
-//                    startActivity(intent);
-                    } else {
-                        showToast(ERR_MSG_UPLOAD_FAIL);
-                        finish();
-                    }
-                } catch (JSONException e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, e.getMessage());
-                    e.printStackTrace();
-                }
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                Log.d("className", e.getMessage());
+                showToast(ERR_MSG_UPLOAD_FAIL);
+                e.printStackTrace();
                 finish();
             }
         }
+    }
+
+    public class GetNumberOfRevision extends AsyncTask<Object, Object, Object> {
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "GetNumberOfRevision starts");
+            dialog.setProgress(25);
+        }
+
+        @Override
+        protected String doInBackground(Object... arg0) {
+            return getNumberOfRevision();
+        }
+
+        @Override
+        protected void onPostExecute(Object result) {
+            parseJSONResponse((String) result);
+        }
+
+        public String getNumberOfRevision() {
+            String responseBody = "";
+            // Instantiate an HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(SZAAPIURL
+                    + "getNumRevisionsOfAsset");
+            // Post parameters
+            SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
+            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+            postParameters.add(new BasicNameValuePair("tokenid", settings
+                    .getString("tokenid", null)));
+            postParameters.add(new BasicNameValuePair("userid", settings
+                    .getString("userid", null)));
+            postParameters.add(new BasicNameValuePair("projectid", project_id));
+            if (isNewRevision) {
+                postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            } else {
+                postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
+            }
+
+            // Instantiate a POST HTTP method
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
+                ResponseHandler<String> responseHandler = new BasicResponseHandler();
+                responseBody = httpclient.execute(httppost, responseHandler);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return responseBody;
+        }
+
+        public void parseJSONResponse(String responseBody) {
+            JSONArray json;
+            try {
+                json = new JSONArray(responseBody);
+                JSONObject job = json.getJSONObject(0);
+                Log.d(TAG, responseBody);
+                String revNum = job.getJSONObject("data_array").getString(
+                        "num_rec");
+                String latestRevNum = String
+                        .valueOf(Integer.parseInt(revNum) - 1);
+                System.out.println(latestRevNum);
+                GetRevision task = new GetRevision(latestRevNum);
+                task.execute();
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, e.getMessage());
+                showToast(ERR_MSG_UPLOAD_FAIL);
+                e.printStackTrace();
+                finish();
+            }
+        }
+    }
+
+    public class GetRevision extends AsyncTask<Object, Object, Object> {
+        String revNum;
+
+        public GetRevision(String revNum) {
+            this.revNum = revNum;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "GetRevision starts");
+            dialog.setProgress(50);
+        }
+
+        @Override
+        protected String doInBackground(Object... arg0) {
+            return getRevision();
+        }
+
+        @Override
+        protected void onPostExecute(Object result) {
+            parseJSONResponse((String) result);
+
+        }
+
+        public String getRevision() {
+            String responseBody = "";
+            // Instantiate an HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(SZAAPIURL + "getRevision");
+            // Post parameters
+            SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
+            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+            postParameters.add(new BasicNameValuePair("tokenid", settings
+                    .getString("tokenid", null)));
+            postParameters.add(new BasicNameValuePair("userid", settings
+                    .getString("userid", null)));
+            postParameters.add(new BasicNameValuePair("projectid", project_id));
+            if (isNewRevision) {
+                postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            } else {
+                postParameters.add(new BasicNameValuePair("assetid", new_asset_id));
+            }
+            postParameters.add(new BasicNameValuePair("revnum", revNum));
+            postParameters
+                    .add(new BasicNameValuePair(
+                            "select",
+                            "[revid], [src_revid], [revnum], [iskey], [ismain], [name], [ext], [des], [checkin_userid], [checkin_datetime], [revsize]"));
+            Log.d(TAG, "postParameters: " + postParameters.toString());
+            // Instantiate a POST HTTP method
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
+                ResponseHandler<String> responseHandler = new BasicResponseHandler();
+                responseBody = httpclient.execute(httppost, responseHandler);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return responseBody;
+        }
+
+        public void parseJSONResponse(String responseBody) {
+            JSONArray json, data_array;
+            try {
+                json = new JSONArray(responseBody);
+                JSONObject job = json.getJSONObject(0);
+                data_array = job.getJSONArray("data_array");
+                JSONObject dataJob = new JSONObject(data_array.getString(0));
+                String revId = dataJob.getString("revid");
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, e.getMessage());
+                showToast(ERR_MSG_UPLOAD_FAIL);
+                e.printStackTrace();
+                finish();
+            }
+        }
+    }
+
+    public class CreateRevision extends AsyncTask<Object, Object, Object> {
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "CreateRevision starts");
+            dialog.setProgress(75);
+        }
+
+        @Override
+        protected String doInBackground(Object... arg0) {
+            return createRevision();
+        }
+
+        @Override
+        protected void onPostExecute(Object result) {
+            dialog.setProgress(100);
+            parseJSONResponse((String) result);
+
+        }
+
+        public String createRevision() {
+            String responseBody = "";
+            // Instantiate an HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httppost = new HttpPost(SZAAPIURL + "createRevision");
+            // Post parameters
+            SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
+            ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+            postParameters.add(new BasicNameValuePair("tokenid", settings
+                    .getString("tokenid", null)));
+            postParameters.add(new BasicNameValuePair("userid", settings
+                    .getString("userid", null)));
+            postParameters.add(new BasicNameValuePair("projectid", project_id));
+//            if (false == isNewRevision) {
+//                postParameters.add(new BasicNameValuePair("folderid", folder_id));
+//            }
+            postParameters.add(new BasicNameValuePair("assetid", asset_id));
+            // put the previous resvision id
+            postParameters.add(new BasicNameValuePair("src_revid", latest_revid));
+            postParameters
+                    .add(new BasicNameValuePair("des_revid", new_asset_id));
+            postParameters.add(new BasicNameValuePair("des_revfilename",
+                    selectedImagePath.substring(selectedImagePath
+                            .lastIndexOf("/") + 1)));
+            postParameters.add(new BasicNameValuePair("ismain", "1"));
+            postParameters.add(new BasicNameValuePair("des",
+                    editTextDescription.getText().toString()));
+            Log.d(TAG, "postParameters: " + postParameters.toString());
+            // Instantiate a POST HTTP method
+            try {
+                httppost.setEntity(new UrlEncodedFormEntity(postParameters));
+                ResponseHandler<String> responseHandler = new BasicResponseHandler();
+                responseBody = httpclient.execute(httppost, responseHandler);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return responseBody;
+        }
+
+        public void parseJSONResponse(String responseBody) {
+            JSONArray json;
+            try {
+                json = new JSONArray(responseBody);
+                JSONObject job = json.getJSONObject(0);
+                Log.d(TAG, responseBody);
+                int error_code = job.getInt("error_code");
+                if (error_code == 0) {
+                    GetNumberOfRevision task = new GetNumberOfRevision();
+                    task.execute();
+                    showToast(MSG_SUCCESS);
+//                    Intent intent = new Intent(AssetUploadActivity.this,
+//                            WorkingAssetsListActivity.class);
+//                    startActivity(intent);
+                } else {
+                    showToast(ERR_MSG_UPLOAD_FAIL);
+                    finish();
+                }
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, e.getMessage());
+                e.printStackTrace();
+            }
+            finish();
+        }
+    }
 
     public void showToast(String message) {
         Toast toast = Toast.makeText(AssetUploadActivity.this,
@@ -899,3 +927,6 @@ public class AssetUploadActivity extends Activity implements Settings {
         toast.show();
     }
 }
+
+//IMAGE:  imageUri: content://media/external/images/media/9460
+//        imageUri: content://media/external/images/media/9164

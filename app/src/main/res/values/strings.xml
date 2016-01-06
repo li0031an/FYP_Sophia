@@ -151,6 +151,7 @@
     <string name="uploadeddate">Uploaded Date</string>
     <string name="title_activity_image_upload">Upload Asset</string>
     <string name="upload">Upload</string>
+    <string name="reset">Reset</string>
     <string name="Description">Description</string>
     <string name="x">X</string>
     <string name="title_activity_video_upload">Upload Video</string>
@@ -159,6 +160,13 @@
     <string name="full_screen_mode">Full-Screen Mode: </string>
     <string name="title_activity_project_details">ProjectDetailsActivity</string>
     <string name="title_activity_asset_detail">AssetDetailActivity</string>
+
+<!--project detail activity-->
+    <string name="upload_new_file">Long press to upload new files</string>
+
+<!-- upload activity-->
+    <string name="image_or_videos">Images or Videos</string>
+    <string name="other_types">Other types</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
