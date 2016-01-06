@@ -38,6 +38,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     File downloadedFile;
     int progressInt = 0;
     boolean folderExist = false;
+    boolean isDownloadSucessful = true;
     FileType filetype;
     DecimalFormat twoDP = new DecimalFormat("#.##");
     ProgressDialog downloadDialog;
@@ -91,10 +92,14 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 shortDownloadDirectory = Environment.DIRECTORY_DOWNLOADS;
         }
         boolean downloadFolderExist = true;
+
+        //prepare download directory - should be existing, directory and writable
         downloadDirectory = new File(Environment.getExternalStorageDirectory(), shortDownloadDirectory);
         if (!downloadDirectory.exists() || (!downloadDirectory.isDirectory())) {
             downloadFolderExist = downloadDirectory.mkdir();
         }
+
+        //prepare download folder - should be existing, directory and writable
         if (downloadFolderExist) {
             if (downloadDirectory.canWrite() || downloadDirectory.setWritable(true, true)) {
                 downloadFolder = new File(downloadDirectory, "/AMPS");
@@ -220,10 +225,11 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
                     downloadDialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
-                    publishProgress("" + (int) ((downloadedSize * 100) / totalSize));
-//                    fileOutput.write(buffer, 0, count);
-
+                    publishProgress("" + ((downloadedSize * 100) / totalSize));
                 }
+
+                if (downloadedSize == totalSize) isDownloadSucessful = true;
+                else isDownloadSucessful = false;
 
                 //close connection
                 fileOutput.flush();
@@ -272,7 +278,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         downloadDialog.dismiss();
         Log.d(TAG, "downloaded to " + downloadFolder.toString());
         if (folderExist) { //to avoid double error msg
-            if (progressInt == 100) {
+            if (isDownloadSucessful) {
                 AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
                 downloadComplete.setTitle("Download Status");
                 downloadComplete.setMessage(assetFullName + " is downloaded to directory " + shortDownloadDirectory + "/AMPS successfully.");
