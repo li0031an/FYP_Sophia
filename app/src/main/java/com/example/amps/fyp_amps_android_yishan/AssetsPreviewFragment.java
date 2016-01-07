@@ -148,22 +148,22 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 int action = event.getAction();
                                 switch (action) {
                                     case MotionEvent.ACTION_UP:
-//                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
-//                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
-//                                        getActivity().startActivity(reviewImageFullScreen);
-//                                        break;
+                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
+                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
+                                        getActivity().startActivity(reviewImageFullScreen);
+                                        break;
                                 }
                                 return true;
                             }
                         });
                     } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("3gp")) || (asset.getExt().equals("webm"))))) {
-//                        Intent i = new Intent(getActivity(), VideoPlayerActivity.class);
-//                        i.putExtra("asset_id", asset_id);
-//                        i.putExtra("token_id", tokenid);
-//                        i.putExtra("user_id", userid);
-//                        i.putExtra("project_id", project_id);
-//                        i.putExtra("revNum",a.getRevNum());
-//                        startActivity(i);
+                        Intent i = new Intent(getActivity(), VideoPlayerActivity.class);
+                        i.putExtra("asset_id", asset_id);
+                        i.putExtra("token_id", tokenid);
+                        i.putExtra("user_id", userid);
+                        i.putExtra("project_id", project_id);
+                        i.putExtra("revNum",a.getRevNum());
+                        startActivity(i);
                     }
                     break;
                 case R.id.imageButtonUpload:

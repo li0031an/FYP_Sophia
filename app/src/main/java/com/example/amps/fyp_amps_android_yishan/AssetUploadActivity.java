@@ -140,14 +140,24 @@ public class AssetUploadActivity extends Activity implements Settings {
 //        intent.addCategory(Intent.CATEGORY_OPENABLE);
 //        String[] mimetypes = {"image/*|video/*|audio/*"};
 //        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-        Intent intent = new Intent(Intent.ACTION_PICK);
+//        Intent intent = new Intent(Intent.ACTION_PICK);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        intent.setType("application/*");
+//        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/" + pickEnvironment + "/AMPS/*");
+//        Log.d(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
+//        Log.d(TAG, "PATH: " + uri);
+//        intent.setData(uri);
+//        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICK_FILE_RESULT_CODE);
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/*");
-        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/" + pickEnvironment + "/AMPS/*");
-        Log.d(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
-        Log.d(TAG, "PATH: " + uri);
-        intent.setData(uri);
-        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICK_FILE_RESULT_CODE);
+        intent.setType("*/*");
+        String[] mimetypes = {"text/*|application/*"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+//        startActivityForResult(intent, PICKFILE_RESULT_CODE);
+        startActivityForResult(Intent.createChooser(intent,  "Select " + pickEnvironment),
+                PICK_IMAGE_VIDEO_RESULT_CODE);
+
     }
 
     @Override
@@ -172,6 +182,7 @@ public class AssetUploadActivity extends Activity implements Settings {
                     return;
             }
         }
+        if (null == data) return;
         uploadFileUri = data.getData();
         Log.d(TAG, "uri: " + uploadFileUri);
         if (uploadFileUri.toString().contains("image")) uploadFileType = FileType.IMAGE;
