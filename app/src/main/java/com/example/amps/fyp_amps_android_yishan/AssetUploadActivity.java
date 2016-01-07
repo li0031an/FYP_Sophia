@@ -104,20 +104,41 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     private void startPickImageVideoIntent(){
-        Intent intent = new Intent();
-        intent.setType("video/*, audio/*, video/*");
-        intent.setAction(Intent.ACTION_PICK);
+        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+        // browser.
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+
+        // Filter to only show results that can be "opened", such as a
+        // file (as opposed to a list of contacts or timezones)
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // Filter to show only images, using the image MIME data type.
+        // If one wanted to search for ogg vorbis files, the type would be "audio/ogg".
+        // To search for all documents available via installed storage providers,
+        // it would be "*/*".
+        intent.setType("*/*");
+        String[] mimetypes = {"image/*|video/*|audio/*"};
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+//        startActivityForResult(intent, PICKFILE_RESULT_CODE);
         startActivityForResult(Intent.createChooser(intent, "Select picture or video"),
                 PICKFILE_RESULT_CODE);
     }
 
     private void startPickFileIntent() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//        intent.setType("files/*");
-        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/" + pickEnvironment + "/AMPS/");
+        //        Intent intent = new Intent();
+//        intent.setType("image/*|video/*");
+////        intent.setType("image/*, audio/*, video/*");
+//        intent.setAction(Intent.ACTION_PICK);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        String[] mimetypes = {"image/*|video/*|audio/*"};
+//        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/*");
+        Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/" + pickEnvironment + "/AMPS/*");
         Log.d(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
         Log.d(TAG, "PATH: " + uri);
-        intent.setDataAndType(uri, "text/csv");
+        intent.setData(uri);
         startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICKFILE_RESULT_CODE);
     }
 
