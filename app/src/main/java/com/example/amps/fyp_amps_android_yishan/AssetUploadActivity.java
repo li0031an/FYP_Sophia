@@ -1,5 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
+import android.content.res.Resources;
 import android.os.Environment;
 import android.util.Log;
 import android.app.Activity;
@@ -16,9 +17,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.ContextMenu;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -56,7 +55,8 @@ import java.util.ArrayList;
 //@TargetApi(19)
 public class AssetUploadActivity extends Activity implements Settings {
     private static String TAG = "AssetUploadActivity";
-    private static final int PICKFILE_RESULT_CODE = 1;
+    private static final int PICK_IMAGE_VIDEO_RESULT_CODE = 10;
+    private static final int PICK_FILE_RESULT_CODE = 11;
     private static final int MAX_CONTENT_SIZE = 1024 * 1024; //1024*1024byte = 1MB
     private static final String ERR_MSG_UPLOAD_FAIL = "Upload fail. Please upload again.";
     private static final String ERR_MSG_NO_IMAGE_SELECTED = "Upload fail. Please upload an image.";
@@ -68,8 +68,9 @@ public class AssetUploadActivity extends Activity implements Settings {
     private String new_asset_id;
     private String latest_revid;
     ProgressDialog dialog;
-    private Uri imageUri;
-    private String selectedImagePath;
+    private Uri uploadFileUri;
+    private FileType uploadFileType;
+    private String selectedFilePath;
     private String pickEnvironment = "";
     private int numberOfChunks;
     private int fileSize = 0;
@@ -77,6 +78,13 @@ public class AssetUploadActivity extends Activity implements Settings {
     ImageView imageUploaded;
     EditText editTextDescription;
     DecimalFormat formatter = new DecimalFormat("#.##");
+    public enum FileType {
+        IMAGE,
+        VIDEO,
+        AUDIO,
+        DOCUMENT,
+        OTHER
+    }
 
 
     @Override
@@ -103,7 +111,7 @@ public class AssetUploadActivity extends Activity implements Settings {
         else startPickFileIntent();
     }
 
-    private void startPickImageVideoIntent(){
+    private void startPickImageVideoIntent() {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -121,7 +129,7 @@ public class AssetUploadActivity extends Activity implements Settings {
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
 //        startActivityForResult(intent, PICKFILE_RESULT_CODE);
         startActivityForResult(Intent.createChooser(intent, "Select picture or video"),
-                PICKFILE_RESULT_CODE);
+                PICK_IMAGE_VIDEO_RESULT_CODE);
     }
 
     private void startPickFileIntent() {
@@ -139,7 +147,7 @@ public class AssetUploadActivity extends Activity implements Settings {
         Log.d(TAG, "Environment.getExternalStorageDirectory(): " + Environment.getExternalStorageDirectory());
         Log.d(TAG, "PATH: " + uri);
         intent.setData(uri);
-        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICKFILE_RESULT_CODE);
+        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment), PICK_FILE_RESULT_CODE);
     }
 
     @Override
@@ -149,40 +157,58 @@ public class AssetUploadActivity extends Activity implements Settings {
         return true;
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PICKFILE_RESULT_CODE) {
-            if (resultCode == RESULT_OK) {
-//                if (requestCode == PICK_IMAGE) {
-                imageUri = data.getData();
-                Log.d(TAG,"uri: " + imageUri );
-                selectedImagePath = getPath(imageUri);
-                numberOfChunks = readImageFileIntoChunk();
-                if (numberOfChunks > 1) {
-                    Bitmap bit = decodeSampleBitmapFromLargeImage(selectedImagePath);
-                    imageUploaded.setImageBitmap(bit);
-                } else {
-                    imageUploaded.setImageURI(imageUri);
-                }
-                //Try to create another image file as png inside a cache
-                int rotateImage = getCameraPhotoOrientation(
-                        AssetUploadActivity.this, imageUri,
-                        selectedImagePath);
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case PICK_IMAGE_VIDEO_RESULT_CODE:
+                case PICK_FILE_RESULT_CODE:
+                    uploadFileUri = data.getData();
+                    Log.d(TAG, "uri: " + uploadFileUri);
+                    break;
+                default:
+                    Log.e(TAG, "requestCode is not valid: " + requestCode);
+                    return;
+            }
+        }
+        uploadFileUri = data.getData();
+        Log.d(TAG, "uri: " + uploadFileUri);
+        if (uploadFileUri.toString().contains("image")) uploadFileType = FileType.IMAGE;
+        else if (uploadFileUri.toString().contains("video")) uploadFileType = FileType.VIDEO;
+        else uploadFileType = FileType.OTHER;
 
-                imageUploaded.setAdjustViewBounds(true);
+        selectedFilePath = getPath(uploadFileUri);
+        Log.d(TAG, "selectedFilePath: " + selectedFilePath);
+        numberOfChunks = readImageFileIntoChunk();
+        if (uploadFileType == FileType.IMAGE) {
+            if (numberOfChunks > 1) {
+                Bitmap bit = decodeSampleBitmapFromLargeImage(selectedFilePath);
+                imageUploaded.setImageBitmap(bit);
+            } else {
+                imageUploaded.setImageURI(uploadFileUri);
+            }
+        } else {
+            imageUploaded.setImageDrawable(getResources().getDrawable((R.mipmap.no_image)));
+        }
+        //Try to create another image file as png inside a cache
+        int rotateImage = getCameraPhotoOrientation(
+                AssetUploadActivity.this, uploadFileUri,
+                selectedFilePath);
 
-                Matrix matrix = new Matrix();
-                imageUploaded.setScaleType(ImageView.ScaleType.MATRIX); // required
+        imageUploaded.setAdjustViewBounds(true);
+
+        Matrix matrix = new Matrix();
+        imageUploaded.setScaleType(ImageView.ScaleType.MATRIX); // required
 //                matrix.postRotate((float) rotateImage, imageUploaded
 //                        .getDrawable().getBounds().width() / 2, imageUploaded
 //                        .getDrawable().getBounds().height() / 2);
-                matrix.postRotate((float) rotateImage, imageUploaded
-                        .getDrawable().getBounds().width(), imageUploaded
-                        .getDrawable().getBounds().height());
-                imageUploaded.setImageMatrix(matrix);
+        matrix.postRotate((float) rotateImage, imageUploaded
+                .getDrawable().getBounds().width(), imageUploaded
+                .getDrawable().getBounds().height());
+        imageUploaded.setImageMatrix(matrix);
 //                }
-            }
-        }
+
     }
 
     public static Bitmap decodeSampleBitmapFromLargeImage(String imagePath) {
@@ -235,15 +261,31 @@ public class AssetUploadActivity extends Activity implements Settings {
         return bitmap;
     }
 
+    //IMAGE:  uploadFileUri: content://media/external/images/media/9460
+//        uploadFileUri: content://media/external/images/media/9164
+//uri: content://media/external/video/media/9479
     public String getPath(Uri uri) {
         // Perform the query on the contact to get the MediaStore column
         // We don't need a selection or sort order (there's only one result for the given URI)
         // CAUTION: The query() method should be called from a separate thread to avoid blocking
         // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
         // Consider using CursorLoader to perform the query.
-        Log.d(TAG,"uri: " + uri );
-        String[] projection = {MediaStore.Images.Media.DATA};
-        Cursor cursor = managedQuery(uri, projection, null, null, null);
+        Log.d(TAG, "uri: " + uri);
+        String[] projection;
+        switch (uploadFileType) {
+            case IMAGE:
+                projection = new String[] {MediaStore.Images.Media.DATA};
+                break;
+            case VIDEO:
+                projection = new String[] {MediaStore.Video.Media.DATA};
+                break;
+            case AUDIO:
+                projection = new String[] {MediaStore.Audio.Media.DATA};
+                break;
+            default: projection = new String[] {MediaStore.Files.FileColumns.DATA};
+        }
+//        projection ;
+        Cursor cursor = AssetUploadActivity.this.getContentResolver().query(uri, projection, null, null, null);
         int column_index = cursor
                 .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
@@ -329,7 +371,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             InputStream inputStream = null;
             try {
                 inputStream = new BufferedInputStream(new FileInputStream(
-                        selectedImagePath));
+                        selectedFilePath));
                 fileSize = inputStream.available();
                 inputStream.close();
                 Log.d(TAG, "fileSize: " + fileSize);
@@ -366,7 +408,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             Log.d(TAG, "UploadAsset starts");
             dialog = new ProgressDialog(AssetUploadActivity.this);
             dialog.setCancelable(false);
-            dialog.setMessage("Uploading Asset " + selectedImagePath + "...");
+            dialog.setMessage("Uploading Asset " + selectedFilePath + "...");
             dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             dialog.setProgressNumberFormat("0 MB/s");
             dialog.show();
@@ -409,7 +451,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             try {
                 Boolean isSuccess = true;
                 fileInputStream = new BufferedInputStream(new FileInputStream(new File(
-                        selectedImagePath)));
+                        selectedFilePath)));
                 for (int resumableChunkNumber = 1; resumableChunkNumber <= numberOfChunks; resumableChunkNumber++) {
                     if (isSuccess) {
                         if (resumableChunkNumber == numberOfChunks)
@@ -465,13 +507,13 @@ public class AssetUploadActivity extends Activity implements Settings {
                         Log.d(TAG, "folderid: " + folder_id);
                     }
 
-                    String resumableFilename = selectedImagePath.substring(selectedImagePath
+                    String resumableFilename = selectedFilePath.substring(selectedFilePath
                             .lastIndexOf("/") + 1);
                     entity.addPart(new FormBodyPart("resumableFilename",
                             new StringBody(resumableFilename)));
                     Log.d(TAG, "resumableFilename: " + resumableFilename);
 
-                    String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedImagePath.substring(selectedImagePath
+                    String resumableIdentifier = String.valueOf(fileSize) + "_" + selectedFilePath.substring(selectedFilePath
                             .lastIndexOf("/") + 1);
                     Log.d(TAG, "resumableIdentifier: " + resumableIdentifier);
                     entity.addPart(new FormBodyPart("resumableIdentifier",
@@ -655,9 +697,9 @@ public class AssetUploadActivity extends Activity implements Settings {
 //                postParameters.add(new BasicNameValuePair("folderid", folder_id));
 //            }
             postParameters.add(new BasicNameValuePair("fileName",
-                    selectedImagePath.substring(selectedImagePath
+                    selectedFilePath.substring(selectedFilePath
                             .lastIndexOf("/") + 1)));
-            String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedImagePath.substring(selectedImagePath
+            String resumableIdentifier = String.valueOf(fileSize) + "_" + (selectedFilePath.substring(selectedFilePath
                     .lastIndexOf("/") + 1));
             postParameters.add(new BasicNameValuePair("uniqueIdentifier", resumableIdentifier));
 
@@ -898,7 +940,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             postParameters
                     .add(new BasicNameValuePair("des_revid", new_asset_id));
             postParameters.add(new BasicNameValuePair("des_revfilename",
-                    selectedImagePath.substring(selectedImagePath
+                    selectedFilePath.substring(selectedFilePath
                             .lastIndexOf("/") + 1)));
             postParameters.add(new BasicNameValuePair("ismain", "1"));
             postParameters.add(new BasicNameValuePair("des",
@@ -948,6 +990,3 @@ public class AssetUploadActivity extends Activity implements Settings {
         toast.show();
     }
 }
-
-//IMAGE:  imageUri: content://media/external/images/media/9460
-//        imageUri: content://media/external/images/media/9164
