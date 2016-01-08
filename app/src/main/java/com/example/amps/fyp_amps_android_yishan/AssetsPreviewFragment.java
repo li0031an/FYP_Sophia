@@ -38,6 +38,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.amps.fyp_amps_android_yishan.preview.ImageReviewFullScreenActivity;
+import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
+
 public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, ModifyAssetListener, View.OnClickListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
@@ -162,7 +165,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                         i.putExtra("token_id", tokenid);
                         i.putExtra("user_id", userid);
                         i.putExtra("project_id", project_id);
-                        i.putExtra("revNum",a.getRevNum());
+                        i.putExtra("revNum",asset.getLatest_revnum());
                         startActivity(i);
                     }
                     break;
