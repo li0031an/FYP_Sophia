@@ -115,7 +115,7 @@ public class VideoPlayerActivity extends Activity implements Settings {
         super.onCreate(savedInstanceState);
 
         // Set layout
-        setContentView(R.layout.video_player);
+        setContentView(R.layout.activity_video_player);
 
         // Save the web view
         webView = (VideoEnabledWebView) findViewById(R.id.webView);
@@ -123,7 +123,7 @@ public class VideoPlayerActivity extends Activity implements Settings {
         // Initialize the VideoEnabledWebChromeClient and set event handlers
         final View nonVideoLayout = findViewById(R.id.nonVideoLayout); // Your own view, read class comments
         final ViewGroup videoLayout = (ViewGroup) findViewById(R.id.videoLayout); // Your own view, read class comments
-        View loadingView = getLayoutInflater().inflate(R.layout.video_player, null); // Your own view, read class comments
+        View loadingView = getLayoutInflater().inflate(R.layout.activity_video_player, null); // Your own view, read class comments
         final Activity activity = this;
         webChromeClient = new VideoEnabledWebChromeClient(nonVideoLayout, videoLayout, loadingView, webView) // See all available constructors...
         {

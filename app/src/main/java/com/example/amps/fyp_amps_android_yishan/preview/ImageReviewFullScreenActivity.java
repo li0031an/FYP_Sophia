@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 
 import com.example.amps.fyp_amps_android_yishan.R;
 import com.example.amps.fyp_amps_android_yishan.Settings;
+import com.example.amps.fyp_amps_android_yishan.touch.TouchImageView;
 
 public class ImageReviewFullScreenActivity extends Activity implements Settings {
     byte[] imageDecodedString;
@@ -43,7 +44,7 @@ public class ImageReviewFullScreenActivity extends Activity implements Settings 
         }
         ImageView image = (ImageView) findViewById(R.id.imageReviewFullScreen);
 
-        Bitmap decodedByte = BitmapFactory.decodeByteArray(imageDecodedString,0, imageDecodedString.length);
+        Bitmap decodedByte = BitmapFactory.decodeByteArray(imageDecodedString, 0, imageDecodedString.length);
         System.out.println(decodedByte.getConfig());
         image.setImageBitmap(decodedByte);
         TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
