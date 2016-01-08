@@ -59,8 +59,13 @@
             android:configChanges="orientation|screenSize|keyboardHidden" >
         </activity>
         <activity
-            android:name=".ImageReviewFullScreenActivity"
+            android:name=".preview.ImageReviewFullScreenActivity"
             android:label="@string/title_activity_image_review_full_screen"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+        </activity>
+        <activity
+            android:name=".preview.VideoPlayerActivity"
+            android:label="@string/title_activity_video_player_activity"
             android:configChanges="orientation|screenSize|keyboardHidden">
         </activity>
         <activity

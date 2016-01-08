@@ -58,6 +58,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     public enum FileType {
         IMAGE,
         VIDEO,
+        AUDIO,
         DOCUMENT,
         OTHER
     }
@@ -69,6 +70,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             filetype = FileType.VIDEO;
         } else if ((assetExt.equals("pdf") || (assetExt.equals("txt") || (assetExt.equals("doc")) || (assetExt.equals("xml")) || (assetExt.equals("pptx"))))) {
             filetype = FileType.DOCUMENT;
+        } else if ((assetExt.equals("mp3"))) {
+            filetype = FileType.AUDIO;
         } else {
             filetype = FileType.OTHER;
         }

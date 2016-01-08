@@ -22,12 +22,16 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -37,6 +41,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.amps.fyp_amps_android_yishan.preview.ImageReviewFullScreenActivity;
 import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
@@ -138,12 +143,19 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         /////
     }
 
+    public void showToast(String message) {
+        Toast toast = Toast.makeText(getActivity(),
+                message, Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
     public void onClick(View view) {
         try {
             switch (view.getId()) {
                 case R.id.imageButtonReview:
-                    if ((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif"))))) {
+                    if (null == asset.getFileType()) asset.setFileType(setAssetFileType(asset.getExt()));
 
+                    if (asset.getFileType() == Asset.FileType.IMAGE) {
                         ImageButton imageButtonReview = (ImageButton) getActivity().findViewById(R.id.imageButtonReview);
                         imageButtonReview.setOnTouchListener(new OnTouchListener() {
                             @Override
@@ -159,7 +171,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 return true;
                             }
                         });
-                    } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("3gp")) || (asset.getExt().equals("webm"))))) {
+                    } else if (asset.getFileType() == Asset.FileType.VIDEO) {
                         Intent i = new Intent(getActivity(), VideoPlayerActivity.class);
                         i.putExtra("asset_id", asset_id);
                         i.putExtra("token_id", tokenid);
@@ -167,7 +179,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                         i.putExtra("project_id", project_id);
                         i.putExtra("revNum",asset.getLatest_revnum());
                         startActivity(i);
-                    }
+                    } else {
+                        //todo -- preview for audio, document/text to be implemented
+                        showToast("Sorry, this kind of file is not supported for preview yet");
+                }
                     break;
                 case R.id.imageButtonUpload:
                     Intent uploadImage = new Intent(getActivity(),AssetUploadActivity.class);
@@ -256,14 +271,39 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
             @Override
             public void onItemClick(int position, View v) {
                 Log.i(TAG, " Clicked on Item ");
-
             }
         });
         mRecyclerView.setAdapter(mAdapter);
 
+        Asset.FileType fileType = setAssetFileType(asset.getExt());
+        asset.setFileType(fileType);
+
+        if(asset.getFileType() == Asset.FileType.IMAGE) {
+            if(!asset.getBase64_thumbnail().isEmpty()){
+                decodedString = Base64.decode(asset.getBase64_thumbnail(), Base64.DEFAULT);
+            }
+        }
 
         GetCreatedUserInfo task = new GetCreatedUserInfo();
         task.execute();
+    }
+
+    protected Asset.FileType setAssetFileType (String ext) {
+        Asset.FileType fileType;
+        if((ext.equals("jpg") || (ext.equals("png") || (ext.equals("jpeg")) || (ext.equals("gif"))))){
+            fileType = Asset.FileType.IMAGE;
+        }
+        else if((ext.equals("avi") || (ext.equals("flv") || (ext.equals("mp4")) || (ext.equals("webm"))
+                || (ext.equals("wmv"))))){
+            fileType = Asset.FileType.VIDEO;
+        } else if ((ext.equals("pdf") || (ext.equals("txt") || (ext.equals("doc")) || (ext.equals("xml")) || (ext.equals("pptx"))))) {
+            fileType = Asset.FileType.DOCUMENT;
+        } else if ((ext.equals("mp3"))) {
+            fileType = Asset.FileType.AUDIO;
+        } else {
+            fileType = Asset.FileType.OTHER;
+        }
+        return fileType;
     }
 
     public class GetCreatedUserInfo extends AsyncTask<Object, Object, Object> {

@@ -34,6 +34,24 @@ public class Asset {
     String assigned_userid;
     String workflow_step_id;
 
+    FileType fileType;
+
+    public enum FileType {
+        IMAGE,
+        VIDEO,
+        AUDIO,
+        DOCUMENT,
+        OTHER
+    }
+
+    public FileType getFileType() {
+        return fileType;
+    }
+
+    public void setFileType(FileType fileType) {
+        this.fileType = fileType;
+    }
+
     public void setVideoUrl(String videoUrl) {
         this.videoUrl = videoUrl;
     }
