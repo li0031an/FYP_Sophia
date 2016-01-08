@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 public class DownloadAsset extends AsyncTask<Object, String, Object> implements Settings {
 
     private static String TAG = "DownloadAsset";
+    DownloadAssetListener downloadAssetListener;
     Activity activity;
     ProgressDialog dialog;
     SharedPreferences settings;
@@ -32,11 +33,12 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     String assetidLst;
     String assetFullName;
     String revid;
-    //    String assetExt;
+    String assetExt;
     String shortDownloadDirectory;
     File downloadFolder;
     File downloadedFile;
     int progressInt = 0;
+    boolean isDoStream;
     boolean folderExist = false;
     boolean isDownloadSucessful = true;
     FileType filetype;
@@ -44,14 +46,17 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     ProgressDialog downloadDialog;
 
     public DownloadAsset(Activity activity, SharedPreferences settings, String assetidLst
-            , String projectId, String assetFullName, String assetExt, String revid) {
+            , String projectId, String assetFullName, String assetExt, String revid,
+                         DownloadAssetListener downloadAssetListener, boolean isDoStream) {
         this.activity = activity;
         this.settings = settings;
         this.assetidLst = assetidLst;
         this.projectId = projectId;
         this.assetFullName = assetFullName;
-//        this.assetExt = assetExt;
+        this.assetExt = assetExt;
         this.revid = revid;
+        this.downloadAssetListener = downloadAssetListener;
+        this.isDoStream = isDoStream;
         setDownloadedFileFormat(assetExt);
     }
 
@@ -126,7 +131,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                     downloadFolderExist = false;
                     showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " cannot be created.");
                 }
-            }else {
+            } else {
                 downloadFolderExist = false;
                 showToast("Sorry, cannot download, because your download directory: " + shortDownloadDirectory + " is not writable.");
             }
@@ -148,7 +153,9 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         downloadDialog.setIndeterminate(false);
         downloadDialog.setCancelable(false);
         downloadDialog.show();
-        folderExist = setDownloadFolder();
+//        if (!isDoStream) {
+            folderExist = setDownloadFolder();
+//        }
     }
 
     @SuppressWarnings("deprecation")
@@ -164,11 +171,13 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         if (null != revid) {
             req += "&revid=" + revid;
         }
-        Log.d(TAG, "revid: " + revid);
+        if (isDoStream) {
+            req += "dostream=1";
+        }
         //TrafficStats traffic = new TrafficStats();
         //double totalNetworkBytes = traffic.getTotalTxBytes();
 
-        if (folderExist) {
+        if (isDoStream || folderExist) {
             downloadedFile = new File(downloadFolder, assetFullName);
             Log.d(TAG, "downloadedFile: " + downloadedFile.toString());
             InputStream inputStream = null;
@@ -303,6 +312,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                                 Log.i("ExternalStorage", "-> uri=" + uri);
                             }
                         });
+                downloadAssetListener.onDownloadAssetReady(downloadedFile.toURI());
             } else {
                 AlertDialog downloadError = new AlertDialog.Builder(activity).create();
                 downloadError.setTitle("Download Status");

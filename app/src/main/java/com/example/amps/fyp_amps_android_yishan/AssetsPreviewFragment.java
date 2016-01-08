@@ -46,7 +46,7 @@ import android.widget.Toast;
 import com.example.amps.fyp_amps_android_yishan.preview.ImageReviewFullScreenActivity;
 import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
 
-public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, ModifyAssetListener, View.OnClickListener {
+public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, ModifyAssetListener, View.OnClickListener, DownloadAssetListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
@@ -102,6 +102,11 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     public void setFile_size(double fileSize){
         this.fileSize = fileSize;
     }
+
+    @Override
+    public void onDownloadAssetReady(Uri uri) {
+//        --todo: to be implemented
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -164,8 +169,13 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 switch (action) {
                                     case MotionEvent.ACTION_UP:
                                         Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
+                                        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
                                         reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
                                         getActivity().startActivity(reviewImageFullScreen);
+                                        String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
+                                        DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
+                                                , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), this, true);
+                                        taskDownload.execute();
                                         break;
                                 }
                                 return true;
@@ -201,7 +211,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                     DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
-                            , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid());
+                            , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), this, false);
                     taskDownload.execute();
                     break;
                 case R.id.imageButtonDelete:
