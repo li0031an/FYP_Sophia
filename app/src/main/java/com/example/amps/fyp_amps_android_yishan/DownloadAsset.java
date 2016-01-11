@@ -183,7 +183,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         //TrafficStats traffic = new TrafficStats();
         //double totalNetworkBytes = traffic.getTotalTxBytes();
 
-        if (isDoStream || folderExist) {
+        if (folderExist) {
             downloadedFile = new File(downloadFolder, assetFullName);
             Log.d(TAG, "downloadedFile: " + downloadedFile.toString());
             InputStream inputStream = null;
@@ -305,19 +305,21 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 //            return;
 //        }
         if (folderExist) { //to avoid double error msg
-            if (!isDoStream && isDownloadSucessful) {
-                AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
-                downloadComplete.setTitle("Download Status");
-                downloadComplete.setMessage(assetFullName + " is downloaded to directory " + shortDownloadDirectory + "/AMPS successfully.");
-                downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
+            if (isDownloadSucessful) {
+                if (!isDoStream) {
+                    AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
+                    downloadComplete.setTitle("Download Status");
+                    downloadComplete.setMessage(assetFullName + " is downloaded to directory " + shortDownloadDirectory + "/AMPS successfully.");
+                    downloadComplete.setButton("OK", new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // TODO Auto-generated method stub
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // TODO Auto-generated method stub
 
-                    }
-                });
-                downloadComplete.show();
+                        }
+                    });
+                    downloadComplete.show();
+                }
                 //make sure the download file appear in the file system immediately
                 MediaScannerConnection.scanFile(activity,
                         new String[]{downloadedFile.toString()}, null,
@@ -335,6 +337,18 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                     AlertDialog downloadError = new AlertDialog.Builder(activity).create();
                     downloadError.setTitle("Download Status");
                     downloadError.setMessage("Failed to download " + assetFullName + ".. Please try again later..");
+                    downloadError.setButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //  TODO Auto-generated method stub
+
+                        }
+                    });
+                    downloadError.show();
+                } else {
+                    AlertDialog downloadError = new AlertDialog.Builder(activity).create();
+                    downloadError.setTitle("Preview Status");
+                    downloadError.setMessage("Failed to preview " + assetFullName + ".. Please try again later..");
                     downloadError.setButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
