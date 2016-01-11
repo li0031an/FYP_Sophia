@@ -173,10 +173,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 int action = event.getAction();
                                 switch (action) {
                                     case MotionEvent.ACTION_UP:
-//                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
-//                                        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
-//                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
-//                                        getActivity().startActivity(reviewImageFullScreen);
                                         String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                                         DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
                                                 , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), AssetsPreviewFragment.this, true);

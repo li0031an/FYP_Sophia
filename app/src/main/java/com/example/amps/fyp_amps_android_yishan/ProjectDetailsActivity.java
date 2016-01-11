@@ -364,7 +364,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getOneLevelChild.execute();
             }
         } else {
-            showToast("Sorry cannot get one level child because root id not found.");
+//            showToast("Sorry cannot get one level child because root id not found.");
             Log.d(TAG, "rootId not found");
         }
     }

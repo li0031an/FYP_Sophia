@@ -157,10 +157,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         downloadDialog.setIndeterminate(false);
         downloadDialog.setCancelable(false);
         downloadDialog.show();
-//        if (!isDoStream) {
         folderExist = setDownloadFolder();
-
-//        }
     }
 
     @SuppressWarnings("deprecation")
@@ -284,7 +281,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     //Updating Progress Bar
     //Focus:
     protected void onProgressUpdate(String... progress) {
-        //Log.d("",progress[0]);
         //super.onProgressUpdate(progress);
         if (null != downloadDialog) {
             progressInt = Integer.parseInt(progress[0]);
@@ -299,11 +295,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             downloadDialog.dismiss();
         }
         Log.d(TAG, "downloaded to " + downloadFolder.toString());
-//        if (isDoStream) {
-//            downloadAssetListener.onDownloadAssetReady(url);
-//            Log.d(TAG, "is do stream : true, url string: " + url);
-//            return;
-//        }
+
         if (folderExist) { //to avoid double error msg
             if (isDownloadSucessful) {
                 if (!isDoStream) {
@@ -364,26 +356,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         }
     }
 
-    /**
-     * public String downloadAsset() {
-     * String req = SZAAPIURL + "downloadAsset?tokenid=" + tokenid +
-     * "&userid=" + userid +
-     * "&projectid=" + project_id +
-     * "&assetid_lst=" + asset_id +
-     * "&revid=" + a.getRevId() ;
-     * try {
-     * DownloadManager downloadManager;
-     * downloadManager = (DownloadManager)WorkingAssetsPreviewFragment.this.getActivity().getSystemService("download");
-     * Uri uri = Uri.parse(req);
-     * DownloadManager.Request request = new DownloadManager.Request(uri);
-     * request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, a.getName() + "." + a.getExt());
-     * downloadManager.enqueue(request);
-     * } catch (Exception e) {
-     * e.printStackTrace();
-     * }
-     * return null;
-     * }
-     */
     public void showToast(String info) {
         Toast toast = Toast.makeText(
                 activity,
