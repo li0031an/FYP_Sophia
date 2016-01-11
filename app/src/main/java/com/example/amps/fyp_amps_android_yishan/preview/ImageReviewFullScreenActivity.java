@@ -1,7 +1,9 @@
 package com.example.amps.fyp_amps_android_yishan.preview;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 //import android.net.uri;
 
 //import com.example.amps.WorkingAssetsListActivity.GetProjectInfo;
@@ -35,7 +37,7 @@ import com.example.amps.fyp_amps_android_yishan.R;
 import com.example.amps.fyp_amps_android_yishan.Settings;
 import com.example.amps.fyp_amps_android_yishan.touch.TouchImageView;
 
-public class ImageReviewFullScreenActivity extends Activity implements Settings, DownloadAssetListener {
+public class ImageReviewFullScreenActivity extends Activity implements Settings {
     private static final String TAG = "ImageReview";
     byte[] imageDecodedString;
     String assetExt;
@@ -43,17 +45,42 @@ public class ImageReviewFullScreenActivity extends Activity implements Settings,
 //    String projectId;
 //    String assetidLst;
 //    String revid;
+    ImageView imageView;
+    Uri uri;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         getActionBar().hide();
         setContentView(R.layout.activity_image_review_full_screen);
-//        Bundle extras = getIntent().getExtras();
-//        if (extras != null) {
+        Bundle extras = getIntent().getExtras();
+        ImageView imageView = (ImageView) findViewById(R.id.imageReviewFullScreen);
+        if (extras != null) {
+            String stringUri = extras.getString("imageUri");
+            uri = Uri.parse(stringUri);
+            Log.d(TAG, "image uri is gotten from extras: " + stringUri);
 //            imageDecodedString = extras.getByteArray("imageDecodedString");
 //            assetExt = extras.getString("imageExt");
-//        }
+        }
+        if (null != uri) {
+//            try{
+//                URL url_new = new Uri(url);
+//                imageView.setImageURI(url_new);
+//            } catch (MalformedURLException e) {
+//                Log.e(TAG, "url cannot be formed: original string: " + url);
+//            }
+//            imageView.setImageURI(url_new);
+//                TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
+//                img.setMaxZoom(4);
+//            Drawable drawable = LoadImageFromWebOperations(url);
+//            Log.d(TAG, "drawable: " + drawable);
+//            imageView.setImageDrawable(drawable);
+            imageView.setImageURI(uri);
+            TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
+            img.setMaxZoom(4);
+        }
+
+
 
 //        if (null != imageDecodedString) {
 //            if (null != assetExt) {
@@ -100,13 +127,25 @@ public class ImageReviewFullScreenActivity extends Activity implements Settings,
         return false;
     }
 
-    @Override
-    public void onDownloadAssetReady(Uri uri) {
-        ImageView image = (ImageView) findViewById(R.id.imageReviewFullScreen);
-        image.setImageURI(uri);
-        TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
-        img.setMaxZoom(4);
+//    @Override
+//    public void onDownloadAssetReady(Uri uri) {
+//        ImageView image = (ImageView) findViewById(R.id.imageReviewFullScreen);
+//        image.setImageURI(uri);
+//        TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
+//        img.setMaxZoom(4);
+//    }
+
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+                Log.e(TAG, "url cannot be formed: original string: " + url);
+        }
+        return null;
     }
+
 
 }
 

@@ -44,6 +44,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     FileType filetype;
     DecimalFormat twoDP = new DecimalFormat("#.##");
     ProgressDialog downloadDialog;
+    String url;
 
     public DownloadAsset(Activity activity, SharedPreferences settings, String assetidLst
             , String projectId, String assetFullName, String assetExt, String revid,
@@ -144,9 +145,12 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
     @Override
     protected void onPreExecute() {
-
         downloadDialog = new ProgressDialog(activity);
-        downloadDialog.setMessage("Downloading " + assetFullName + ".. Please wait..");
+        if (!isDoStream) {
+            downloadDialog.setMessage("Downloading " + assetFullName + ".. Please wait..");
+        } else {
+            downloadDialog.setMessage("Loading " + assetFullName + ".. Please wait..");
+        }
         downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         //downloadDialog.setMax(100);
         downloadDialog.setProgressNumberFormat("0 MB/s");
@@ -154,7 +158,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         downloadDialog.setCancelable(false);
         downloadDialog.show();
 //        if (!isDoStream) {
-            folderExist = setDownloadFolder();
+        folderExist = setDownloadFolder();
+
 //        }
     }
 
@@ -172,7 +177,8 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             req += "&revid=" + revid;
         }
         if (isDoStream) {
-            req += "dostream=1";
+            req += "&dostream=1";
+            url = req;
         }
         //TrafficStats traffic = new TrafficStats();
         //double totalNetworkBytes = traffic.getTotalTxBytes();
@@ -280,17 +286,26 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     protected void onProgressUpdate(String... progress) {
         //Log.d("",progress[0]);
         //super.onProgressUpdate(progress);
-        progressInt = Integer.parseInt(progress[0]);
-        downloadDialog.setProgress(Integer.parseInt(progress[0]));
+        if (null != downloadDialog) {
+            progressInt = Integer.parseInt(progress[0]);
+            downloadDialog.setProgress(Integer.parseInt(progress[0]));
+        }
     }
 
     @SuppressWarnings("deprecation")
     @Override
     protected void onPostExecute(Object result) {
-        downloadDialog.dismiss();
+        if (null != downloadDialog) {
+            downloadDialog.dismiss();
+        }
         Log.d(TAG, "downloaded to " + downloadFolder.toString());
+//        if (isDoStream) {
+//            downloadAssetListener.onDownloadAssetReady(url);
+//            Log.d(TAG, "is do stream : true, url string: " + url);
+//            return;
+//        }
         if (folderExist) { //to avoid double error msg
-            if (isDownloadSucessful) {
+            if (!isDoStream && isDownloadSucessful) {
                 AlertDialog downloadComplete = new AlertDialog.Builder(activity).create();
                 downloadComplete.setTitle("Download Status");
                 downloadComplete.setMessage(assetFullName + " is downloaded to directory " + shortDownloadDirectory + "/AMPS successfully.");
@@ -312,19 +327,23 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                                 Log.i("ExternalStorage", "-> uri=" + uri);
                             }
                         });
-                downloadAssetListener.onDownloadAssetReady(downloadedFile.toURI());
+                if (isDoStream) {
+                    downloadAssetListener.onDownloadAssetReady(Uri.fromFile(downloadedFile));
+                }
             } else {
-                AlertDialog downloadError = new AlertDialog.Builder(activity).create();
-                downloadError.setTitle("Download Status");
-                downloadError.setMessage("Failed to download " + assetFullName + ".. Please try again later..");
-                downloadError.setButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //  TODO Auto-generated method stub
+                if (!isDoStream) {
+                    AlertDialog downloadError = new AlertDialog.Builder(activity).create();
+                    downloadError.setTitle("Download Status");
+                    downloadError.setMessage("Failed to download " + assetFullName + ".. Please try again later..");
+                    downloadError.setButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //  TODO Auto-generated method stub
 
-                    }
-                });
-                downloadError.show();
+                        }
+                    });
+                    downloadError.show();
+                }
             }
         } else {
             //do nothing
@@ -350,7 +369,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
      * }
      * return null;
      * }
-     **/
+     */
     public void showToast(String info) {
         Toast toast = Toast.makeText(
                 activity,

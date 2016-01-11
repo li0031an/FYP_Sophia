@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -106,6 +107,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     @Override
     public void onDownloadAssetReady(Uri uri) {
 //        --todo: to be implemented
+        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
+        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
+        reviewImageFullScreen.putExtra("imageUri", uri.toString());
+        getActivity().startActivity(reviewImageFullScreen);
     };
 
     @Override
@@ -168,13 +173,13 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 int action = event.getAction();
                                 switch (action) {
                                     case MotionEvent.ACTION_UP:
-                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
-                                        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
-                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
-                                        getActivity().startActivity(reviewImageFullScreen);
+//                                        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
+//                                        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
+//                                        reviewImageFullScreen.putExtra("imageDecodedString", decodedString);
+//                                        getActivity().startActivity(reviewImageFullScreen);
                                         String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                                         DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
-                                                , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), this, true);
+                                                , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), AssetsPreviewFragment.this, true);
                                         taskDownload.execute();
                                         break;
                                 }
