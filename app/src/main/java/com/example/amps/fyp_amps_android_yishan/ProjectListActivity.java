@@ -173,7 +173,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             for (int i = 0; i<arrayProjectArray.size(); i++) {
                 projectArray.add((Object) arrayProjectArray.get(i));
             }
-            mAdapter = new RecyclerViewAdapter(this,projectArray);
+            mAdapter = new RecyclerViewAdapter(this,projectArray, null);
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {

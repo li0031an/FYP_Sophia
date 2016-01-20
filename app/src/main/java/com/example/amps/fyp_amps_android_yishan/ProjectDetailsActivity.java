@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener,
@@ -53,6 +54,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     //////
+    private int noFolderItem;
+    private int noAssetItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 Log.d(TAG, "intent - rootFolderId" + rootFolderId);
                 getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getAsset.execute();
+                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+                getRootFolderId.execute();
             } else {
                 getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
                 getRootFolderId.execute();
@@ -201,6 +206,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             });
         }
     }
+
 
     @Override
     protected void onPause() {
@@ -362,6 +368,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             if (null != rootFolderId) {
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
+                getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getAsset.execute();
             }
         } else {
 //            showToast("Sorry cannot get one level child because root id not found.");
@@ -378,7 +386,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             for (int i = 0; i < arrayfolderList.size(); i++) {
                 folderList.add(arrayfolderList.get(i));
             }
-            mAdapter = new RecyclerViewAdapter(this, folderList);
+            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
@@ -414,7 +422,15 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId, selectAttributes);
                 getAssetDetail.execute();
             }
-            mAdapter = new RecyclerViewAdapter(this, assetList);
+            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+            noAssetItem = 0;
+            noFolderItem = 0;
+            if (null != folderList) {
+                noFolderItem = folderList.size();
+            }
+            if (null != assetList) {
+                noAssetItem = assetList.size();
+            }
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
@@ -462,7 +478,15 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                         Log.d(TAG, "new asset is not used, asset id: " + assetDetail.getAsset_id());
                         Log.d(TAG, "new asset is not used, asset type: " + assetDetail.getExt());
                     }
-                    mAdapter = new RecyclerViewAdapter(this, assetList);
+                    mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+                    noAssetItem = 0;
+                    noFolderItem = 0;
+                    if (null != folderList) {
+                        noFolderItem = folderList.size();
+                    }
+                    if (null != assetList) {
+                        noAssetItem = assetList.size();
+                    }
                     ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                         @Override
                         public void onItemClick(int position, View v) {

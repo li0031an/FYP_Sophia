@@ -23,6 +23,8 @@ public class RecyclerViewAdapter extends RecyclerView
     private ArrayList<Object> mDataset;
     private static MyClickListener myClickListener;
     private Context context;
+    private int folderItemNo;
+    private int assetItemNo;
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
@@ -47,9 +49,30 @@ public class RecyclerViewAdapter extends RecyclerView
         this.myClickListener = myClickListener;
     }
 
-    public RecyclerViewAdapter(Context context, ArrayList<Object> myDataset) {
+    public RecyclerViewAdapter(Context context, ArrayList<Object> folderDataset, ArrayList<Object> assetDataset) {
         this.context = context;
-        mDataset = myDataset;
+        folderItemNo = 0;
+        assetItemNo = 0;
+        if (null != folderDataset && 0 != folderDataset.size()) {
+            mDataset = folderDataset;
+            folderItemNo = folderDataset.size();
+            if (null != assetDataset && 0 != assetDataset.size()) {
+                assetItemNo = assetDataset.size();
+                for (int index = 0; index < assetDataset.size(); index++) {
+                    mDataset.add(assetDataset.indexOf(index));
+                }
+            } else {
+                Log.d(TAG, "assetDataset is empty");
+            }
+        } else {
+            Log.d(TAG, "folderDataset is empty");
+            if (null != assetDataset && 0 != assetDataset.size()) {
+                assetItemNo = assetDataset.size();
+                mDataset = assetDataset;
+            } else {
+                Log.e(TAG, "both folderDataset and assetDataset are empty");
+            }
+        }
     }
 
     @Override
@@ -65,7 +88,7 @@ public class RecyclerViewAdapter extends RecyclerView
     @Override
     public void onBindViewHolder(DataObjectHolder holder, int position) {
         if (mDataset.get(position) instanceof Folder) {
-            holder.label.setText(((Folder)mDataset.get(position)).getName());
+            holder.label.setText(((Folder) mDataset.get(position)).getName());
             Resources res = context.getResources();
             holder.image.setImageDrawable(res.getDrawable(R.mipmap.folder));
         } else if (mDataset.get(position) instanceof Project) {
@@ -76,21 +99,21 @@ public class RecyclerViewAdapter extends RecyclerView
             Asset asset = (Asset) mDataset.get(position);
             holder.label.setText(asset.getName());
 
-            if(((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
-                if(null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
+            if (((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
+                if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
                     Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
                             asset.getBase64_thumbnail(), Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(
                             decodedString, 0, decodedString.length);
                     holder.image.setImageBitmap(decodedByte);
-                } else{
+                } else {
                     Log.d(TAG, "don't get Base64_thumbnail");
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
                 }
-            } else if((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
-                    || (asset.getExt().equals("wmv"))))){
+            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
+                    || (asset.getExt().equals("wmv"))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.drawable.ic_action_video));
             } else {
@@ -110,10 +133,18 @@ public class RecyclerViewAdapter extends RecyclerView
         notifyItemRemoved(index);
     }
 
-    public void clearData(){
+    public void clearData() {
         for (int i = 0; i < mDataset.size(); i++) {
             deleteItem(i);
         }
+    }
+
+    public int getNoOfFolderItem() {
+        return folderItemNo;
+    }
+
+    public int getNoOfAssetItem(){
+        return assetItemNo;
     }
 
     @Override
