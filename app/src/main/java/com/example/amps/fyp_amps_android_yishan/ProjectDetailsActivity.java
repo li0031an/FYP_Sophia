@@ -210,7 +210,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             int newPosition = position - noFolderItem;
             Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
             intent.putExtra("project_id", projectId);
-            intent.putExtra("asset", ((Asset) assetList.get(newPosition)).getAsset_id());
+            intent.putExtra("asset_id", ((Asset) assetList.get(newPosition)).getAsset_id());
             intent.putExtra("asset_name", ((Asset) assetList.get(newPosition)).getName());
             intent.putExtra("folderId", rootFolderId);
             startActivity(intent);
