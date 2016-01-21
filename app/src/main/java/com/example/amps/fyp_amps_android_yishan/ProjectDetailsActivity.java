@@ -194,16 +194,26 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                    Log.i(TAG, " Clicked on Item ");
-                    Log.d(TAG, "start assetDetail activity");
-                    Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
-                    intent.putExtra("project_id", projectId);
-                    intent.putExtra("asset", ((Asset) assetList.get(position)).getAsset_id());
-                    intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
-                    intent.putExtra("folderId", rootFolderId);
-                    startActivity(intent);
+                    onItemClickCommon(position, v);
                 }
             });
+        }
+    }
+
+    protected void onItemClickCommon (int position, View v) {
+        Log.d(TAG, " Clicked on Item in onItemClickCommon");
+        if (position < noFolderItem) {
+            Log.d(TAG, "position < noFolderItem " + position + " " + noFolderItem);
+            displayAssetList(position);
+        } else {
+            Log.d(TAG, "position > noFolderItem " + position + " " + noFolderItem);
+            int newPosition = position - noFolderItem;
+            Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+            intent.putExtra("project_id", projectId);
+            intent.putExtra("asset", ((Asset) assetList.get(newPosition)).getAsset_id());
+            intent.putExtra("asset_name", ((Asset) assetList.get(newPosition)).getName());
+            intent.putExtra("folderId", rootFolderId);
+            startActivity(intent);
         }
     }
 
@@ -236,16 +246,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         if (null != projectId) {
         }
-        Bundle savedInstanceState = new Bundle();
-        onSaveInstanceState(savedInstanceState);
+//        Bundle savedInstanceState = new Bundle();
+//        onSaveInstanceState(savedInstanceState);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy()");
-        Bundle savedInstanceState = new Bundle();
-        onSaveInstanceState(savedInstanceState);
+//        Bundle savedInstanceState = new Bundle();
+//        onSaveInstanceState(savedInstanceState);
     }
 
     @Override
@@ -383,15 +393,25 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         if (null != arrayfolderList) {
             Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             currentItemList = (Object) arrayfolderList;
+            folderList.clear();
+            Log.d(TAG, "start to add folderlist");
             for (int i = 0; i < arrayfolderList.size(); i++) {
+                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
                 folderList.add(arrayfolderList.get(i));
             }
             mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+            noAssetItem = 0;
+            noFolderItem = 0;
+            if (null != folderList) {
+                noFolderItem = folderList.size();
+            }
+            if (null != assetList) {
+                noAssetItem = assetList.size();
+            }
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                    Log.i(TAG, " Clicked on Item ");
-                    displayAssetList(position);
+                    onItemClickCommon(position, v);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -405,6 +425,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         if (null != arrayAssetList) {
             Log.d(TAG, "assetList is gotten");
             Boolean needThumbNailUpdate = false;
+            assetList.clear();
             ArrayList<String> assetIdList = new ArrayList<String>();
             for (int i = 0; i < arrayAssetList.size(); i++) {
                 Asset temp = arrayAssetList.get(i);
@@ -434,16 +455,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                    Log.i(TAG, " Clicked on Item ");
-
-                    Log.d(TAG, "start assetDetail activity");
-                    Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
-                    intent.putExtra("project_id", projectId);
-                    intent.putExtra("asset_id", ((Asset) assetList.get(position)).getAsset_id());
-                    intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
-                    intent.putExtra("folderId", rootFolderId);
-                    startActivity(intent);
-
+                   onItemClickCommon(position, v);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
@@ -490,17 +502,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                         @Override
                         public void onItemClick(int position, View v) {
-                            Log.i(TAG, " Clicked on Item ");
-//                    displayAssetList(position);
-
-                            Log.d(TAG, "start assetDetail activity");
-                            Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
-                            intent.putExtra("project_id", projectId);
-                            intent.putExtra("asset_id", ((Asset) assetList.get(position)).getAsset_id());
-                            intent.putExtra("asset_name", ((Asset) assetList.get(position)).getName());
-                            intent.putExtra("folderId", rootFolderId);
-                            startActivity(intent);
-
+                            onItemClickCommon(position, v);
                         }
                     });
                     mRecyclerView.setAdapter(mAdapter);
