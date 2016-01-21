@@ -53,13 +53,18 @@ public class RecyclerViewAdapter extends RecyclerView
         this.context = context;
         folderItemNo = 0;
         assetItemNo = 0;
+        mDataset = new ArrayList<Object>();
+        mDataset.clear();
+//        this.clearData();
         if (null != folderDataset && 0 != folderDataset.size()) {
-            mDataset = folderDataset;
+            for (int index = 0; index < folderDataset.size(); index++) {
+                mDataset.add(folderDataset.get(index));
+            }
             folderItemNo = folderDataset.size();
             if (null != assetDataset && 0 != assetDataset.size()) {
                 assetItemNo = assetDataset.size();
                 for (int index = 0; index < assetDataset.size(); index++) {
-                    mDataset.add(assetDataset.indexOf(index));
+                    mDataset.add(assetDataset.get(index));
                 }
             } else {
                 Log.d(TAG, "assetDataset is empty");
@@ -73,6 +78,11 @@ public class RecyclerViewAdapter extends RecyclerView
                 Log.e(TAG, "both folderDataset and assetDataset are empty");
             }
         }
+        Log.d(TAG, "mDataset:");
+        for (int i = 0; i < mDataset.size(); i++) {
+            Log.d(TAG, "mDataset i " + i + " " + mDataset.get(i).getClass().getName());
+        }
+        Log.d(TAG, "folderItemNo, assetItemNo" + folderItemNo + " " + assetItemNo);
     }
 
     @Override
@@ -134,8 +144,10 @@ public class RecyclerViewAdapter extends RecyclerView
     }
 
     public void clearData() {
-        for (int i = 0; i < mDataset.size(); i++) {
-            deleteItem(i);
+        if (null != mDataset && 0 != mDataset.size()) {
+            for (int i = mDataset.size()-1; i >= 0; i--) {
+                deleteItem(i);
+            }
         }
     }
 

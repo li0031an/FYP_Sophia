@@ -83,8 +83,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 Log.d(TAG, "intent - rootFolderId" + rootFolderId);
                 getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getAsset.execute();
-                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-                getRootFolderId.execute();
+                getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getOneLevelChild.execute();
             } else {
                 getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
                 getRootFolderId.execute();
@@ -390,7 +390,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     public void onOneLevelChildReady() {
         ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
-        if (null != arrayfolderList) {
+        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
+        if (null != arrayfolderList && 0 != arrayfolderList.size()) {
             Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             currentItemList = (Object) arrayfolderList;
             folderList.clear();
@@ -490,24 +491,41 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                         Log.d(TAG, "new asset is not used, asset id: " + assetDetail.getAsset_id());
                         Log.d(TAG, "new asset is not used, asset type: " + assetDetail.getExt());
                     }
-                    mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-                    noAssetItem = 0;
-                    noFolderItem = 0;
-                    if (null != folderList) {
-                        noFolderItem = folderList.size();
-                    }
-                    if (null != assetList) {
-                        noAssetItem = assetList.size();
-                    }
-                    ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                        @Override
-                        public void onItemClick(int position, View v) {
-                            onItemClickCommon(position, v);
-                        }
-                    });
-                    mRecyclerView.setAdapter(mAdapter);
+//                    mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+//                    noAssetItem = 0;
+//                    noFolderItem = 0;
+//                    if (null != folderList) {
+//                        noFolderItem = folderList.size();
+//                    }
+//                    if (null != assetList) {
+//                        noAssetItem = assetList.size();
+//                    }
+//                    ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+//                        @Override
+//                        public void onItemClick(int position, View v) {
+//                            onItemClickCommon(position, v);
+//                        }
+//                    });
+//                    mRecyclerView.setAdapter(mAdapter);
                 }
             }
+            Log.d(TAG, "onAssetDetailReady: folderList, assetList" + folderList.size() + " " + assetList.size());
+            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+            noAssetItem = 0;
+            noFolderItem = 0;
+            if (null != folderList) {
+                noFolderItem = folderList.size();
+            }
+            if (null != assetList) {
+                noAssetItem = assetList.size();
+            }
+            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                @Override
+                public void onItemClick(int position, View v) {
+                    onItemClickCommon(position, v);
+                }
+            });
+            mRecyclerView.setAdapter(mAdapter);
         }
         currentItemList = (Object) assetList;
     }
