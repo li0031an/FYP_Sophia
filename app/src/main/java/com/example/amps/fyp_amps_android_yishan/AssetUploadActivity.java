@@ -586,7 +586,9 @@ public class AssetUploadActivity extends Activity implements Settings {
         }
 
         protected void onProgressUpdate(String... progress) {
-            dialog.setProgress(Integer.parseInt(progress[0]));
+            if (null != dialog) {
+                dialog.setProgress(Integer.parseInt(progress[0]));
+            }
         }
 
         @Override
@@ -720,11 +722,11 @@ public class AssetUploadActivity extends Activity implements Settings {
                     long elapsedTime = System.nanoTime() - startTime;
                     double speed = (bufferSize * 1000000000.000f / elapsedTime);
                     Log.d(TAG, "Bytes send/seconds: " + difference);
-                    if (speed > 1000.00 * 1000.00) {
-                        newSpeed = Double.parseDouble(formatter.format(speed / (1000.00 * 1000.00)));
+                    if (speed > 1024.00 * 1024.00) {
+                        newSpeed = Double.parseDouble(formatter.format(speed / (1024.00 * 1024.00)));
                         unit = " MB/s";
-                    } else if ((speed > 1000.00) && (speed <= 1000.00 * 1000.00)) {
-                        newSpeed = Double.parseDouble(formatter.format(speed / 1000.00));
+                    } else if ((speed > 1024.00) && (speed <= 1024.00 * 1024.00)) {
+                        newSpeed = Double.parseDouble(formatter.format(speed / 1024.00));
                         unit = " kB/s";
                     } else {
                         newSpeed = Double.parseDouble(formatter.format(speed));
@@ -733,7 +735,12 @@ public class AssetUploadActivity extends Activity implements Settings {
 
                     dialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
-                    publishProgress("" + (int) (sentBytes * 100 / fileSize));
+                    int progress = (int) (sentBytes * 100 / fileSize);
+                    if (progress >= 0) {
+                        publishProgress("" + (int) (sentBytes * 100 / fileSize));
+                    } else {
+                        publishProgress("" + (100 + progress));
+                    }
                     Log.d(TAG, "Elpased Time: " + elapsedTime);
                     Log.d(TAG, "Speed: " + speed);
                     Log.d(TAG, "New Speed: " + newSpeed);

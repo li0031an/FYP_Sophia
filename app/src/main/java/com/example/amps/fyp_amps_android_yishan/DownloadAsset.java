@@ -45,6 +45,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     DecimalFormat twoDP = new DecimalFormat("#.##");
     ProgressDialog downloadDialog;
     String url;
+    DecimalFormat formatter = new DecimalFormat("#.##");
 
     public DownloadAsset(Activity activity, SharedPreferences settings, String assetidLst
             , String projectId, String assetFullName, String assetExt, String revid,
@@ -188,7 +189,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
             try {
                 URL url = new URL(req);
                 Log.d(TAG, "URL: " + req);
-                long startTime = System.currentTimeMillis();
+                long startTime = System.nanoTime();
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 connection.setRequestMethod("GET");
@@ -212,7 +213,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                 byte[] buffer = new byte[1024];
                 int bufferLength = 0;//used to store a temporary size of the buffer
 
-                long elapsedTime = System.currentTimeMillis() - startTime;
+                long elapsedTime = System.nanoTime() - startTime;
                 //final double downloadSpeedPerSec = 1000000000.00;
                 Log.d(TAG, "inputStream: " + inputStream.toString());
 
@@ -225,22 +226,30 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                     //this is where you would do something to report the prgress, like this maybe
 //                    updateProgress(downloadedSize, totalSize);
 
-                    double speed = downloadedSize * 1000.0f / elapsedTime;
+                    double speed = bufferLength * 1000000000.000f / elapsedTime;
 
-                    if (speed < 1024) {
-                        newSpeed = Double.parseDouble(twoDP.format(speed));
-                        unit = "Bytes/ sec";
-                    } else if (speed < 1024 * 1024) {
-                        newSpeed = Double.parseDouble(twoDP.format(speed / 1024));
-                        unit = "kB/s";
+                    if (speed > 1024.00 * 1024.00) {
+                        newSpeed = Double.parseDouble(formatter.format(speed / (1024.00 * 1024.00)));
+                        unit = " MB/s";
+                    } else if ((speed > 1024.00) && (speed <= 1024.00 * 1024.00)) {
+                        newSpeed = Double.parseDouble(formatter.format(speed / 1024.00));
+                        unit = " kB/s";
                     } else {
-                        newSpeed = Double.parseDouble(twoDP.format((speed / 1024 * 1024) / 1000000));
-                        unit = "MB/s";
+                        newSpeed = Double.parseDouble(formatter.format(speed));
+                        unit = " bytes/s";
                     }
 
+                    Log.d(TAG, "newSpeed + unit: " + newSpeed + unit);
+                    Log.d(TAG, "downloadedSize, totalSize" + downloadedSize + " " + totalSize);
+                    Log.d(TAG, "(downloadedSize * 100 / totalSize): " + String.valueOf(downloadedSize * 100 / totalSize));
                     downloadDialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
-                    publishProgress("" + ((downloadedSize * 100) / totalSize));
+                    int progress = (int) (downloadedSize * 100 / totalSize);
+                    if (progress >= 0) {
+                        publishProgress("" + (int) (downloadedSize * 100 / totalSize));
+                    } else {
+                        publishProgress("" + (100 + progress));
+                    }
                 }
 
                 if (downloadedSize == totalSize) isDownloadSucessful = true;
@@ -283,7 +292,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
     protected void onProgressUpdate(String... progress) {
         //super.onProgressUpdate(progress);
         if (null != downloadDialog) {
-            progressInt = Integer.parseInt(progress[0]);
+//            progressInt = Integer.parseInt(progress[0]);
             downloadDialog.setProgress(Integer.parseInt(progress[0]));
         }
     }
