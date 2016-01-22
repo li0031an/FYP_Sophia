@@ -27,13 +27,16 @@
             android:layout_height="fill_parent"
             android:orientation="horizontal"
             android:background="@color/lightgrey"
-            android:alpha="0.8">
+            android:alpha="0.8"
+            android:paddingRight="@dimen/cardview_padding"
+            android:paddingLeft="@dimen/cardview_padding">
 
             <ImageView
                 android:id="@+id/cardImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="@dimen/cardview_thumbnail_size"
+                android:layout_height="@dimen/cardview_thumbnail_size"
                 android:layout_gravity="center_vertical"
+                android:scaleType="fitCenter"
                 android:layout_alignParentTop="true"
                 android:paddingRight="10dp"/>
 

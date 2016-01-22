@@ -178,8 +178,12 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
                 asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
             } if (!data_array.isNull("updated_datetime")) {
                 asset.setUpdated_datetime(data_array.getString("updated_datetime"));
-            } if (!data_array.isNull("base64_thumbnail")) {
-                asset.setBase64_thumbnail(data_array.getString("base64_thumbnail"));
+            } if ((!data_array.isNull("base64_thumbnail")) || (!data_array.isNull("base64_small_file"))) {
+                if (!data_array.isNull("base64_thumbnail")) {
+                    asset.setBase64_thumbnail(data_array.getString("base64_thumbnail"));
+                } else {
+                    asset.setBase64_thumbnail(data_array.getString("base64_small_file"));
+                }
             } if (!data_array.isNull("statusid")) {
                 asset.setStatusid(data_array.getString("statusid"));
             } if (!data_array.isNull("latest_revid")) {
