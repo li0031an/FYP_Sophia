@@ -124,7 +124,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_asset_upload, menu);
+        menuInflater.inflate(R.menu.menu_folder_create_upload, menu);
     }
 
     @Override
@@ -140,9 +140,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             case R.id.upload_item_other_types:
                 environment = Environment.DIRECTORY_DOWNLOADS;
                 break;
+            case R.id.create_new_folder:
+                showToast("create_new_folder.");
+                break;
             default: // do nothing
         }
-        callUploadActivity(environment);
+        if ("" != environment) {
+            callUploadActivity(environment);
+        } else {
+            //do create new folder
+        }
         return super.onContextItemSelected(item);
     }
 
@@ -389,7 +396,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     public void onOneLevelChildReady() {
         ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
-        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
+//        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
         if (null != arrayfolderList && 0 != arrayfolderList.size()) {
             Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             currentItemList = (Object) arrayfolderList;
@@ -470,18 +477,18 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             for (int j = 0; j < assetDetailList.size(); j++) {
                 Asset assetDetail = assetDetailList.get(j);
                 if (null != assetDetail) {
-                    Log.d(TAG, "assetDetail is gotten");
+//                    Log.d(TAG, "assetDetail is gotten");
                     for (int i = 0; i < assetList.size(); i++) {
                         Asset temp = (Asset) assetList.get(i);
                         if (temp.getAsset_id().equalsIgnoreCase(assetDetail.getAsset_id())) {
                             String base64_thumbnail = assetDetail.getBase64_thumbnail();
                             if (null == base64_thumbnail) {
-                                Log.d(TAG, "base64_thumbnail is null");
+//                                Log.d(TAG, "base64_thumbnail is null");
                             }
                             ((Asset) assetList.get(i)).setBase64_thumbnail(base64_thumbnail);
                             newAssetUsed = true;
                             if (null != ((Asset) assetList.get(i)).getBase64_thumbnail()) {
-                                Log.d(TAG, "Base64_thumbnail is available");
+//                                Log.d(TAG, "Base64_thumbnail is available");
                             }
                             break;
                         }

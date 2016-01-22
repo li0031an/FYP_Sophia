@@ -163,10 +163,12 @@
 
 <!--project detail activity-->
     <string name="upload_new_file">Long press to upload new files</string>
+    <string name="upload_or_create">Long press to create or upload</string>
 
 <!-- upload activity-->
-    <string name="image_or_videos">Images or Videos</string>
-    <string name="other_types">Other types</string>
+    <string name="create_new_folder">Create a new folder</string>
+    <string name="upload_image_or_videos">Upload images or videos</string>
+    <string name="upload_other_types">Upload other types</string>
 
 <!-- preview video activity-->
     <string name="loading_video">Loading video…</string>

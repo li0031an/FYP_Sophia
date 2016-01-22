@@ -35,7 +35,7 @@ public class RecyclerViewAdapter extends RecyclerView
             super(itemView);
             label = (TextView) itemView.findViewById(R.id.cardText);
             image = (ImageView) itemView.findViewById(R.id.cardImage);
-            Log.i(TAG, "Adding Listener");
+//            Log.i(TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
 
@@ -78,11 +78,10 @@ public class RecyclerViewAdapter extends RecyclerView
                 Log.e(TAG, "both folderDataset and assetDataset are empty");
             }
         }
-        Log.d(TAG, "mDataset:");
-        for (int i = 0; i < mDataset.size(); i++) {
-            Log.d(TAG, "mDataset i " + i + " " + mDataset.get(i).getClass().getName());
-        }
-        Log.d(TAG, "folderItemNo, assetItemNo" + folderItemNo + " " + assetItemNo);
+//        for (int i = 0; i < mDataset.size(); i++) {
+//            Log.d(TAG, "mDataset i " + i + " " + mDataset.get(i).getClass().getName());
+//        }
+//        Log.d(TAG, "folderItemNo, assetItemNo" + folderItemNo + " " + assetItemNo);
     }
 
     @Override
@@ -111,14 +110,14 @@ public class RecyclerViewAdapter extends RecyclerView
 
             if (((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
                 if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
-                    Log.d(TAG, "get Base64_thumbnail");
+//                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
                             asset.getBase64_thumbnail(), Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(
                             decodedString, 0, decodedString.length);
                     holder.image.setImageBitmap(decodedByte);
                 } else {
-                    Log.d(TAG, "don't get Base64_thumbnail");
+//                    Log.d(TAG, "don't get Base64_thumbnail");
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
                 }

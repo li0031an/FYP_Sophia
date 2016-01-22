@@ -239,9 +239,9 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                         unit = " bytes/s";
                     }
 
-                    Log.d(TAG, "newSpeed + unit: " + newSpeed + unit);
-                    Log.d(TAG, "downloadedSize, totalSize" + downloadedSize + " " + totalSize);
-                    Log.d(TAG, "(downloadedSize * 100 / totalSize): " + String.valueOf(downloadedSize * 100 / totalSize));
+//                    Log.d(TAG, "newSpeed + unit: " + newSpeed + unit);
+//                    Log.d(TAG, "downloadedSize, totalSize" + downloadedSize + " " + totalSize);
+//                    Log.d(TAG, "(downloadedSize * 100 / totalSize): " + String.valueOf(downloadedSize * 100 / totalSize));
                     downloadDialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
                     int progress = (int) (downloadedSize * 100 / totalSize);
