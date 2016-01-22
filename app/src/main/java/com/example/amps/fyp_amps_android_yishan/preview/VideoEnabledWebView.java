@@ -1,54 +1,85 @@
 package com.example.amps.fyp_amps_android_yishan.preview;
 
-
-import java.util.Map;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.webkit.JavascriptInterface;
+import android.util.Log;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
+import java.util.Map;
+
 /**
- + * This class serves as a WebView to be used in conjunction with a VideoEnabledWebChromeClient.
- + * It makes it possible to detect the HTML5 video ended event so that the VideoEnabledWebChromeClient can exit full-screen.
- + *
- + * IMPORTANT NOTES:
- + * - Javascript is enabled by default and must not be disabled with getSettings().setJavaScriptEnabled(false).
- + * - setWebChromeClient() must be called before any loadData(), loadDataWithBaseURL() or loadUrl() method.
- + *
- + * @author Cristian Perez (http://cpr.name)
- + *
- + */
+ * This class serves as a WebView to be used in conjunction with a VideoEnabledWebChromeClient.
+ * It makes possible:
+ * - To detect the HTML5 video ended event so that the VideoEnabledWebChromeClient can exit full-screen.
+ *
+ * Important notes:
+ * - Javascript is enabled by default and must not be disabled with getSettings().setJavaScriptEnabled(false).
+ * - setWebChromeClient() must be called before any loadData(), loadDataWithBaseURL() or loadUrl() method.
+ *
+ * @author Cristian Perez (http://cpr.name)
+ *
+ */
 public class VideoEnabledWebView extends WebView
 {
-    public interface ToggledFullscreenCallback
+    private final static String TAG = "VideoEnabledWebView";
+
+    public class JavascriptInterface
     {
-        public void toggledFullscreen(boolean fullscreen);
+        @android.webkit.JavascriptInterface @SuppressWarnings("unused")
+        public void notifyVideoEnd() // Must match Javascript interface method of VideoEnabledWebChromeClient
+        {
+            Log.d(TAG, "GOT IT");
+            // This code is not executed in the UI thread, so we must force that to happen
+            new Handler(Looper.getMainLooper()).post(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if (videoEnabledWebChromeClient != null)
+                    {
+                        videoEnabledWebChromeClient.onHideCustomView();
+                    }
+                }
+            });
+        }
     }
 
     private VideoEnabledWebChromeClient videoEnabledWebChromeClient;
     private boolean addedJavascriptInterface;
 
+    @SuppressWarnings("unused")
     public VideoEnabledWebView(Context context)
     {
         super(context);
         addedJavascriptInterface = false;
     }
 
+    @SuppressWarnings("unused")
     public VideoEnabledWebView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
         addedJavascriptInterface = false;
     }
 
+    @SuppressWarnings("unused")
     public VideoEnabledWebView(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
         addedJavascriptInterface = false;
+    }
+
+    /**
+     * Indicates if the video is being displayed using a custom view (typically full-screen)
+     * @return true it the video is being displayed using a custom view (typically full-screen)
+     */
+    @SuppressWarnings("unused")
+    public boolean isVideoFullscreen()
+    {
+        return videoEnabledWebChromeClient != null && videoEnabledWebChromeClient.isVideoFullscreen();
     }
 
     /**
@@ -100,25 +131,8 @@ public class VideoEnabledWebView extends WebView
         if (!addedJavascriptInterface)
         {
             // Add javascript interface to be called when the video ends (must be done before page load)
-            addJavascriptInterface(new Object()
-            {
-                @JavascriptInterface @SuppressWarnings("unused")
-                public void notifyVideoEnd() // Must match Javascript interface method of VideoEnabledWebChromeClient
-                {
-                    // This code is not executed in the UI thread, so we must force it to happen
-                    new Handler(Looper.getMainLooper()).post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            if (videoEnabledWebChromeClient != null)
-                            {
-                                videoEnabledWebChromeClient.onHideCustomView();
-                            }
-                        }
-                    });
-                }
-            }, "_VideoEnabledWebView"); // Must match Javascript interface name of VideoEnabledWebChromeClient
+            //noinspection all
+            addJavascriptInterface(new JavascriptInterface(), "_VideoEnabledWebView"); // Must match Javascript interface name of VideoEnabledWebChromeClient
 
             addedJavascriptInterface = true;
         }

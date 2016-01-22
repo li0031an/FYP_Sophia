@@ -35,6 +35,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.MediaController;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.example.amps.fyp_amps_android_yishan.R;
@@ -101,6 +102,7 @@ public class VideoPlayerActivity extends Activity implements Settings {
         });
 
     }*/
+    private static final String TAG = "VideoPlayerActivity";
     private VideoEnabledWebView webView;
     private VideoEnabledWebChromeClient webChromeClient;
     String token_id;
@@ -133,24 +135,33 @@ public class VideoPlayerActivity extends Activity implements Settings {
                 activity.setProgress(progress * 1000);
             }
         };
-        webChromeClient.setOnToggledFullscreen(new VideoEnabledWebChromeClient.ToggledFullscreenCallback() {
+        webChromeClient.setOnToggledFullscreen(new VideoEnabledWebChromeClient.ToggledFullscreenCallback()
+        {
             @Override
-            public void toggledFullscreen(boolean fullscreen) {
+            public void toggledFullscreen(boolean fullscreen)
+            {
                 // Your code to handle the full-screen change, for example showing and hiding the title bar. Example:
-                if (fullscreen) {
+                if (fullscreen)
+                {
                     WindowManager.LayoutParams attrs = getWindow().getAttributes();
                     attrs.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
                     attrs.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
                     getWindow().setAttributes(attrs);
-                    if (android.os.Build.VERSION.SDK_INT >= 14) {
+                    if (android.os.Build.VERSION.SDK_INT >= 14)
+                    {
+                        //noinspection all
                         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
                     }
-                } else {
+                }
+                else
+                {
                     WindowManager.LayoutParams attrs = getWindow().getAttributes();
                     attrs.flags &= ~WindowManager.LayoutParams.FLAG_FULLSCREEN;
                     attrs.flags &= ~WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
                     getWindow().setAttributes(attrs);
-                    if (android.os.Build.VERSION.SDK_INT >= 14) {
+                    if (android.os.Build.VERSION.SDK_INT >= 14)
+                    {
+                        //noinspection all
                         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
                     }
                 }
@@ -158,6 +169,7 @@ public class VideoPlayerActivity extends Activity implements Settings {
             }
         });
         webView.setWebChromeClient(webChromeClient);
+
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
@@ -179,7 +191,15 @@ public class VideoPlayerActivity extends Activity implements Settings {
         // Navigate everywhere you want, this classes have only been tested on YouTube's mobile site
         String play = "<!DOCTYPE html><html><body><video width=\"320\" height=\"240\" controls autoplay autobuffer src=" + VideoURL + ">Your browser does not support the video tag.</video></body></html>";
         webView.loadData(play, "text/html", "utf-8");
+        Log.d(TAG, "VideoURL: " + VideoURL.toString());
+//        webView.loadUrl(play);
         webView.setBackgroundColor(0x00000000);
+
+        webView.setWebViewClient(new WebViewClient() {
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                Toast.makeText(activity, "Oh no! " + description, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 

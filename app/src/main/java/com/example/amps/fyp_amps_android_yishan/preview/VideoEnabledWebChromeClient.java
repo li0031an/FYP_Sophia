@@ -1,31 +1,30 @@
 package com.example.amps.fyp_amps_android_yishan.preview;
 
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnPreparedListener;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
-import android.widget.VideoView;
 
 /**
- + * This class serves as a WebChromeClient to be set to a WebView, allowing it to play video.
- + * It works with old VideoView-s as well as the new HTML5VideoFullScreen inner classes.
- + * With VideoView (typically API level <11), it will always show full-screen.
- + * With HTML5VideoFullScreen (typically API level 11+), it will show both in-page and full-screen.
- + *
- + * IMPORTANT NOTES:
- + * - For API level 11+, android:hardwareAccelerated="true" must be set in the application manifest.
- + * - The invoking activity must call VideoEnabledWebChromeClient's onBackPressed() inside of its own onBackPressed().
- + * - Tested in Android API level 8+. Only tested on http://m.youtube.com.
- + *
- + * @author Cristian Perez (http://cpr.name)
- + *
- + */
-public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPreparedListener, OnCompletionListener, OnErrorListener
+ * This class serves as a WebChromeClient to be set to a WebView, allowing it to play video.
+ * Video will play differently depending on target API level (in-line, fullscreen, or both).
+ *
+ * It has been tested with the following video classes:
+ * - android.widget.VideoView (typically API level <11)
+ * - android.webkit.HTML5VideoFullScreen$VideoSurfaceView/VideoTextureView (typically API level 11-18)
+ * - com.android.org.chromium.content.browser.ContentVideoView$VideoSurfaceView (typically API level 19+)
+ *
+ * Important notes:
+ * - For API level 11+, android:hardwareAccelerated="true" must be set in the application manifest.
+ * - The invoking activity must call VideoEnabledWebChromeClient's onBackPressed() inside of its own onBackPressed().
+ * - Tested in Android API levels 8-19. Only tested on http://m.youtube.com.
+ *
+ * @author Cristian Perez (http://cpr.name)
+ *
+ */
+public class VideoEnabledWebChromeClient extends WebChromeClient implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener
 {
     public interface ToggledFullscreenCallback
     {
@@ -47,6 +46,7 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
      * Never use this constructor alone.
      * This constructor allows this class to be defined as an inline inner class in which the user can override methods
      */
+    @SuppressWarnings("unused")
     public VideoEnabledWebChromeClient()
     {
     }
@@ -56,6 +56,7 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
      * @param activityNonVideoView A View in the activity's layout that contains every other view that should be hidden when the video goes full-screen.
      * @param activityVideoView A ViewGroup in the activity's layout that will display the video. Typically you would like this to fill the whole layout.
      */
+    @SuppressWarnings("unused")
     public VideoEnabledWebChromeClient(View activityNonVideoView, ViewGroup activityVideoView)
     {
         this.activityNonVideoView = activityNonVideoView;
@@ -69,8 +70,9 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
      * Builds a video enabled WebChromeClient.
      * @param activityNonVideoView A View in the activity's layout that contains every other view that should be hidden when the video goes full-screen.
      * @param activityVideoView A ViewGroup in the activity's layout that will display the video. Typically you would like this to fill the whole layout.
-     * @param loadingView A View to be shown while the video is loading (typically only used in API level <11). Must be already inflated and without a parent view.
+     * @param loadingView A View to be shown while the video is loading (typically only used in API level <11). Must be already inflated and not attached to a parent view.
      */
+    @SuppressWarnings("unused")
     public VideoEnabledWebChromeClient(View activityNonVideoView, ViewGroup activityVideoView, View loadingView)
     {
         this.activityNonVideoView = activityNonVideoView;
@@ -84,10 +86,11 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
      * Builds a video enabled WebChromeClient.
      * @param activityNonVideoView A View in the activity's layout that contains every other view that should be hidden when the video goes full-screen.
      * @param activityVideoView A ViewGroup in the activity's layout that will display the video. Typically you would like this to fill the whole layout.
-     * @param loadingView A View to be shown while the video is loading (typically only used in API level <11). Must be already inflated and without a parent view.
+     * @param loadingView A View to be shown while the video is loading (typically only used in API level <11). Must be already inflated and not attached to a parent view.
      * @param webView The owner VideoEnabledWebView. Passing it will enable the VideoEnabledWebChromeClient to detect the HTML5 video ended event and exit full-screen.
      * Note: The web page must only contain one video tag in order for the HTML5 video ended event to work. This could be improved if needed (see Javascript code).
      */
+    @SuppressWarnings("unused")
     public VideoEnabledWebChromeClient(View activityNonVideoView, ViewGroup activityVideoView, View loadingView, VideoEnabledWebView webView)
     {
         this.activityNonVideoView = activityNonVideoView;
@@ -110,6 +113,7 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
      * Set a callback that will be fired when the video starts or finishes displaying using a custom view (typically full-screen)
      * @param callback A VideoEnabledWebChromeClient.ToggledFullscreenCallback callback
      */
+    @SuppressWarnings("unused")
     public void setOnToggledFullscreen(ToggledFullscreenCallback callback)
     {
         this.toggledFullscreenCallback = callback;
@@ -131,32 +135,39 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
 
             // Hide the non-video view, add the video view, and show it
             activityNonVideoView.setVisibility(View.INVISIBLE);
-            activityVideoView.addView(videoViewContainer, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            activityVideoView.addView(videoViewContainer, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             activityVideoView.setVisibility(View.VISIBLE);
 
-            if (focusedChild instanceof VideoView)
+            if (focusedChild instanceof android.widget.VideoView)
             {
-                // VideoView (typically API level <11)
-                VideoView videoView = (VideoView) focusedChild;
+                // android.widget.VideoView (typically API level <11)
+                android.widget.VideoView videoView = (android.widget.VideoView) focusedChild;
+
                 // Handle all the required events
                 videoView.setOnPreparedListener(this);
                 videoView.setOnCompletionListener(this);
                 videoView.setOnErrorListener(this);
             }
-            else // Usually android.webkit.HTML5VideoFullScreen$VideoSurfaceView, sometimes android.webkit.HTML5VideoFullScreen$VideoTextureView
+            else
             {
-                // HTML5VideoFullScreen (typically API level 11+)
-                // Handle HTML5 video ended event
-                if (webView != null && webView.getSettings().getJavaScriptEnabled())
+                // Other classes, including:
+                // - android.webkit.HTML5VideoFullScreen$VideoSurfaceView, which inherits from android.view.SurfaceView (typically API level 11-18)
+                // - android.webkit.HTML5VideoFullScreen$VideoTextureView, which inherits from android.view.TextureView (typically API level 11-18)
+                // - com.android.org.chromium.content.browser.ContentVideoView$VideoSurfaceView, which inherits from android.view.SurfaceView (typically API level 19+)
+
+                // Handle HTML5 video ended event only if the class is a SurfaceView
+                // Test case: TextureView of Sony Xperia T API level 16 doesn't work fullscreen when loading the javascript below
+                if (webView != null && webView.getSettings().getJavaScriptEnabled() && focusedChild instanceof SurfaceView)
                 {
-                    // Run javascript code that detects the video end and notifies the interface
+                    // Run javascript code that detects the video end and notifies the Javascript interface
                     String js = "javascript:";
-                    js += "_ytrp_html5_video = document.getElementsByTagName('video')[0];";
-                    js += "if (_ytrp_html5_video !== undefined) {";
+                    js += "var _ytrp_html5_video_last;";
+                    js += "var _ytrp_html5_video = document.getElementsByTagName('video')[0];";
+                    js += "if (_ytrp_html5_video != undefined && _ytrp_html5_video != _ytrp_html5_video_last) {";
                     {
+                        js += "_ytrp_html5_video_last = _ytrp_html5_video;";
                         js += "function _ytrp_html5_video_ended() {";
                         {
-                            js += "_ytrp_html5_video.removeEventListener('ended', _ytrp_html5_video_ended);";
                             js += "_VideoEnabledWebView.notifyVideoEnd();"; // Must match Javascript interface name and method of VideoEnableWebView
                         }
                         js += "}";
@@ -175,8 +186,8 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
         }
     }
 
-    @Override
-    public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) // Only available in API level 14+
+    @Override @SuppressWarnings("deprecation")
+    public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) // Available in API level 14+, deprecated in API level 18+
     {
         onShowCustomView(view, callback);
     }
@@ -184,9 +195,8 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
     @Override
     public void onHideCustomView()
     {
-        // This method must be manually (internally) called on video end in the case of VideoView (typically API level <11)
-        // This method must be manually (internally) called on video end in the case of HTML5VideoFullScreen (typically API level 11+) because it's not always called automatically
-        // This method must be manually (internally) called on back key press (from this class' onBackPressed() method)
+        // This method should be manually called on video end in all cases because it's not always called automatically.
+        // This method must be manually called on back key press (from this class' onBackPressed() method).
 
         if (isVideoFullscreen)
         {
@@ -195,8 +205,11 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
             activityVideoView.removeView(videoViewContainer);
             activityNonVideoView.setVisibility(View.VISIBLE);
 
-            // Call back
-            if (videoViewCallback != null) videoViewCallback.onCustomViewHidden();
+            // Call back (only in API level <19, because in API level 19+ with chromium webview it crashes)
+            if (videoViewCallback != null && !videoViewCallback.getClass().getName().contains(".chromium."))
+            {
+                videoViewCallback.onCustomViewHidden();
+            }
 
             // Reset video related variables
             isVideoFullscreen = false;
@@ -212,7 +225,7 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
     }
 
     @Override
-    public View getVideoLoadingProgressView() // Video will start loading, only called in the case of VideoView (typically API level <11)
+    public View getVideoLoadingProgressView() // Video will start loading
     {
         if (loadingView != null)
         {
@@ -226,7 +239,7 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
     }
 
     @Override
-    public void onPrepared(MediaPlayer mp) // Video will start playing, only called in the case of VideoView (typically API level <11)
+    public void onPrepared(MediaPlayer mp) // Video will start playing, only called in the case of android.widget.VideoView (typically API level <11)
     {
         if (loadingView != null)
         {
@@ -235,13 +248,13 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
     }
 
     @Override
-    public void onCompletion(MediaPlayer mp) // Video finished playing, only called in the case of VideoView (typically API level <11)
+    public void onCompletion(MediaPlayer mp) // Video finished playing, only called in the case of android.widget.VideoView (typically API level <11)
     {
         onHideCustomView();
     }
 
     @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) // Error while playing video, only called in the case of VideoView (typically API level <11)
+    public boolean onError(MediaPlayer mp, int what, int extra) // Error while playing video, only called in the case of android.widget.VideoView (typically API level <11)
     {
         return false; // By returning false, onCompletion() will be called
     }
@@ -249,8 +262,9 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
     /**
      * Notifies the class that the back key has been pressed by the user.
      * This must be called from the Activity's onBackPressed(), and if it returns false, the activity itself should handle it. Otherwise don't do anything.
-     * @return Returns true if the event was handled, and false if it is not (video view is not visible)
+     * @return Returns true if the event was handled, and false if was not (video view is not visible)
      */
+    @SuppressWarnings("unused")
     public boolean onBackPressed()
     {
         if (isVideoFullscreen)
@@ -263,4 +277,5 @@ public class VideoEnabledWebChromeClient extends WebChromeClient implements OnPr
             return false;
         }
     }
+
 }
