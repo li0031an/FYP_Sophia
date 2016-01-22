@@ -125,7 +125,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
 //            }
             rootFolderId.setError_message(job.getString("error_messages"));
 
-            if (errorCode == 0) showToast("get root folder id successfully");
+//            if (errorCode == 0) showToast("get root folder id successfully");
             if (errorCode != 0) {
                 showToast(rootFolderId.getError_message().substring(2, rootFolderId.getError_message().length()-2));
                 return rootFolderId;
@@ -179,7 +179,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
         Toast toast = Toast.makeText(
                 context,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 

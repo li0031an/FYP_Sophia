@@ -114,7 +114,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
             oneLevelChild.setError_code(String.valueOf(errorCode));
             oneLevelChild.setError_message(job.getString("error_messages"));
 
-            if (errorCode == 0) showToast("get one level child successfully");
+//            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 showToast(oneLevelChild.getError_message().substring(2, oneLevelChild.getError_message().length() - 2));
                 return oneLevelChild;
@@ -170,7 +170,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
         Toast toast = Toast.makeText(
                 context,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 

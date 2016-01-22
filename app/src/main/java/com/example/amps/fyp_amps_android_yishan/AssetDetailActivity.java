@@ -27,13 +27,13 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
     private String asset_id;
     private String project_id, folderId;
     private String videoUrl;
+    private String asset_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "oncreate()");
         setContentView(R.layout.activity_asset_detail);
-        setTitle("Assets");
         settings = getSharedPreferences(SETTINGS, 0);
 
         Bundle extras = getIntent().getExtras();
@@ -42,6 +42,13 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
             project_id = extras.getString("project_id");
             folderId = extras.getString("folderId");
             videoUrl = extras.getString("videoUrl");
+            asset_name = extras.getString("asset_name");
+        }
+
+        if (null != asset_name) {
+            setTitle(asset_name);
+        } else {
+            setTitle("Assets");
         }
 
         try {

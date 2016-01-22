@@ -666,7 +666,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         Toast toast = Toast.makeText(
                 ProjectDetailsActivity.this,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 

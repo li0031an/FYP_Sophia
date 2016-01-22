@@ -118,7 +118,7 @@ public class VideoPlayerActivity extends Activity implements Settings {
 
         // Set layout
         setContentView(R.layout.activity_video_player);
-
+        getActionBar().hide();
         // Save the web view
         webView = (VideoEnabledWebView) findViewById(R.id.webView);
 

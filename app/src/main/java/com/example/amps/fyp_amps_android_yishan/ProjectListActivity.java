@@ -183,14 +183,15 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             });
             mRecyclerView.setAdapter(mAdapter);
         } else {
-            showToast("No project found via GetProjectInfo");
+//            showToast("No project found via GetProjectInfo");
+            showToast("No project found");
         }
     }
     public void showToast(String info){
         Toast toast = Toast.makeText(
                 ProjectListActivity.this,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 
