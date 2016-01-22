@@ -100,7 +100,7 @@ public class RecyclerViewAdapter extends RecyclerView
         if (mDataset.get(position) instanceof Folder) {
             holder.label.setText(((Folder) mDataset.get(position)).getName());
             Resources res = context.getResources();
-            holder.image.setImageDrawable(res.getDrawable(R.mipmap.folder));
+            holder.image.setImageDrawable(res.getDrawable(R.mipmap.folder_icon));
         } else if (mDataset.get(position) instanceof Project) {
             holder.label.setText(((Project) mDataset.get(position)).getName());
             Resources res = context.getResources();
@@ -125,10 +125,10 @@ public class RecyclerViewAdapter extends RecyclerView
             } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
                     || (asset.getExt().equals("wmv"))))) {
                 Resources res = context.getResources();
-                holder.image.setImageDrawable(res.getDrawable(R.drawable.ic_action_video));
+                holder.image.setImageDrawable(res.getDrawable(R.mipmap.video_icon));
             } else {
                 Resources res = context.getResources();
-                holder.image.setImageDrawable(res.getDrawable(R.mipmap.no_image));
+                holder.image.setImageDrawable(res.getDrawable(R.mipmap.doc_icon));
             }
         }
     }

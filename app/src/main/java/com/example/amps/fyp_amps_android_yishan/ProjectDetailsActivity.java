@@ -546,7 +546,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
             ImageView imageView = new ImageView(this);
             Resources res = getResources();
-            imageView.setImageDrawable(res.getDrawable(R.mipmap.folder));
+            imageView.setImageDrawable(res.getDrawable(R.mipmap.folder_icon));
 
             TextView textViewName = new TextView(this);
 //            textViewName.setText(folder.getName());
