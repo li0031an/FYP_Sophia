@@ -227,6 +227,7 @@ public class LoginActivity extends Activity implements Settings {
             } catch (JSONException e) {
                 Log.d(TAG, e.getMessage());
                 e.printStackTrace();
+                showToast("Please make sure internet connection is available.");
             }
         }
     }
@@ -235,7 +236,7 @@ public class LoginActivity extends Activity implements Settings {
         Toast toast = Toast.makeText(
                 LoginActivity.this,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 }

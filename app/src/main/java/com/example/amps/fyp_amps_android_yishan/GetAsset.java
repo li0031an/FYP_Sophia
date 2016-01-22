@@ -101,7 +101,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
             int errorCode = job.getInt("error_code");
-            if (errorCode == 0) showToast("get one level child successfully");
+//            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));
@@ -165,7 +165,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         Toast toast = Toast.makeText(
                 context,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 

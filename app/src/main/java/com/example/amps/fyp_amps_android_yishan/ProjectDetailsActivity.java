@@ -42,18 +42,17 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private Folder rootFolder;
     private ArrayList<Object> folderList = new ArrayList<Object>();
     private ArrayList<Object> assetList = new ArrayList<Object>();
-    //    private String[] listviewMenu;
     private Object currentItemList;
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
     GetAsset getAsset;
     GetAssetDetail getAssetDetail;
-    //////
+
     private static String header;
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    //////
+
     private int noFolderItem;
     private int noAssetItem;
 

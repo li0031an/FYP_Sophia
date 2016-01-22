@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.amps.fyp_amps_android_yishan.BaseActivity">
 
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+    <item android:id="@+id/action_logout"
+        android:title="@string/logout"
         android:orderInCategory="10"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_logout"
-        android:title="@string/logout"
-        android:icon="@mipmap/ic_launcher"
-        android:orderInCategory="300"
-        android:showAsAction="ifRoom" />
+    <!--<item android:id="@+id/action_logout"-->
+        <!--android:title="@string/logout"-->
+        <!--android:icon="@mipmap/ic_launcher"-->
+        <!--android:orderInCategory="300"-->
+        <!--android:showAsAction="ifRoom" />-->
 
 </menu>

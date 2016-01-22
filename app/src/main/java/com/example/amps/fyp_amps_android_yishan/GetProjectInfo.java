@@ -94,7 +94,7 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
             int errorCode= job.getInt("error_code");
             String errorMsg = job.getString("error_messages");
 
-            if (errorCode == 0) showToast("get one level child successfully");
+//            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));
                 return array;
@@ -143,7 +143,7 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
         Toast toast = Toast.makeText(
                 context,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 }

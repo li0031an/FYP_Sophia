@@ -116,7 +116,7 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
         Toast toast = Toast.makeText(
                 activity,
                 info,
-                Toast.LENGTH_LONG);
+                Toast.LENGTH_SHORT);
         toast.show();
     }
 }
