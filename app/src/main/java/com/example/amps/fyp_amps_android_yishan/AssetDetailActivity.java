@@ -45,6 +45,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
             asset_name = extras.getString("asset_name");
         }
 
+        getActionBar().setDisplayShowTitleEnabled(true);
         if (null != asset_name) {
             setTitle(asset_name);
         } else {
