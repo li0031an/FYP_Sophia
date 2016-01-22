@@ -168,6 +168,9 @@
     <string name="image_or_videos">Images or Videos</string>
     <string name="other_types">Other types</string>
 
+<!-- preview video activity-->
+    <string name="loading_video">Loading video…</string>
+
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_image_review_full_screen">ImageReviewFullScreenActivity</string>

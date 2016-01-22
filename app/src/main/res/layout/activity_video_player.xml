@@ -14,8 +14,8 @@
 
         <com.example.amps.fyp_amps_android_yishan.preview.VideoEnabledWebView
             android:id="@+id/webView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     </RelativeLayout>
 
@@ -25,13 +25,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <!-- View that will be shown while the fullscreen video loads (maybe include a spinner and a "Loading..." message) -->
-        <View
+        <!-- View that will be shown while the fullscreen video loads. For example you could include
+        a "Loading..." message. However, in this particular example this view is actually defined in
+        view_loading_video.xml and inflated programmatically in ExampleActivity.java. The reason for
+        this is to keep the main layout (this file) cleaner. -->
+        <!-- <View
             android:id="@+id/videoLoading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:visibility="invisible" />
+            android:visibility="invisible" /> -->
 
     </RelativeLayout>
 
