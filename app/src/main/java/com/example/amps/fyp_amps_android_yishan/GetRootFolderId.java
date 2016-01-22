@@ -57,7 +57,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
         rootFolderId = parseRootFolderId((String) result);
 
         if (null != rootFolderId) {
-            if (Integer.parseInt(rootFolderId.error_code) == 0) {
+            if (Integer.parseInt(rootFolderId.getError_code()) == 0) {
                 rootFolderInfo = rootFolderId.getRootFolderInfo();
                 if (null != rootFolderInfo) {
                     Log.d(TAG, "IN rootFolderInfo ID" + rootFolderInfo.getFolder_id());

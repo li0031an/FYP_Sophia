@@ -62,7 +62,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
         Log.d(TAG, "onPostExecute starts");
         OneLevelChild oneLevelChild = parseOneLevelChildObject((String) result);
         if (null != oneLevelChild) {
-            if (Integer.parseInt(oneLevelChild.error_code) == 0) {
+            if (Integer.parseInt(oneLevelChild.getError_code()) == 0) {
                 folderList = oneLevelChild.getFolderList();
                 if (null != folderList) {
                     getOneLevelChildListener.onOneLevelChildReady();
