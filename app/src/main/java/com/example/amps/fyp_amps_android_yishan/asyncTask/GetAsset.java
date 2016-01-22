@@ -1,4 +1,4 @@
-package com.example.amps.fyp_amps_android_yishan;
+package com.example.amps.fyp_amps_android_yishan.asyncTask;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,6 +6,10 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.amps.fyp_amps_android_yishan.Asset;
+import com.example.amps.fyp_amps_android_yishan.GetAssetListener;
+import com.example.amps.fyp_amps_android_yishan.Settings;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -21,7 +25,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class GetAsset extends AsyncTask<Object, Object, Object> implements Settings{
+public class GetAsset extends AsyncTask<Object, Object, Object> implements Settings {
     private static String TAG = "GetAsset";
     GetAssetListener getAssetListener;
     Context context;

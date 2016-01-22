@@ -1,4 +1,4 @@
-package com.example.amps.fyp_amps_android_yishan.asyncTask.;
+package com.example.amps.fyp_amps_android_yishan.asyncTask;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

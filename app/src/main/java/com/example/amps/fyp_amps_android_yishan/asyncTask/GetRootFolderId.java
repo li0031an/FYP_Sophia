@@ -1,4 +1,4 @@
-package com.example.amps.fyp_amps_android_yishan;
+package com.example.amps.fyp_amps_android_yishan.asyncTask;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,6 +6,11 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.amps.fyp_amps_android_yishan.Folder;
+import com.example.amps.fyp_amps_android_yishan.GetRootFolderIdListener;
+import com.example.amps.fyp_amps_android_yishan.RootFolderId;
+import com.example.amps.fyp_amps_android_yishan.Settings;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -21,7 +26,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class GetRootFolderId extends AsyncTask<Object, Object, Object> implements Settings{
+public class GetRootFolderId extends AsyncTask<Object, Object, Object> implements Settings {
 
     private static String TAG = "GetRootFolderId";
     GetRootFolderIdListener getRootFolderIdListener;
@@ -57,7 +62,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
         rootFolderId = parseRootFolderId((String) result);
 
         if (null != rootFolderId) {
-            if (Integer.parseInt(rootFolderId.error_code) == 0) {
+            if (Integer.parseInt(rootFolderId.getError_code()) == 0) {
                 rootFolderInfo = rootFolderId.getRootFolderInfo();
                 if (null != rootFolderInfo) {
                     Log.d(TAG, "IN rootFolderInfo ID" + rootFolderInfo.getFolder_id());

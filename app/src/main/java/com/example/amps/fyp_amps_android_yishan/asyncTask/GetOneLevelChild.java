@@ -1,4 +1,4 @@
-package com.example.amps.fyp_amps_android_yishan;
+package com.example.amps.fyp_amps_android_yishan.asyncTask;
 
 //get one level child
 
@@ -10,6 +10,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.Toast;
+
+import com.example.amps.fyp_amps_android_yishan.Folder;
+import com.example.amps.fyp_amps_android_yishan.GetOneLevelChildListener;
+import com.example.amps.fyp_amps_android_yishan.OneLevelChild;
+import com.example.amps.fyp_amps_android_yishan.Settings;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -62,7 +67,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
         Log.d(TAG, "onPostExecute starts");
         OneLevelChild oneLevelChild = parseOneLevelChildObject((String) result);
         if (null != oneLevelChild) {
-            if (Integer.parseInt(oneLevelChild.error_code) == 0) {
+            if (Integer.parseInt(oneLevelChild.getError_code()) == 0) {
                 folderList = oneLevelChild.getFolderList();
                 if (null != folderList) {
                     getOneLevelChildListener.onOneLevelChildReady();

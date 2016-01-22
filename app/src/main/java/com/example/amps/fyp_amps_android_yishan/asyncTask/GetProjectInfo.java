@@ -1,4 +1,4 @@
-package com.example.amps.fyp_amps_android_yishan;
+package com.example.amps.fyp_amps_android_yishan.asyncTask;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,6 +6,10 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.Toast;
+
+import com.example.amps.fyp_amps_android_yishan.GetProjectInfoListener;
+import com.example.amps.fyp_amps_android_yishan.Project;
+import com.example.amps.fyp_amps_android_yishan.Settings;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
