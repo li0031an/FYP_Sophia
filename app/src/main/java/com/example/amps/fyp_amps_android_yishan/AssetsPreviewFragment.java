@@ -30,15 +30,20 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -89,29 +94,33 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     public void setProject_id(String project_id) {
         this.project_id = project_id;
     }
+
     public void setFolderId(String folderId) {
         this.folderId = folderId;
     }
 
-    public void setVideo_Url(String video_url){
+    public void setVideo_Url(String video_url) {
         this.video_url = video_url;
     }
 
-    public void setRevId(String revId){
+    public void setRevId(String revId) {
         this.revId = revId;
     }
-    public void setFile_size(double fileSize){
+
+    public void setFile_size(double fileSize) {
         this.fileSize = fileSize;
     }
 
     @Override
     public void onDownloadAssetReady(Uri uri) {
 //        --todo: to be implemented
-        Intent reviewImageFullScreen = new Intent(getActivity(),ImageReviewFullScreenActivity.class);
+        Intent reviewImageFullScreen = new Intent(getActivity(), ImageReviewFullScreenActivity.class);
         reviewImageFullScreen.putExtra("imageExt", asset.getExt());
         reviewImageFullScreen.putExtra("imageUri", uri.toString());
         getActivity().startActivity(reviewImageFullScreen);
-    };
+    }
+
+    ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -151,6 +160,58 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         /////
+        Button add_button = (Button) getActivity().findViewById(R.id.imageButtonUpload);
+//        add_button.setOnClickListener(this);
+        registerForContextMenu(add_button);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater menuInflater = getActivity().getMenuInflater();
+        menuInflater.inflate(R.menu.menu_asset_upload, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        //get the context view item selected, e.g. original menu
+//        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        String environment = "";
+        //get the action to do, e.g. upload images or videos
+        switch (item.getItemId()) {
+            case R.id.upload_item_image_or_video:
+                environment = Environment.DIRECTORY_PICTURES;
+                break;
+            case R.id.upload_item_other_types:
+                environment = Environment.DIRECTORY_DOWNLOADS;
+                break;
+            default: // do nothing
+        }
+        callUploadActivity(environment);
+        return super.onContextItemSelected(item);
+    }
+
+    private void callUploadActivity(String environmentVariable) {
+        Intent uploadFile = new Intent(getActivity(), AssetUploadActivity.class);
+        uploadFile.putExtra("asset_id", asset_id);
+        uploadFile.putExtra("project_id", project_id);
+        uploadFile.putExtra("folder_id", folderId);
+        uploadFile.putExtra("isNewRevision", true);
+        uploadFile.putExtra("environment", environmentVariable);
+        String assetFullName = asset.getName() + asset.getExt();
+        uploadFile.putExtra("assetFullName",assetFullName);
+        Log.d("AssetUploadActivity","pass to assetFullName: "+assetFullName);
+        uploadFile.putExtra("latest_revid",asset.getLatest_revid());
+        Log.d("AssetUploadActivity","pass to latest_revid: "+asset.getLatest_revid());
+        Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
+        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
+//                    String assetFullName = asset.getName() + "." + asset.getExt();
+//                    String assetFullName = "";
+//                    uploadImage.putExtra("assetFullName", assetFullName);
+//                    Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
+//                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
+//                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
+        getActivity().startActivity(uploadFile);
     }
 
     public void showToast(String message) {
@@ -163,7 +224,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         try {
             switch (view.getId()) {
                 case R.id.imageButtonReview:
-                    if (null == asset.getFileType()) asset.setFileType(setAssetFileType(asset.getExt()));
+                    if (null == asset.getFileType())
+                        asset.setFileType(setAssetFileType(asset.getExt()));
 
                     if (asset.getFileType() == Asset.FileType.IMAGE) {
                         ImageButton imageButtonReview = (ImageButton) getActivity().findViewById(R.id.imageButtonReview);
@@ -188,26 +250,12 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                         i.putExtra("token_id", tokenid);
                         i.putExtra("user_id", userid);
                         i.putExtra("project_id", project_id);
-                        i.putExtra("revNum",asset.getLatest_revnum());
+                        i.putExtra("revNum", asset.getLatest_revnum());
                         startActivity(i);
                     } else {
                         //todo -- preview for audio, document/text to be implemented
                         showToast("Sorry, this kind of file is not supported for preview yet");
-                }
-                    break;
-                case R.id.imageButtonUpload:
-                    Intent uploadImage = new Intent(getActivity(),AssetUploadActivity.class);
-                    uploadImage.putExtra("asset_id", asset_id);
-                    uploadImage.putExtra("project_id", project_id);
-                    uploadImage.putExtra("folder_id", folderId);
-                    uploadImage.putExtra("isNewRevision", true);
-                    Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
-                    String assetFullName = asset.getName() + asset.getExt();
-                    uploadImage.putExtra("assetFullName", assetFullName);
-                    Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
-                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
-                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
-                    getActivity().startActivity(uploadImage);
+                    }
                     break;
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
@@ -231,9 +279,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         }
     }
 
-    public void onDeleteAsset(){
+    public void onDeleteAsset() {
         getActivity().finish();
     }
+
     public int getCameraPhotoOrientation(Context context, Uri imageUri,
                                          String imagePath) {
         int rotate = 0;
@@ -289,8 +338,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         Asset.FileType fileType = setAssetFileType(asset.getExt());
         asset.setFileType(fileType);
 
-        if(asset.getFileType() == Asset.FileType.IMAGE) {
-            if(!asset.getBase64_thumbnail().isEmpty()){
+        if (asset.getFileType() == Asset.FileType.IMAGE) {
+            if (null != asset.getBase64_thumbnail() && !asset.getBase64_thumbnail().isEmpty()) {
                 decodedString = Base64.decode(asset.getBase64_thumbnail(), Base64.DEFAULT);
             }
         }
@@ -299,13 +348,12 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         task.execute();
     }
 
-    protected Asset.FileType setAssetFileType (String ext) {
+    protected Asset.FileType setAssetFileType(String ext) {
         Asset.FileType fileType;
-        if((ext.equals("jpg") || (ext.equals("png") || (ext.equals("jpeg")) || (ext.equals("gif"))))){
+        if ((ext.equals("jpg") || (ext.equals("png") || (ext.equals("jpeg")) || (ext.equals("gif"))))) {
             fileType = Asset.FileType.IMAGE;
-        }
-        else if((ext.equals("avi") || (ext.equals("flv") || (ext.equals("mp4")) || (ext.equals("webm"))
-                || (ext.equals("wmv"))))){
+        } else if ((ext.equals("avi") || (ext.equals("flv") || (ext.equals("mp4")) || (ext.equals("webm"))
+                || (ext.equals("wmv"))))) {
             fileType = Asset.FileType.VIDEO;
         } else if ((ext.equals("pdf") || (ext.equals("txt") || (ext.equals("doc")) || (ext.equals("xml")) || (ext.equals("pptx"))))) {
             fileType = Asset.FileType.DOCUMENT;
