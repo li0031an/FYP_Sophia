@@ -1,7 +1,10 @@
 package com.example.amps.fyp_amps_android_yishan;
 
+import android.content.ContentUris;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -57,6 +60,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     private static String TAG = "AssetUploadActivity";
     private static final int PICK_IMAGE_VIDEO_RESULT_CODE = 10;
     private static final int PICK_FILE_RESULT_CODE = 11;
+    private static final int GALLERY_KITKAT_INTENT_CALLED = 100;
     private static final int MAX_CONTENT_SIZE = 1024 * 1024; //1024*1024byte = 1MB
     private static final String ERR_MSG_UPLOAD_FAIL = "Upload fail. Please upload again.";
     private static final String ERR_MSG_NO_IMAGE_SELECTED = "Upload fail. Please upload an image.";
@@ -112,6 +116,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     }
 
     private void startPickImageVideoIntent() {
+//        if (Build.VERSION.SDK_INT < 19) {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -130,6 +135,12 @@ public class AssetUploadActivity extends Activity implements Settings {
 //        startActivityForResult(intent, PICKFILE_RESULT_CODE);
         startActivityForResult(Intent.createChooser(intent, "Select picture or video"),
                 PICK_IMAGE_VIDEO_RESULT_CODE);
+//        } else {
+//            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+//            intent.addCategory(Intent.CATEGORY_OPENABLE);
+//            intent.setType("image/jpeg");
+//            startActivityForResult(intent, GALLERY_KITKAT_INTENT_CALLED);
+//        }
     }
 
     private void startPickFileIntent() {
@@ -155,7 +166,7 @@ public class AssetUploadActivity extends Activity implements Settings {
         String[] mimetypes = {"text/*|application/*"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
 //        startActivityForResult(intent, PICKFILE_RESULT_CODE);
-        startActivityForResult(Intent.createChooser(intent,  "Select " + pickEnvironment),
+        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment),
                 PICK_IMAGE_VIDEO_RESULT_CODE);
 
     }
@@ -170,19 +181,26 @@ public class AssetUploadActivity extends Activity implements Settings {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case PICK_IMAGE_VIDEO_RESULT_CODE:
-                case PICK_FILE_RESULT_CODE:
-                    uploadFileUri = data.getData();
-                    Log.d(TAG, "uri: " + uploadFileUri);
-                    break;
-                default:
-                    Log.e(TAG, "requestCode is not valid: " + requestCode);
-                    return;
-            }
-        }
+        if (resultCode != Activity.RESULT_OK) return;
         if (null == data) return;
+        switch (requestCode) {
+            case PICK_IMAGE_VIDEO_RESULT_CODE:
+            case PICK_FILE_RESULT_CODE:
+                uploadFileUri = data.getData();
+                Log.d(TAG, "uri: " + uploadFileUri);
+                break;
+//            case GALLERY_KITKAT_INTENT_CALLED:
+//                uploadFileUri = data.getData();
+//                final int takeFlags = data.getFlags()
+//                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//                // Check for the freshest data.
+//                getContentResolver().takePersistableUriPermission(uploadFileUri, getIntent().FLAG_GRANT_READ_URI_PERMISSION);
+//                break;
+            default:
+                Log.e(TAG, "requestCode is not valid: " + requestCode);
+                return;
+        }
         uploadFileUri = data.getData();
         Log.d(TAG, "uri: " + uploadFileUri);
         if (uploadFileUri.toString().contains("image")) uploadFileType = FileType.IMAGE;
@@ -282,26 +300,157 @@ public class AssetUploadActivity extends Activity implements Settings {
         // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
         // Consider using CursorLoader to perform the query.
         Log.d(TAG, "uri: " + uri);
-        String[] projection;
-        switch (uploadFileType) {
-            case IMAGE:
-                projection = new String[] {MediaStore.Images.Media.DATA};
-                break;
-            case VIDEO:
-                projection = new String[] {MediaStore.Video.Media.DATA};
-                break;
-            case AUDIO:
-                projection = new String[] {MediaStore.Audio.Media.DATA};
-                break;
-            default: projection = new String[] {MediaStore.Files.FileColumns.DATA};
+//        String[] projection;
+//        switch (uploadFileType) {
+//            case IMAGE:
+//                projection = new String[] {MediaStore.Images.Media.DATA};
+//                break;
+//            case VIDEO:
+//                projection = new String[] {MediaStore.Video.Media.DATA};
+//                break;
+//            case AUDIO:
+//                projection = new String[] {MediaStore.Audio.Media.DATA};
+//                break;
+//            default: projection = new String[] {MediaStore.Files.FileColumns.DATA};
+//        }
+////        projection ;
+//        Cursor cursor = AssetUploadActivity.this.getContentResolver().query(uri, projection, null, null, null);
+//        int column_index = cursor
+//                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+//        cursor.moveToFirst();
+//        return cursor.getString(column_index);
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+        // DocumentProvider
+        Context context = AssetUploadActivity.this;
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+
+                // TODO handle non-primary volumes
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
         }
-//        projection ;
-        Cursor cursor = AssetUploadActivity.this.getContentResolver().query(uri, projection, null, null, null);
-        int column_index = cursor
-                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
-        return cursor.getString(column_index);
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+            // Return the remote address
+            if (isGooglePhotosUri(uri))
+                return uri.getLastPathSegment();
+
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
     }
+
+    /**
+     * Get the value of the data column for this Uri. This is useful for
+     * MediaStore Uris, and other file-based ContentProviders.
+     *
+     * @param context       The context.
+     * @param uri           The Uri to query.
+     * @param selection     (Optional) Filter used in the query.
+     * @param selectionArgs (Optional) Selection arguments used in the query.
+     * @return The value of the _data column, which is typically a file path.
+     */
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is ExternalStorageProvider.
+     */
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is DownloadsProvider.
+     */
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is MediaProvider.
+     */
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is Google Photos.
+     */
+    public static boolean isGooglePhotosUri(Uri uri) {
+        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+    }
+
 
     public int getCameraPhotoOrientation(Context context, Uri imageUri,
                                          String imagePath) {
