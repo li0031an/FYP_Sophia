@@ -17,7 +17,7 @@
             android:id="@+id/cardImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_gravity="center_horizontal"
             android:layout_alignParentTop="true"
             android:paddingLeft="@dimen/cardview_padding"
             android:paddingRight="@dimen/cardview_padding"
