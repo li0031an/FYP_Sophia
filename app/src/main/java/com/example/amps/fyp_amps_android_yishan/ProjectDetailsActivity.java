@@ -1,6 +1,7 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -8,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,7 +17,9 @@ import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,6 +27,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TableRow;
@@ -136,22 +141,69 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         switch (item.getItemId()) {
             case R.id.upload_item_image_or_video:
                 environment = Environment.DIRECTORY_PICTURES;
+                callUploadActivity(environment);
                 break;
             case R.id.upload_item_other_types:
                 environment = Environment.DIRECTORY_DOWNLOADS;
+                callUploadActivity(environment);
                 break;
             case R.id.create_new_folder:
                 showToast("create_new_folder.");
+                askForNewFolderName();
                 break;
             default: // do nothing
         }
-        if ("" != environment) {
-            callUploadActivity(environment);
-        } else {
-            //do create new folder
-        }
+//        if ("" != environment) {
+//            callUploadActivity(environment);
+//        } else {
+//            //do create new folder
+//        }
         return super.onContextItemSelected(item);
     }
+
+    protected void askForNewFolderName() {
+        // get prompts.xml view
+        LayoutInflater li = LayoutInflater.from(ProjectDetailsActivity.this);
+        View promptsView = li.inflate(R.layout.prompt_new_folder_name, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                new ContextThemeWrapper(this, R.style.dialogTheme));
+
+        // set prompts.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
+        final EditText userInput = (EditText) promptsView
+                .findViewById(R.id.editTextDialogUserInput);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("Confirm",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // get user input and set it to result
+                                // edit text
+                                String name =  userInput.getText().toString();
+                                startAsyncTask(name);
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    public void startAsyncTask(String name){
+        showToast("name: " + name);
+    }
+
 
     @Override
     protected void onStart() {
@@ -206,7 +258,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         }
     }
 
-    protected void onItemClickCommon (int position, View v) {
+    protected void onItemClickCommon(int position, View v) {
         Log.d(TAG, " Clicked on Item in onItemClickCommon");
         if (position < noFolderItem) {
             Log.d(TAG, "position < noFolderItem " + position + " " + noFolderItem);
@@ -462,7 +514,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                   onItemClickCommon(position, v);
+                    onItemClickCommon(position, v);
                 }
             });
             mRecyclerView.setAdapter(mAdapter);
