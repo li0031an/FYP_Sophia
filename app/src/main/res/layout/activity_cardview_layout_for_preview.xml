@@ -32,13 +32,13 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="2dp"
+        android:background="@color/SlimeGreen"
         >
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical"
-            android:background="@color/SlimeGreen"
             android:alpha="0.8">
 
         <LinearLayout

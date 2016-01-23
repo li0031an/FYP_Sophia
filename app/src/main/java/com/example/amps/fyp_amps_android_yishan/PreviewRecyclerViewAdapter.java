@@ -114,25 +114,32 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
 
             if (((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
                 if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
-                    Log.d(TAG, "get Base64_thumbnail");
+//                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
                             asset.getBase64_thumbnail(), Base64.DEFAULT);
                     Bitmap decodedByte = BitmapFactory.decodeByteArray(
                             decodedString, 0, decodedString.length);
+                    Log.d(TAG, "decodedByte: " + decodedByte.getHeight() + " " + decodedByte.getWidth());
                     holder.image.setImageBitmap(decodedByte);
                 } else {
-                    Log.d(TAG, "don't get Base64_thumbnail");
+//                    Log.d(TAG, "don't get Base64_thumbnail");
                     Resources res = context.getResources();
-                    holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
+                    holder.image.setImageDrawable(res.getDrawable(R.drawable.unknown_icon_large));
                 }
             } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
                     || (asset.getExt().equals("mp4")) || (asset.getExt().equals("wmv"))
+                    || (asset.getExt().equals("mp3"))
                     || (asset.getExt().equals("webm"))))) {
                 Resources res = context.getResources();
-                holder.image.setImageDrawable(res.getDrawable(R.mipmap.video_icon));
+                holder.image.setImageDrawable(res.getDrawable(R.drawable.video_icon_large));
+            } else if ((asset.getExt().equals("doc") || (asset.getExt().equals("txt")
+                    || (asset.getExt().equals("pptx")) || (asset.getExt().equals("ppt"))
+                    || (asset.getExt().equals("docx"))))) {
+                Resources res = context.getResources();
+                holder.image.setImageDrawable(res.getDrawable(R.drawable.document_icon_large));
             } else {
                 Resources res = context.getResources();
-                holder.image.setImageDrawable(res.getDrawable(R.mipmap.doc_icon));
+                holder.image.setImageDrawable(res.getDrawable(R.drawable.unknown_icon_large));
             }
         }
     }

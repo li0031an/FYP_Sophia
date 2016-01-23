@@ -119,15 +119,22 @@ public class RecyclerViewAdapter extends RecyclerView
                 } else {
 //                    Log.d(TAG, "don't get Base64_thumbnail");
                     Resources res = context.getResources();
-                    holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
+                    holder.image.setImageDrawable(res.getDrawable(R.mipmap.unknown_icon));
                 }
-            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
+            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
+                    || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
+                    || (asset.getExt().equals("mp3"))
                     || (asset.getExt().equals("wmv"))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.mipmap.video_icon));
-            } else {
+            } else if ((asset.getExt().equals("doc") || (asset.getExt().equals("txt")
+                    || (asset.getExt().equals("pptx")) || (asset.getExt().equals("ppt"))
+                    || (asset.getExt().equals("docx"))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.mipmap.doc_icon));
+            } else {
+                Resources res = context.getResources();
+                holder.image.setImageDrawable(res.getDrawable(R.mipmap.unknown_icon));
             }
         }
     }
