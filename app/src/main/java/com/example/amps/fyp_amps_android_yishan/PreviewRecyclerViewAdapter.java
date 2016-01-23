@@ -26,16 +26,17 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
 
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
-        TextView revisionNo, updatedUserName, updatedDate, comment, fileSize;
+        TextView assetNameTV, revisionNo, updatedUserName, updatedDate, comment, fileSize;
         ImageView image;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
-            revisionNo = (TextView) itemView.findViewById(R.id.cardText1);
-            updatedUserName = (TextView) itemView.findViewById(R.id.cardText2);
-            updatedDate = (TextView) itemView.findViewById(R.id.cardText3);
-            comment = (TextView) itemView.findViewById(R.id.cardText4);
-            fileSize = (TextView) itemView.findViewById(R.id.cardText5);
+            assetNameTV = (TextView) itemView.findViewById(R.id.assetNameTV);
+            revisionNo = (TextView) itemView.findViewById(R.id.vertionNumberTV);
+            updatedUserName = (TextView) itemView.findViewById(R.id.updatedUserNameTV);
+            updatedDate = (TextView) itemView.findViewById(R.id.lastUpdateTimeTV);
+            comment = (TextView) itemView.findViewById(R.id.commentTV);
+            fileSize = (TextView) itemView.findViewById(R.id.filesizeTV);
             image = (ImageView) itemView.findViewById(R.id.cardImage);
             Log.i(TAG, "Adding Listener");
             itemView.setOnClickListener(this);
@@ -70,12 +71,16 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
     public void onBindViewHolder(DataObjectHolder holder, int position) {
         Asset asset = (Asset) mDataset.get(position);
 
+        holder.assetNameTV.setText("");
         holder.revisionNo.setText("revision no not available");
         holder.updatedUserName.setText("name not available");
         holder.updatedDate.setText("date not available");
         holder.comment.setText("No comment yet");
         //--todo implement comment
 
+        if (null != asset.getName()) {
+            holder.assetNameTV.setText(asset.getName());
+        }
         if (null != asset.getLatest_revnum()) {
             holder.revisionNo.setText("#" + asset.getLatest_revnum());
         } else {
