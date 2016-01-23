@@ -125,7 +125,9 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.content_picture));
                 }
-            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv") || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))))) {
+            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
+                    || (asset.getExt().equals("mp4")) || (asset.getExt().equals("wmv"))
+                    || (asset.getExt().equals("webm"))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.mipmap.video_icon));
             } else {
