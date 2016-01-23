@@ -4,8 +4,11 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="cardview_padding">10dp</dimen>
     <dimen name="cardview_thumbnail_size">64dp</dimen>
-    <dimen name="cardview_small_file_size_height">300dp</dimen>
-    <dimen name="cardview_small_file_size_width">480dp</dimen>
+    <dimen name="cardview_small_file_size_height">200dp</dimen>
+    <dimen name="cardview_small_file_size_width">300dp</dimen>
+
+    <dimen name="padding_buttom">10dp</dimen>
+
 
 
 </resources>
