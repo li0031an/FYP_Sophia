@@ -5,16 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
-import android.util.Base64;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
@@ -24,22 +19,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 
 public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener,
-        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener {
+        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener, CreateProjectFolderListener {
 
     private static String TAG = "ProjectDetailsActivity";
     private String projectId;
@@ -183,7 +174,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                                 // get user input and set it to result
                                 // edit text
                                 String name =  userInput.getText().toString();
-                                startAsyncTask(name);
+                                startCreateProjectFolderAsyncTask(name);
                             }
                         })
                 .setNegativeButton("Cancel",
@@ -200,8 +191,11 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         alertDialog.show();
     }
 
-    public void startAsyncTask(String name){
-        showToast("name: " + name);
+    public void startCreateProjectFolderAsyncTask(String name){
+        AsyncTaskCreateProjectFolder asyncTaskCreateProjectFolder =
+                new AsyncTaskCreateProjectFolder(this, name, ProjectDetailsActivity.this,
+                        rootFolderId, settings, projectId);
+        asyncTaskCreateProjectFolder.execute();
     }
 
 
@@ -586,6 +580,24 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             mRecyclerView.setAdapter(mAdapter);
         }
         currentItemList = (Object) assetList;
+    }
+
+    @Override
+    public void onCreateProjectFolderReady(String newFolderId) {
+        Log.d(TAG, "createProjectFolderListener: newFolderId, " + newFolderId);
+        if (null != newFolderId) {
+            if (null != rootFolderId) {
+                getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getAsset.execute();
+                getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getOneLevelChild.execute();
+            } else {
+                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+                getRootFolderId.execute();
+            }
+        } else {
+            Log.e(TAG, "newFolderId is null in onCreateProjectFolderReady");
+        }
     }
 
     public void createFolderCardRow(View v) {
