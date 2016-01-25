@@ -94,7 +94,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                    Log.i(TAG, " Clicked on Item ");
+//                    Log.i(TAG, " Clicked on Item ");
                     displayFolderList(position);
                 }
             });
@@ -177,7 +177,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
             ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
                 @Override
                 public void onItemClick(int position, View v) {
-                    Log.i(TAG, " Clicked on Item ");
+//                    Log.i(TAG, " Clicked on Item ");
                     displayFolderList(position);
                 }
             });

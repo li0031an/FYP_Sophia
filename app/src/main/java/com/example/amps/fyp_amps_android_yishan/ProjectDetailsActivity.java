@@ -209,7 +209,9 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart()");
-        ((RecyclerViewAdapter) mAdapter).clearData();
+        if(null != mAdapter) {
+            ((RecyclerViewAdapter) mAdapter).clearData();
+        }
         SharedPreferences details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         projectId = details.getString("projectId", null);
         Log.d(TAG, "projectId: " + projectId);
@@ -219,7 +221,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         if (layerNo > 1) {
             intentRootId = details.getString(String.valueOf(layerNo), null);
         } else if (layerNo == 1) {
-            details.edit().putInt("NO", layerNo - 1).commit();
+            intentRootId = details.getString(String.valueOf(layerNo), null);
         }
         if (null != intentRootId) {
             details.edit().putInt("NO", layerNo - 1).commit();
@@ -227,9 +229,11 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             rootFolderId = intentRootId;
             getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
             getAsset.execute();
+            getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+            getOneLevelChild.execute();
         } else {
             getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-            Log.d(TAG, "CALL - GetRootFolderId");
+//            Log.d(TAG, "CALL - GetRootFolderId");
             getRootFolderId.execute();
         }
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -253,12 +257,12 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     protected void onItemClickCommon(int position, View v) {
-        Log.d(TAG, " Clicked on Item in onItemClickCommon");
+//        Log.d(TAG, " Clicked on Item in onItemClickCommon");
         if (position < noFolderItem) {
-            Log.d(TAG, "position < noFolderItem " + position + " " + noFolderItem);
+//            Log.d(TAG, "position < noFolderItem " + position + " " + noFolderItem);
             displayAssetList(position);
         } else {
-            Log.d(TAG, "position > noFolderItem " + position + " " + noFolderItem);
+//            Log.d(TAG, "position > noFolderItem " + position + " " + noFolderItem);
             int newPosition = position - noFolderItem;
             Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
             intent.putExtra("project_id", projectId);
@@ -273,12 +277,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     protected void onPause() {
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
-        if (null != rootFolderId) {
+        boolean isBackPressed = Details.getBoolean("IsBackPressed", false);
+        Details.edit().putBoolean("IsBackPressed", false).commit();
+        Log.d(TAG, "onPause IsBackPressed: " + String.valueOf(isBackPressed));
+        if ((!isBackPressed) && (null != rootFolderId)) {
             int layerNo = Details.getInt("NO", 0);
             String stringNo = String.valueOf(layerNo + 1);
             Details.edit().putInt("NO", layerNo + 1)
                     .putString(stringNo, rootFolderId).commit();
             Log.d(TAG, "NO: onPause: " + String.valueOf(layerNo + 1));
+            Log.d(TAG, "Layno, rootFolderId: " + String.valueOf(layerNo + 1) + " " + rootFolderId);
         }
         Details.edit().putString("projectId", projectId).commit();
         super.onPause();
@@ -314,8 +322,9 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     public void onBackPressed() {
         SharedPreferences Details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
         int layerNo = Details.getInt("NO", 0);
-        Details.edit().putInt("NO", layerNo - 1).commit();
-        Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo - 1));
+//        Details.edit().putInt("NO", layerNo - 1).commit();
+        Details.edit().putBoolean("IsBackPressed", true).commit();
+        Log.d(TAG, "layerno: onBackPressed: " + String.valueOf(layerNo));
         ProjectDetailsActivity.super.onBackPressed();
         finish();
     }
@@ -394,8 +403,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         uploadFile.putExtra("folder_id", rootFolderId);
         uploadFile.putExtra("isNewRevision", false);
         uploadFile.putExtra("environment", environmentVariable);
-        Log.d("AssetUploadActivity", "pass to folder_id: " + rootFolderId);
-        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
+//        Log.d("AssetUploadActivity", "pass to folder_id: " + rootFolderId);
+//        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
 //                    String assetFullName = asset.getName() + "." + asset.getExt();
 //                    String assetFullName = "";
 //                    uploadImage.putExtra("assetFullName", assetFullName);
@@ -435,7 +444,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             }
         } else {
 //            showToast("Sorry cannot get one level child because root id not found.");
-            Log.d(TAG, "rootId not found");
+//            Log.d(TAG, "rootId not found");
         }
     }
 
@@ -444,12 +453,12 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
 //        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
         if (null != arrayfolderList && 0 != arrayfolderList.size()) {
-            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
+//            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
             currentItemList = (Object) arrayfolderList;
             folderList.clear();
-            Log.d(TAG, "start to add folderlist");
+//            Log.d(TAG, "start to add folderlist");
             for (int i = 0; i < arrayfolderList.size(); i++) {
-                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
+//                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
                 folderList.add(arrayfolderList.get(i));
             }
             mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
@@ -476,15 +485,15 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         ArrayList<Asset> arrayAssetList = getAsset.getAssetList();
 
         if (null != arrayAssetList) {
-            Log.d(TAG, "assetList is gotten");
+//            Log.d(TAG, "assetList is gotten");
             Boolean needThumbNailUpdate = false;
             assetList.clear();
             ArrayList<String> assetIdList = new ArrayList<String>();
             for (int i = 0; i < arrayAssetList.size(); i++) {
                 Asset temp = arrayAssetList.get(i);
-                Log.d(TAG, "array type: " + temp.getExt());
+//                Log.d(TAG, "array type: " + temp.getExt());
                 if (((temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))))) {
-                    Log.d(TAG, "call GetAssetDetail()");
+//                    Log.d(TAG, "call GetAssetDetail()");
                     needThumbNailUpdate = true;
                     assetIdList.add(temp.asset_id);
                 } //Todo -- if several images are calling GetAssetDetail() at almost the same time
@@ -561,7 +570,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 //                    mRecyclerView.setAdapter(mAdapter);
                 }
             }
-            Log.d(TAG, "onAssetDetailReady: folderList, assetList" + folderList.size() + " " + assetList.size());
+//            Log.d(TAG, "onAssetDetailReady: folderList, assetList" + folderList.size() + " " + assetList.size());
             mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
             noAssetItem = 0;
             noFolderItem = 0;
@@ -584,7 +593,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onCreateProjectFolderReady(String newFolderId) {
-        Log.d(TAG, "createProjectFolderListener: newFolderId, " + newFolderId);
+//        Log.d(TAG, "createProjectFolderListener: newFolderId, " + newFolderId);
         if (null != newFolderId) {
             if (null != rootFolderId) {
                 getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
