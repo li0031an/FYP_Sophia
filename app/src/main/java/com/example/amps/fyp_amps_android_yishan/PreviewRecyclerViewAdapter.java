@@ -79,7 +79,13 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
         //--todo implement comment
 
         if (null != asset.getName()) {
-            holder.assetNameTV.setText(asset.getName());
+            String fullname = asset.getName();
+            if (null != asset.getExt()) {
+                fullname = fullname + "." + asset.getExt();
+            } else {
+                //do nothing
+            }
+            holder.assetNameTV.setText(fullname);
         }
         if (null != asset.getLatest_revnum()) {
             holder.revisionNo.setText("#" + asset.getLatest_revnum());

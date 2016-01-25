@@ -89,6 +89,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
             Log.d(TAG, "response body: " + responseBody.toString());
         } catch (Exception e) {
             e.printStackTrace();
+            responseBody = null;
         }
         return responseBody;
     }

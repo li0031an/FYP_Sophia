@@ -60,7 +60,10 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
     protected void onPostExecute(Object result) {
         dialog.dismiss();
         Log.d(TAG, "onPostExecute starts");
-        OneLevelChild oneLevelChild = parseOneLevelChildObject((String) result);
+        OneLevelChild oneLevelChild = null;
+        if (null != result) {
+            oneLevelChild = parseOneLevelChildObject((String) result);
+        }
         if (null != oneLevelChild) {
             if (Integer.parseInt(oneLevelChild.getError_code()) == 0) {
                 folderList = oneLevelChild.getFolderList();
@@ -99,6 +102,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
             Log.d(TAG, "response body: " + responseBody.toString());
         } catch (Exception e) {
             e.printStackTrace();
+            responseBody = null;
         }
         return responseBody;
     }
