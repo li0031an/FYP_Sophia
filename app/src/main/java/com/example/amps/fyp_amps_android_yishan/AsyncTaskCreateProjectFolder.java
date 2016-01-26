@@ -106,7 +106,11 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
 //            if (errorCode == 0) showToast("create new folder successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Sorry, you cannot create new folders here.");
+                }
             }
 
             data_array = job.getJSONObject("data_array");

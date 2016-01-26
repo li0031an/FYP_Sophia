@@ -212,6 +212,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 //                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
 //                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
         getActivity().startActivity(uploadFile);
+        getActivity().finish();
     }
 
     public void showToast(String message) {
