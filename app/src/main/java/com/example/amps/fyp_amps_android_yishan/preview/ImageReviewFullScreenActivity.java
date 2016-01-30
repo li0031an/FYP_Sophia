@@ -1,44 +1,19 @@
 package com.example.amps.fyp_amps_android_yishan.preview;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-//import android.net.uri;
-
-//import com.example.amps.WorkingAssetsListActivity.GetProjectInfo;
-//import com.example.amps.touch.TouchImageView;
-
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.PointF;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.FloatMath;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-
 
 import com.example.amps.fyp_amps_android_yishan.DownloadAsset;
 import com.example.amps.fyp_amps_android_yishan.DownloadAssetListener;
 import com.example.amps.fyp_amps_android_yishan.R;
 import com.example.amps.fyp_amps_android_yishan.Settings;
-import com.example.amps.fyp_amps_android_yishan.touch.TouchImageView;
 
 public class ImageReviewFullScreenActivity extends Activity implements Settings, DownloadAssetListener {
     private static final String TAG = "ImageReview";
@@ -64,15 +39,7 @@ public class ImageReviewFullScreenActivity extends Activity implements Settings,
             imageProjectId = extras.getString("imageProjectId");
             imageFullName = extras.getString("imageFullName");
             imageLatestRevid = extras.getString("imageLatestRevid");
-
-//            uri = Uri.parse(stringUri);
-//            Log.d(TAG, "image uri is gotten from extras: " + stringUri);
         }
-//        if (null != uri) {
-//            imageView.setImageURI(uri);
-//            TouchImageView img = (TouchImageView) findViewById(R.id.imageReviewFullScreen);
-//            img.setMaxZoom(4);
-//        }
         SharedPreferences settings = getSharedPreferences(SETTINGS, 0);
         if (null != imageExt && null != imageId && null != imageLatestRevid
                 && null != imageProjectId && null != imageFullName) {
@@ -94,8 +61,6 @@ public class ImageReviewFullScreenActivity extends Activity implements Settings,
 
     @Override
     public void onDownloadAssetReady(Bitmap bitmap) {
-//        Bitmap bitmap = decodeImage(inputStream, width, height);
-//        Log.d(TAG, "bitmap size: " + bitmap.getByteCount());
         imageView.setImageBitmap(bitmap);
     }
 

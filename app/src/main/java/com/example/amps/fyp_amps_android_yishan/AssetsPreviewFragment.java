@@ -58,7 +58,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
     ProgressDialog dialog;
-    ProgressDialog downloadDialog;
     Asset asset;
     String userid;
     String tokenid;
@@ -67,13 +66,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     String video_url;
     String revId;
     double fileSize;
-    static ImageView imageViewPreview;
-    TextView textViewRevisionNo2;
-    TextView textViewUploadedBy2;
-    TextView textViewUploadedDate2;
-    TextView textViewComment2;
-    TextView tvFileSize2;
-    String fileSizeUnit;
     byte[] decodedString;
 
     private RecyclerView mRecyclerView;
@@ -123,17 +115,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-//        imageViewPreview = (ImageView) getActivity().findViewById(
-//                R.id.imageViewPreview);
-//        textViewRevisionNo2 = (TextView) getActivity().findViewById(
-//                R.id.textViewRevisionNo2);
-//        textViewUploadedBy2 = (TextView) getActivity().findViewById(
-//                R.id.textViewUploadedBy2);
-//        textViewUploadedDate2 = (TextView) getActivity().findViewById(
-//                R.id.textViewUploadedDate2);
-//        textViewComment2 = (TextView) getActivity().findViewById(
-//                R.id.textViewComment2);
-//        tvFileSize2 = (TextView)getActivity().findViewById(R.id.tvFileSize2);
         settings = getActivity().getSharedPreferences(SETTINGS, 0);
         String selectAttributes = "[asset_id], [name], [ext], [file_size]" +
                 ", [latest_revid], [latest_revnum], [updated_userid], [updated_username]" +
@@ -195,12 +176,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         Log.d("AssetUploadActivity","pass to latest_revid: "+asset.getLatest_revid());
         Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
         Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
-//                    String assetFullName = asset.getName() + "." + asset.getExt();
-//                    String assetFullName = "";
-//                    uploadImage.putExtra("assetFullName", assetFullName);
-//                    Log.d("AssetUploadActivity", "pass to assetFullName: "+assetFullName);
-//                    uploadImage.putExtra("latest_revid", asset.getLatest_revid());
-//                    Log.d("AssetUploadActivity", "pass to latest_revid: "+ asset.getLatest_revid());
         getActivity().startActivity(uploadFile);
         getActivity().finish();
     }
@@ -313,9 +288,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         return rotate;
     }
 
-    public void onAssetReady() {
-
-    }
+    public void onAssetReady() {}
 
     @Override
     public void onDownloadAssetReady(Bitmap bitmap) {

@@ -180,8 +180,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Bitmap> implements 
             req += "&dostream=1";
             url = req;
         }
-        //TrafficStats traffic = new TrafficStats();
-        //double totalNetworkBytes = traffic.getTotalTxBytes();
 
         if (folderExist) {
             downloadedFile = new File(downloadFolder, assetFullName);
@@ -264,14 +262,11 @@ public class DownloadAsset extends AsyncTask<Object, String, Bitmap> implements 
                         unit = " bytes/s";
                     }
 
-//                    Log.d(TAG, "newSpeed + unit: " + newSpeed + unit);
-//                    Log.d(TAG, "downloadedSize, totalSize" + downloadedSize + " " + totalSize);
-//                    Log.d(TAG, "(downloadedSize * 100 / totalSize): " + String.valueOf(downloadedSize * 100 / totalSize));
                     downloadDialog.setProgressNumberFormat(newSpeed + unit);
                     //increase from 0-100%
-                    int progress = (int) (downloadedSize * 100 / totalSize);
+                    int progress = (downloadedSize * 100 / totalSize);
                     if (progress >= 0) {
-                        publishProgress("" + (int) (downloadedSize * 100 / totalSize));
+                        publishProgress("" + (downloadedSize * 100 / totalSize));
                     } else {
                         publishProgress("" + (100 + progress));
                     }
@@ -313,7 +308,6 @@ public class DownloadAsset extends AsyncTask<Object, String, Bitmap> implements 
     }
 
     //Updating Progress Bar
-    //Focus:
     protected void onProgressUpdate(String... progress) {
         //super.onProgressUpdate(progress);
         if (null != downloadDialog) {
