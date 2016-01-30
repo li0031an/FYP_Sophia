@@ -1,7 +1,9 @@
 package com.example.amps.fyp_amps_android_yishan;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 public interface DownloadAssetListener {
-    void onDownloadAssetReady(Uri uri);
+    void onDownloadAssetReady(Bitmap bitmap);
+    int getRequiredImageWidth();
+    int getRequiredImageHeight();
 }

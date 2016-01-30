@@ -1,6 +1,7 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -110,17 +111,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     public void setFile_size(double fileSize) {
         this.fileSize = fileSize;
     }
-
-    @Override
-    public void onDownloadAssetReady(Uri uri) {
-//        --todo: to be implemented
-        Intent reviewImageFullScreen = new Intent(getActivity(), ImageReviewFullScreenActivity.class);
-        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
-        reviewImageFullScreen.putExtra("imageUri", uri.toString());
-        getActivity().startActivity(reviewImageFullScreen);
-    }
-
-    ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -237,9 +227,13 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                                 switch (action) {
                                     case MotionEvent.ACTION_UP:
                                         String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
-                                        DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
-                                                , asset.asset_id, project_id, assetFullNameDownloaded, asset.getExt(), asset.getLatest_revid(), AssetsPreviewFragment.this, true);
-                                        taskDownload.execute();
+                                        Intent reviewImageFullScreen = new Intent(getActivity(), ImageReviewFullScreenActivity.class);
+                                        reviewImageFullScreen.putExtra("imageExt", asset.getExt());
+                                        reviewImageFullScreen.putExtra("imageId", asset.asset_id);
+                                        reviewImageFullScreen.putExtra("imageProjectId", project_id);
+                                        reviewImageFullScreen.putExtra("imageFullName", assetFullNameDownloaded);
+                                        reviewImageFullScreen.putExtra("imageLatestRevid", asset.getLatest_revid());
+                                        getActivity().startActivity(reviewImageFullScreen);
                                         break;
                                 }
                                 return true;
@@ -321,6 +315,23 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 
     public void onAssetReady() {
 
+    }
+
+    @Override
+    public void onDownloadAssetReady(Bitmap bitmap) {
+        //do nothing
+    }
+
+    @Override
+    public int getRequiredImageWidth() {
+        //do nothing
+        return 0;
+    }
+
+    @Override
+    public int getRequiredImageHeight() {
+        //do nothing
+        return 0;
     }
 
     public void onAssetDetailReady() {

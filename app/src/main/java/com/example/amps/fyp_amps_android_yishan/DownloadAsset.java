@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,7 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
 
-public class DownloadAsset extends AsyncTask<Object, String, Object> implements Settings {
+public class DownloadAsset extends AsyncTask<Object, String, Bitmap> implements Settings {
 
     private static String TAG = "DownloadAsset";
     DownloadAssetListener downloadAssetListener;
@@ -163,7 +165,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
     @SuppressWarnings("deprecation")
     @Override
-    protected String doInBackground(Object... arg0) {
+    protected Bitmap doInBackground(Object... arg0) {
         //return downloadAsset();
         String tokenid = settings.getString("tokenid", null);
         String userid = settings.getString("userid", null);
@@ -196,13 +198,36 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 //                connection.setFixedLengthStreamingMode(bytes.length);
                 connection.setDoOutput(true);
                 connection.connect();
-                //get downloaded data
-                //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
-                fileOutput = new FileOutputStream(downloadedFile, false);
 
                 //get data from internet
                 inputStream = new BufferedInputStream(connection.getInputStream());
 
+                if (isDoStream) {
+                    isDownloadSucessful = true;
+                    int requiredImageWidth = downloadAssetListener.getRequiredImageWidth();
+                    int requiredImageHeight = downloadAssetListener.getRequiredImageHeight();
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inJustDecodeBounds = true;
+                    BitmapFactory.decodeStream(inputStream, null, options);
+                    options.inSampleSize = calculateInSampleSize(options, requiredImageWidth, requiredImageHeight);
+                    options.inJustDecodeBounds = false;
+                    inputStream.close();
+                    //re-get the stream
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    connection.setRequestMethod("GET");
+                    //connection.setFixedLengthStreamingMode(bytes.length);
+                    connection.setDoOutput(true);
+                    connection.connect();
+                    //get data from internet
+                    inputStream = new BufferedInputStream(connection.getInputStream());
+                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+                    inputStream.close();
+                    return bitmap;
+                }
+                //get downloaded data
+                //FileOutputStream fileOutput = new FileOutputStream (downloadLocation);
+                fileOutput = new FileOutputStream(downloadedFile, false);
                 //total size of the file
                 int totalSize = connection.getContentLength();
                 //variable to store total downloaded bytes
@@ -299,7 +324,7 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
 
     @SuppressWarnings("deprecation")
     @Override
-    protected void onPostExecute(Object result) {
+    protected void onPostExecute(Bitmap result) {
         if (null != downloadDialog) {
             downloadDialog.dismiss();
         }
@@ -320,18 +345,18 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
                         }
                     });
                     downloadComplete.show();
-                }
-                //make sure the download file appear in the file system immediately
-                MediaScannerConnection.scanFile(activity,
-                        new String[]{downloadedFile.toString()}, null,
-                        new MediaScannerConnection.OnScanCompletedListener() {
-                            public void onScanCompleted(String path, Uri uri) {
-                                Log.i("ExternalStorage", "Scanned " + path + ":");
-                                Log.i("ExternalStorage", "-> uri=" + uri);
-                            }
-                        });
-                if (isDoStream) {
-                    downloadAssetListener.onDownloadAssetReady(Uri.fromFile(downloadedFile));
+
+                    //make sure the download file appear in the file system immediately
+                    MediaScannerConnection.scanFile(activity,
+                            new String[]{downloadedFile.toString()}, null,
+                            new MediaScannerConnection.OnScanCompletedListener() {
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i("ExternalStorage", "Scanned " + path + ":");
+                                    Log.i("ExternalStorage", "-> uri=" + uri);
+                                }
+                            });
+                } else {
+                    downloadAssetListener.onDownloadAssetReady(result);
                 }
             } else {
                 if (!isDoStream) {
@@ -363,6 +388,29 @@ public class DownloadAsset extends AsyncTask<Object, String, Object> implements 
         } else {
             //do nothing
         }
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 
     public void showToast(String info) {
