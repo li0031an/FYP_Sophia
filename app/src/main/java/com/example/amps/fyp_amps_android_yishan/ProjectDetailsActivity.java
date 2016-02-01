@@ -126,7 +126,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         //get the context view item selected, e.g. original menu
-//        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        //AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         String environment = "";
         //get the action to do, e.g. upload images or videos
         switch (item.getItemId()) {
@@ -189,6 +189,45 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
         // show it
         alertDialog.show();
+    }
+
+    protected void confirmForDeleteFolder(final int position) {
+        // get prompts.xml view
+        if (position < folderList.size()) {
+            LayoutInflater li = LayoutInflater.from(ProjectDetailsActivity.this);
+            View promptsView = li.inflate(R.layout.prompt_confirmation_without_input, null);
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                    new ContextThemeWrapper(this, R.style.dialogTheme));
+
+            // set prompts.xml to alertdialog builder
+            alertDialogBuilder.setView(promptsView);
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Confirm to delete the folder " + ((Folder)folderList.get(position)).getName() + " ?")
+                    .setCancelable(false)
+                    .setPositiveButton("Confirm",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    showToast("should start delete folder " + ((Folder)folderList.get(position)).getName());
+                                }
+                            })
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            // show it
+            alertDialog.show();
+        } else {
+            Log.e(TAG, "the position is out of range: position: " + position);
+        }
     }
 
     public void startCreateProjectFolderAsyncTask(String name){
@@ -257,19 +296,20 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     }
 
     protected void onItemClickCommon(int position, View v) {
-//        Log.d(TAG, " Clicked on Item in onItemClickCommon");
-        if (position < noFolderItem) {
-//            Log.d(TAG, "position < noFolderItem " + position + " " + noFolderItem);
-            displayAssetList(position);
+        if (v.getId() == R.id.clickIcon) {
+            confirmForDeleteFolder(position);
         } else {
-//            Log.d(TAG, "position > noFolderItem " + position + " " + noFolderItem);
-            int newPosition = position - noFolderItem;
-            Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
-            intent.putExtra("project_id", projectId);
-            intent.putExtra("asset_id", ((Asset) assetList.get(newPosition)).getAsset_id());
-            intent.putExtra("asset_name", ((Asset) assetList.get(newPosition)).getName());
-            intent.putExtra("folderId", rootFolderId);
-            startActivity(intent);
+            if (position < noFolderItem) {
+                displayAssetList(position);
+            } else {
+                int newPosition = position - noFolderItem;
+                Intent intent = new Intent(ProjectDetailsActivity.this, AssetDetailActivity.class);
+                intent.putExtra("project_id", projectId);
+                intent.putExtra("asset_id", ((Asset) assetList.get(newPosition)).getAsset_id());
+                intent.putExtra("asset_name", ((Asset) assetList.get(newPosition)).getName());
+                intent.putExtra("folderId", rootFolderId);
+                startActivity(intent);
+            }
         }
     }
 

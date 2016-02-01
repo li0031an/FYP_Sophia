@@ -1,36 +1,13 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import java.util.ArrayList;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TableRow.LayoutParams;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class ProjectListActivity extends BaseActivity implements Settings,
@@ -39,11 +16,9 @@ public class ProjectListActivity extends BaseActivity implements Settings,
     GetProjectInfo task;
     private static String TAG = "ProjectListActivity";
 
-    //////
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-    //////
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +28,7 @@ public class ProjectListActivity extends BaseActivity implements Settings,
         settings = getSharedPreferences(SETTINGS, 0);
         task = new GetProjectInfo(this, ProjectListActivity.this, settings);
         task.execute();
-        /////
+
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(this);

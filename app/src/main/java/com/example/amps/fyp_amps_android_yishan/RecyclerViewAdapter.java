@@ -1,6 +1,7 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -158,20 +160,20 @@ public class RecyclerViewAdapter extends RecyclerView
         }
     }
 
-    public int getNoOfFolderItem() {
-        return folderItemNo;
-    }
-
-    public int getNoOfAssetItem() {
-        return assetItemNo;
-    }
-
     @Override
     public int getItemCount() {
         return mDataset.size();
     }
 
     public interface MyClickListener {
-        public void onItemClick(int position, View v);
+        void onItemClick(int position, View v);
+    }
+
+    public void showToast(String info) {
+        Toast toast = Toast.makeText(
+                context,
+                info,
+                Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

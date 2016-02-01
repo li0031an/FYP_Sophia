@@ -17,7 +17,8 @@
 
     <style name="dialogTheme" parent="Theme.AppCompat.Dialog">
         <item name="android:windowNoTitle">true</item>
-        ...
+        <item name="popupMenuStyle">@style/PopupMenu.Example</item>
+
     </style>
 
     <!-- Application theme. -->
