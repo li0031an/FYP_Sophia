@@ -76,7 +76,7 @@ public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Obje
                 .getString("userid", null)));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
         postParameters.add(new BasicNameValuePair("folderid_lst", folderId));
-
+        Log.d(TAG, "postParameters: " + postParameters.toString());
         // Instantiate a POST HTTP method
         try {
             httppost.setEntity(new UrlEncodedFormEntity(postParameters));
@@ -90,7 +90,7 @@ public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Obje
     }
 
     public boolean parseResultObject(String responseBody) {
-        JSONArray json;
+        JSONArray json, errorMsg;
         JSONObject job, data_array;
         boolean isSuccessful = false;
         try {
@@ -99,18 +99,18 @@ public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Obje
             int errorCode = job.getInt("error_code");
 //            if (errorCode == 0) showToast("create new folder successfully");
             if (errorCode != 0 && errorCode != 33) {
-                String errorMsg = job.getString("error_messages");
-                if (null != errorMsg) {
-                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                errorMsg = job.getJSONArray("error_messages");
+                if (null != errorMsg && errorMsg.toString() != "[]") {
+                    showToast(errorMsg.toString());
                 } else {
-                    showToast("Sorry, you cannot create new folders here.");
+                    showToast("Sorry, you cannot delete the folder here.");
                 }
             } else {
                 isSuccessful = true;
             }
 
-            data_array = job.getJSONObject("data_array");
-            Log.d(TAG, "JSON: " + data_array.toString());
+//            data_array = job.getJSONObject("data_array");
+//            Log.d(TAG, "JSON: " + data_array.toString());
 
         }catch(JSONException e){
             e.printStackTrace();
