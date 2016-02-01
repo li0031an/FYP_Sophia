@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 
 public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener,
-        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener, CreateProjectFolderListener {
+        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener, CreateDeleteProjectFolderListener {
 
     private static String TAG = "ProjectDetailsActivity";
     private String projectId;
@@ -210,7 +210,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     .setPositiveButton("Confirm",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    showToast("should start delete folder " + ((Folder)folderList.get(position)).getName());
+//                                    showToast("should start delete folder " + ((Folder)folderList.get(position)).getName());
+                                    startDeleteProjectFolderAsyncTask((Folder)folderList.get(position));
                                 }
                             })
                     .setNegativeButton("Cancel",
@@ -235,6 +236,13 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 new AsyncTaskCreateProjectFolder(this, name, ProjectDetailsActivity.this,
                         rootFolderId, settings, projectId);
         asyncTaskCreateProjectFolder.execute();
+    }
+
+    public void startDeleteProjectFolderAsyncTask(Folder folder) {
+        AsyncTaskDeleteProjectFolder asyncTaskDeleteProjectFolder =
+                new AsyncTaskDeleteProjectFolder(this, folder.getFolder_id(), folder.getName(), ProjectDetailsActivity.this,
+                        settings, projectId);
+        asyncTaskDeleteProjectFolder.execute();
     }
 
 
@@ -633,7 +641,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onCreateProjectFolderReady(String newFolderId) {
-//        Log.d(TAG, "createProjectFolderListener: newFolderId, " + newFolderId);
+//        Log.d(TAG, "createDeleteProjectFolderListener: newFolderId, " + newFolderId);
         if (null != newFolderId) {
             if (null != rootFolderId) {
                 getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
@@ -646,6 +654,24 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             }
         } else {
             Log.e(TAG, "newFolderId is null in onCreateProjectFolderReady");
+        }
+    }
+
+    @Override
+    public void onDeleteProjectFolderReady(String folderId) {
+//        Log.d(TAG, "createDeleteProjectFolderListener: newFolderId, " + newFolderId);
+        if (null != folderId) {
+            if (null != rootFolderId) {
+                getAsset = new GetAsset(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getAsset.execute();
+                getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
+                getOneLevelChild.execute();
+            } else {
+                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+                getRootFolderId.execute();
+            }
+        } else {
+            Log.e(TAG, "folderId is null in onDeleteProjectFolderReady");
         }
     }
 

@@ -21,22 +21,22 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Object> implements Settings{
-    private static String TAG = "AsyncTaskCreateProjectFolder";
+public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Object> implements Settings{
+    private static String TAG = "AsyncTaskDeleteProjectFolder";
     Context context;
     ProgressDialog dialog;
     SharedPreferences settings;
-    String newFolderName;
+    String folderId;
     String projectId;
-    String parentFolderId;
-    String newFolerId;
+    String folderName;
     CreateDeleteProjectFolderListener createDeleteProjectFolderListener;
 
-    public AsyncTaskCreateProjectFolder(CreateDeleteProjectFolderListener createDeleteProjectFolderListener, String newFolderName, Context context, String parentFolderId, SharedPreferences settings, String projectId){
+    public AsyncTaskDeleteProjectFolder(CreateDeleteProjectFolderListener createDeleteProjectFolderListener,
+                                        String folderId, String folderName, Context context, SharedPreferences settings, String projectId){
         this.createDeleteProjectFolderListener = createDeleteProjectFolderListener;
-        this.newFolderName = newFolderName;
+        this.folderId = folderId;
+        this.folderName = folderName;
         this.context = context;
-        this.parentFolderId = parentFolderId;
         this.settings = settings;
         this.projectId = projectId;
     }
@@ -44,12 +44,12 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
     @Override
     protected void onPreExecute() {
         dialog = ProgressDialog.show(context,
-                "Creating new folder: " + newFolderName, "Please wait...", true);
+                "Delete folder: " + folderName, "Please wait...", true);
     }
 
     @Override
     protected String doInBackground(Object... arg0) {
-        return createNewProjectFolder();
+        return deleteProjectFolder();
 
     }
 
@@ -57,21 +57,16 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
     protected void onPostExecute(Object result) {
         dialog.dismiss();
         Log.d(TAG, "onPostExecute starts");
-        if (null != result) {
-            newFolerId = parseResultObject((String) result);
-            if (null != newFolerId) {
-                createDeleteProjectFolderListener.onCreateProjectFolderReady(newFolerId);
-            } else {
-                //do nothing
-            }
+        if (null != result && parseResultObject((String) result) == true) {
+            createDeleteProjectFolderListener.onDeleteProjectFolderReady(folderId);
         }
     }
 
-    public String createNewProjectFolder() {
+    public String deleteProjectFolder() {
         String responseBody = "";
         // Instantiate an HttpClient
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(SZAAPIURL + "createProjectFolder");
+        HttpPost httppost = new HttpPost(SZAAPIURL + "delRecurProjectFolder");
 
         // Post parameters
         ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -80,8 +75,7 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
         postParameters.add(new BasicNameValuePair("userid", settings
                 .getString("userid", null)));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
-        postParameters.add(new BasicNameValuePair("parent_folder_id", parentFolderId));
-        postParameters.add(new BasicNameValuePair("name", newFolderName));
+        postParameters.add(new BasicNameValuePair("folderid_lst", folderId));
 
         // Instantiate a POST HTTP method
         try {
@@ -95,34 +89,33 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
         return responseBody;
     }
 
-    public String parseResultObject(String responseBody) {
+    public boolean parseResultObject(String responseBody) {
         JSONArray json;
         JSONObject job, data_array;
-        String tempFolderId = "";
+        boolean isSuccessful = false;
         try {
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
             int errorCode = job.getInt("error_code");
 //            if (errorCode == 0) showToast("create new folder successfully");
-            if (errorCode != 0) {
+            if (errorCode != 0 && errorCode != 33) {
                 String errorMsg = job.getString("error_messages");
                 if (null != errorMsg) {
                     showToast(errorMsg.substring(2, errorMsg.length() - 2));
                 } else {
                     showToast("Sorry, you cannot create new folders here.");
                 }
+            } else {
+                isSuccessful = true;
             }
 
             data_array = job.getJSONObject("data_array");
             Log.d(TAG, "JSON: " + data_array.toString());
-            if (null != data_array && (!data_array.isNull("folder_id"))) {
-                tempFolderId = data_array.getString("folder_id");
-                Log.d(TAG, "tempFolderId: " + tempFolderId);
-            }
+
         }catch(JSONException e){
             e.printStackTrace();
         }
-        return tempFolderId;
+        return isSuccessful;
     }
 
     public void showToast(String info){
@@ -134,3 +127,4 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
     }
 
 }
+
