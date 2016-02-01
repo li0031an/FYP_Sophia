@@ -1,7 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,14 +28,16 @@ public class RecyclerViewAdapter extends RecyclerView
     public static class DataObjectHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
         TextView label;
-        ImageView image;
+        ImageView image, clickIcon;
 
         public DataObjectHolder(View itemView) {
             super(itemView);
             label = (TextView) itemView.findViewById(R.id.cardText);
             image = (ImageView) itemView.findViewById(R.id.cardImage);
+            clickIcon = (ImageView) itemView.findViewById(R.id.clickIcon);
 //            Log.i(TAG, "Adding Listener");
             itemView.setOnClickListener(this);
+            clickIcon.setOnClickListener(this);
         }
 
         @Override
@@ -88,7 +89,7 @@ public class RecyclerViewAdapter extends RecyclerView
     public DataObjectHolder onCreateViewHolder(ViewGroup parent,
                                                int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.activity_cardview_layout, parent, false);
+                .inflate(R.layout.activity_cardview_folder_layout, parent, false);
 
         DataObjectHolder dataObjectHolder = new DataObjectHolder(view);
         return dataObjectHolder;
@@ -151,7 +152,7 @@ public class RecyclerViewAdapter extends RecyclerView
 
     public void clearData() {
         if (null != mDataset && 0 != mDataset.size()) {
-            for (int i = mDataset.size()-1; i >= 0; i--) {
+            for (int i = mDataset.size() - 1; i >= 0; i--) {
                 deleteItem(i);
             }
         }
@@ -161,7 +162,7 @@ public class RecyclerViewAdapter extends RecyclerView
         return folderItemNo;
     }
 
-    public int getNoOfAssetItem(){
+    public int getNoOfAssetItem() {
         return assetItemNo;
     }
 

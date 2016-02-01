@@ -4,9 +4,9 @@
     tools:context="com.example.amps.fyp_amps_android_yishan.AssetUploadActivity">
 
     <item
-        android:id="@+id/create_new_folder"
-        android:title="@string/create_new_folder"
-        app:showAsAction="always" />
+    android:id="@+id/create_new_folder"
+    android:title="@string/create_new_folder"
+    app:showAsAction="always" />
 
     <item
         android:id="@+id/upload_item_image_or_video"
