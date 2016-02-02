@@ -165,10 +165,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         uploadFile.putExtra("isNewRevision", true);
 //        uploadFile.putExtra("environment", environmentVariable);
         String assetFullName = asset.getName() + asset.getExt();
-        uploadFile.putExtra("assetFullName",assetFullName);
-        Log.d("AssetUploadActivity","pass to assetFullName: "+assetFullName);
-        uploadFile.putExtra("latest_revid",asset.getLatest_revid());
-        Log.d("AssetUploadActivity","pass to latest_revid: "+asset.getLatest_revid());
+        uploadFile.putExtra("assetFullName", assetFullName);
+        Log.d("AssetUploadActivity", "pass to assetFullName: " + assetFullName);
+        uploadFile.putExtra("latest_revid", asset.getLatest_revid());
+        Log.d("AssetUploadActivity", "pass to latest_revid: " + asset.getLatest_revid());
         Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
 //        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
         getActivity().startActivity(uploadFile);
@@ -184,13 +184,13 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     public void onClick(View view) {
         try {
             switch (view.getId()) {
-                case R.id.imageButtonReview:
+                case R.id.cardImage:
                     if (null == asset.getFileType())
                         asset.setFileType(setAssetFileType(asset.getExt()));
 
                     if (asset.getFileType() == Asset.FileType.IMAGE) {
-                        ImageButton imageButtonReview = (ImageButton) getActivity().findViewById(R.id.imageButtonReview);
-                        imageButtonReview.setOnTouchListener(new OnTouchListener() {
+                        ImageView cardImage = (ImageView) getActivity().findViewById(R.id.cardImage);
+                        cardImage.setOnTouchListener(new OnTouchListener() {
                             @Override
                             public boolean onTouch(View arg0, MotionEvent event) {
                                 int action = event.getAction();

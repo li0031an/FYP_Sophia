@@ -16,7 +16,7 @@ import com.example.amps.fyp_amps_android_yishan.Settings;
 
 public class AssetDetailActivity extends BaseActivity implements TabListener,
         Settings {
-    private static String TAG = "WorkingAssetsActivity";
+    private static String TAG = "AssetDetailActivity";
     RelativeLayout r;
     FragmentTransaction fragmentTra = null;
     AssetsPreviewFragment previewFragment;
@@ -177,7 +177,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
     public void onClick(View view) {
         try {
             switch (view.getId()) {
-                case R.id.imageButtonReview:
+                case R.id.cardImage:
                     previewFragment.onClick(view);
                     break;
                 case R.id.imageButtonUpload:
