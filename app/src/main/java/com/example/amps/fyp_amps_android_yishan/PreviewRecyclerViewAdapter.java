@@ -123,7 +123,8 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
 
             //tvFileSize2.setText(String.valueOf(a.getFile_size()));
 
-            if (((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
+            if (null != asset.getExt() &&
+                    ((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
                 if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
 //                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
@@ -137,13 +138,15 @@ public class PreviewRecyclerViewAdapter extends RecyclerView
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.drawable.unknown_icon_large));
                 }
-            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
+            } else if (null != asset.getExt() &&
+                    (asset.getExt().equals("avi") || (asset.getExt().equals("flv")
                     || (asset.getExt().equals("mp4")) || (asset.getExt().equals("wmv"))
                     || (asset.getExt().equals("mp3"))
                     || (asset.getExt().equals("webm"))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.drawable.video_icon_large));
-            } else if ((asset.getExt().equals("doc") || (asset.getExt().equals("txt")
+            } else if (null != asset.getExt() &&
+                    (asset.getExt().equals("doc") || (asset.getExt().equals("txt")
                     || (asset.getExt().equals("pptx")) || (asset.getExt().equals("ppt"))
                     || (asset.getExt().equals("docx"))))) {
                 Resources res = context.getResources();

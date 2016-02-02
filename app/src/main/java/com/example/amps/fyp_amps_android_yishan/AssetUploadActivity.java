@@ -66,6 +66,7 @@ public class AssetUploadActivity extends Activity implements Settings {
     private static final String ERR_MSG_NO_IMAGE_SELECTED = "Upload fail. Please upload an image.";
     private static final String ERR_MSG_NO_IMAGE_NO_DES = "Upload fail. Please upload an image and enter a description.";
     private static final String MSG_SUCCESS = "Upload successfully.";
+    final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
     private String project_id;
     private String folder_id;
     private String asset_id;
@@ -75,13 +76,14 @@ public class AssetUploadActivity extends Activity implements Settings {
     private Uri uploadFileUri;
     private FileType uploadFileType;
     private String selectedFilePath;
-    private String pickEnvironment = "";
+    //    private String pickEnvironment = "";
     private int numberOfChunks;
     private int fileSize = 0;
     boolean isNewRevision;
     ImageView imageUploaded;
     EditText editTextDescription;
     DecimalFormat formatter = new DecimalFormat("#.##");
+
     public enum FileType {
         IMAGE,
         VIDEO,
@@ -105,14 +107,20 @@ public class AssetUploadActivity extends Activity implements Settings {
             folder_id = extras.getString("folder_id");
             isNewRevision = extras.getBoolean("isNewRevision");
             latest_revid = extras.getString("latest_revid");
-            pickEnvironment = extras.getString("environment");
+//            pickEnvironment = extras.getString("environment");
             Log.d(TAG, "GET from intent folder_id: " + folder_id);
             Log.d(TAG, "GET from intent isNewRevision: " + String.valueOf(isNewRevision));
             Log.d(TAG, "GET from intent latest_revid: " + latest_revid);
-            Log.d(TAG, "GET from intent pickEnvironment: " + pickEnvironment);
+//            Log.d(TAG, "GET from intent pickEnvironment: " + pickEnvironment);
         }
-        if (pickEnvironment.equalsIgnoreCase("Pictures")) startPickImageVideoIntent();
-        else startPickFileIntent();
+        if (!isKitKat) {
+            showToast("Sorry, your Android phone only supports selecting pictures and videos./n" +
+                    "Please upgrade to at least Android KitKat to enjoy uploading all files.");
+            startPickImageVideoIntent();
+        } else {
+//        if (pickEnvironment.equalsIgnoreCase("Pictures"))
+            startPickFileIntent();
+        }
     }
 
     private void startPickImageVideoIntent() {
@@ -133,7 +141,7 @@ public class AssetUploadActivity extends Activity implements Settings {
         String[] mimetypes = {"image/*|video/*|audio/*"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
 //        startActivityForResult(intent, PICKFILE_RESULT_CODE);
-        startActivityForResult(Intent.createChooser(intent, "Select picture or video"),
+        startActivityForResult(Intent.createChooser(intent, "Select images or videos"),
                 PICK_IMAGE_VIDEO_RESULT_CODE);
 //        } else {
 //            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -163,11 +171,11 @@ public class AssetUploadActivity extends Activity implements Settings {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        String[] mimetypes = {"text/*|application/*"};
+        String[] mimetypes = {"text/*|application/*|image/*|video/*|audio/*"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-//        startActivityForResult(intent, PICKFILE_RESULT_CODE);
-        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment),
-                PICK_IMAGE_VIDEO_RESULT_CODE);
+        startActivityForResult(intent, PICK_FILE_RESULT_CODE);
+//        startActivityForResult(Intent.createChooser(intent, "Select " + pickEnvironment),
+//        PICK_IMAGE_VIDEO_RESULT_CODE);
 
     }
 
@@ -183,29 +191,28 @@ public class AssetUploadActivity extends Activity implements Settings {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) return;
         if (null == data) return;
-        switch (requestCode) {
-            case PICK_IMAGE_VIDEO_RESULT_CODE:
-            case PICK_FILE_RESULT_CODE:
-                uploadFileUri = data.getData();
-                Log.d(TAG, "uri: " + uploadFileUri);
-                break;
-//            case GALLERY_KITKAT_INTENT_CALLED:
+//        switch (requestCode) {
+//            case PICK_IMAGE_VIDEO_RESULT_CODE:
 //                uploadFileUri = data.getData();
-//                final int takeFlags = data.getFlags()
-//                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-//                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-//                // Check for the freshest data.
-//                getContentResolver().takePersistableUriPermission(uploadFileUri, getIntent().FLAG_GRANT_READ_URI_PERMISSION);
+//                Log.d(TAG, "uri: " + uploadFileUri);
+//            case PICK_FILE_RESULT_CODE:
+//                uploadFileUri = data.getData();
+//                Log.d(TAG, "uri: " + uploadFileUri);
 //                break;
-            default:
-                Log.e(TAG, "requestCode is not valid: " + requestCode);
-                return;
-        }
+////            case GALLERY_KITKAT_INTENT_CALLED:
+////                uploadFileUri = data.getData();
+////                final int takeFlags = data.getFlags()
+////                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+////                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+////                // Check for the freshest data.
+////                getContentResolver().takePersistableUriPermission(uploadFileUri, getIntent().FLAG_GRANT_READ_URI_PERMISSION);
+////                break;
+//            default:
+//                Log.e(TAG, "requestCode is not valid: " + requestCode);
+//                return;
+//        }
         uploadFileUri = data.getData();
         Log.d(TAG, "uri: " + uploadFileUri);
-        if (uploadFileUri.toString().contains("image")) uploadFileType = FileType.IMAGE;
-        else if (uploadFileUri.toString().contains("video")) uploadFileType = FileType.VIDEO;
-        else uploadFileType = FileType.OTHER;
 
         selectedFilePath = getPath(uploadFileUri);
         Log.d(TAG, "selectedFilePath: " + selectedFilePath);
@@ -300,31 +307,37 @@ public class AssetUploadActivity extends Activity implements Settings {
         // your app's UI thread. (For simplicity of the sample, this code doesn't do that.)
         // Consider using CursorLoader to perform the query.
         Log.d(TAG, "uri: " + uri);
-//        String[] projection;
-//        switch (uploadFileType) {
-//            case IMAGE:
-//                projection = new String[] {MediaStore.Images.Media.DATA};
-//                break;
-//            case VIDEO:
-//                projection = new String[] {MediaStore.Video.Media.DATA};
-//                break;
-//            case AUDIO:
-//                projection = new String[] {MediaStore.Audio.Media.DATA};
-//                break;
-//            default: projection = new String[] {MediaStore.Files.FileColumns.DATA};
-//        }
-////        projection ;
-//        Cursor cursor = AssetUploadActivity.this.getContentResolver().query(uri, projection, null, null, null);
-//        int column_index = cursor
-//                .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-//        cursor.moveToFirst();
-//        return cursor.getString(column_index);
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
 
         // DocumentProvider
         Context context = AssetUploadActivity.this;
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+        if (!isKitKat) {
+            if (uri.toString().contains("image")) uploadFileType = FileType.IMAGE;
+            else if (uri.toString().contains("video")) uploadFileType = FileType.VIDEO;
+            else uploadFileType = FileType.OTHER;
+            String[] projection;
+            switch (uploadFileType) {
+                case IMAGE:
+                    projection = new String[]{MediaStore.Images.Media.DATA};
+                    break;
+                case VIDEO:
+                    projection = new String[]{MediaStore.Video.Media.DATA};
+                    break;
+                case AUDIO:
+                    projection = new String[]{MediaStore.Audio.Media.DATA};
+                    break;
+                default:
+                    projection = new String[]{MediaStore.Files.FileColumns.DATA};
+            }
+//        projection ;
+            Cursor cursor = AssetUploadActivity.this.getContentResolver().query(uri, projection, null, null, null);
+            int column_index = cursor
+                    .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+
+        } else if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
+            uploadFileType = FileType.DOCUMENT;
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
@@ -338,7 +351,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             }
             // DownloadsProvider
             else if (isDownloadsDocument(uri)) {
-
+                uploadFileType = FileType.OTHER;
                 final String id = DocumentsContract.getDocumentId(uri);
                 final Uri contentUri = ContentUris.withAppendedId(
                         Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
@@ -347,6 +360,7 @@ public class AssetUploadActivity extends Activity implements Settings {
             }
             // MediaProvider
             else if (isMediaDocument(uri)) {
+                uploadFileType = FileType.AUDIO;
                 final String docId = DocumentsContract.getDocumentId(uri);
                 final String[] split = docId.split(":");
                 final String type = split[0];
@@ -370,15 +384,17 @@ public class AssetUploadActivity extends Activity implements Settings {
         }
         // MediaStore (and general)
         else if ("content".equalsIgnoreCase(uri.getScheme())) {
-
             // Return the remote address
-            if (isGooglePhotosUri(uri))
+            if (isGooglePhotosUri(uri)) {
+                uploadFileType = FileType.IMAGE;
                 return uri.getLastPathSegment();
-
+            }
+            uploadFileType = FileType.OTHER;
             return getDataColumn(context, uri, null, null);
         }
         // File
         else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            uploadFileType = FileType.OTHER;
             return uri.getPath();
         }
 

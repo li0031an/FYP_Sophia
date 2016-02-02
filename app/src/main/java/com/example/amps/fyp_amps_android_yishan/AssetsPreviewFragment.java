@@ -147,35 +147,30 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     public boolean onContextItemSelected(MenuItem item) {
         //get the context view item selected, e.g. original menu
 //        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        String environment = "";
         //get the action to do, e.g. upload images or videos
         switch (item.getItemId()) {
             case R.id.upload_item_image_or_video:
-                environment = Environment.DIRECTORY_PICTURES;
-                break;
-            case R.id.upload_item_other_types:
-                environment = Environment.DIRECTORY_DOWNLOADS;
                 break;
             default: // do nothing
         }
-        callUploadActivity(environment);
+        callUploadActivity();
         return super.onContextItemSelected(item);
     }
 
-    private void callUploadActivity(String environmentVariable) {
+    private void callUploadActivity() {
         Intent uploadFile = new Intent(getActivity(), AssetUploadActivity.class);
         uploadFile.putExtra("asset_id", asset_id);
         uploadFile.putExtra("project_id", project_id);
         uploadFile.putExtra("folder_id", folderId);
         uploadFile.putExtra("isNewRevision", true);
-        uploadFile.putExtra("environment", environmentVariable);
+//        uploadFile.putExtra("environment", environmentVariable);
         String assetFullName = asset.getName() + asset.getExt();
         uploadFile.putExtra("assetFullName",assetFullName);
         Log.d("AssetUploadActivity","pass to assetFullName: "+assetFullName);
         uploadFile.putExtra("latest_revid",asset.getLatest_revid());
         Log.d("AssetUploadActivity","pass to latest_revid: "+asset.getLatest_revid());
         Log.d("AssetUploadActivity", "pass to folder_id: " + folderId);
-        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
+//        Log.d(TAG, "environmentVariable pass to upload: " + environmentVariable);
         getActivity().startActivity(uploadFile);
         getActivity().finish();
     }

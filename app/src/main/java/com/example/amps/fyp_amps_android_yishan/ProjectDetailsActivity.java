@@ -134,10 +134,10 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 environment = Environment.DIRECTORY_PICTURES;
                 callUploadActivity(environment);
                 break;
-            case R.id.upload_item_other_types:
-                environment = Environment.DIRECTORY_DOWNLOADS;
-                callUploadActivity(environment);
-                break;
+//            case R.id.upload_item_other_types:
+//                environment = Environment.DIRECTORY_DOWNLOADS;
+//                callUploadActivity(environment);
+//                break;
             case R.id.create_new_folder:
                 showToast("create_new_folder.");
                 askForNewFolderName();
@@ -540,7 +540,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             for (int i = 0; i < arrayAssetList.size(); i++) {
                 Asset temp = arrayAssetList.get(i);
 //                Log.d(TAG, "array type: " + temp.getExt());
-                if (((temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))))) {
+                if (null != temp.getExt() && (temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif"))))) {
 //                    Log.d(TAG, "call GetAssetDetail()");
                     needThumbNailUpdate = true;
                     assetIdList.add(temp.asset_id);

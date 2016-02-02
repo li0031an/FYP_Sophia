@@ -170,8 +170,9 @@
     <string name="create_new_folder">Create a new folder</string>
     <string name="upload_image_or_videos">Upload images or videos</string>
     <string name="upload_other_types">Upload other types</string>
+    <string name="upload_files">Upload files</string>
 
-<!-- preview video activity-->
+    <!-- preview video activity-->
     <string name="loading_video">Loading video…</string>
 
 <!-- TODO: Remove or change this placeholder text -->

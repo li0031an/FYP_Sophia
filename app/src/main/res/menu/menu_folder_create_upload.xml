@@ -10,12 +10,7 @@
 
     <item
         android:id="@+id/upload_item_image_or_video"
-        android:title="@string/upload_image_or_videos"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/upload_item_other_types"
-        android:title="@string/upload_other_types"
+        android:title="@string/upload_files"
         app:showAsAction="always" />
 
 </menu>

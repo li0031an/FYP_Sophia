@@ -111,7 +111,7 @@ public class RecyclerViewAdapter extends RecyclerView
             Asset asset = (Asset) mDataset.get(position);
             holder.label.setText(asset.getName());
 
-            if (((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
+            if (null != asset.getExt() && ((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
                 if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
 //                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(
@@ -124,15 +124,17 @@ public class RecyclerViewAdapter extends RecyclerView
                     Resources res = context.getResources();
                     holder.image.setImageDrawable(res.getDrawable(R.mipmap.unknown_icon));
                 }
-            } else if ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
+            } else if (null != asset.getExt() &&
+                    ((asset.getExt().equals("avi") || (asset.getExt().equals("flv")
                     || (asset.getExt().equals("mp4")) || (asset.getExt().equals("webm"))
                     || (asset.getExt().equals("mp3"))
-                    || (asset.getExt().equals("wmv"))))) {
+                    || (asset.getExt().equals("wmv")))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.mipmap.video_icon));
-            } else if ((asset.getExt().equals("doc") || (asset.getExt().equals("txt")
+            } else if (null != asset.getExt() &&
+                    ((asset.getExt().equals("doc") || (asset.getExt().equals("txt")
                     || (asset.getExt().equals("pptx")) || (asset.getExt().equals("ppt"))
-                    || (asset.getExt().equals("docx"))))) {
+                    || (asset.getExt().equals("docx")))))) {
                 Resources res = context.getResources();
                 holder.image.setImageDrawable(res.getDrawable(R.mipmap.doc_icon));
             } else {

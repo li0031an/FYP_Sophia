@@ -2,7 +2,7 @@ package com.example.amps.fyp_amps_android_yishan;
 
 public class Asset {
     String asset_id;
-    String ext;
+    String ext = "";
     String name;
     String estimated_datestart;
     String estimated_dateend;
