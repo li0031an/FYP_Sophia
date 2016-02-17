@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.view.Menu;
 import android.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
@@ -49,9 +50,10 @@ import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
 
 public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener
         , ModifyAssetListener, View.OnClickListener, DownloadAssetListener
-        , GetSharedUserOfResourceInfoListener {
+        , GetAssignedUserOfProjectInfoListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
+    GetAssignedUserOfProjectInfoAsyncTask getAssignedUserOfProjectInfoAsyncTask;
     SharedPreferences settings;
     ProgressDialog dialog;
     Asset asset;
@@ -63,6 +65,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     String revId;
     double fileSize;
     byte[] decodedString;
+
+    int[] assignedUserIdOfProjectInfoList;
+    String[] assignedUserNameOfProjectInfoList;
+    View tempViewForPopupMenu;
 
     private RecyclerView mRecyclerView;
     private RecyclerView.Adapter mAdapter;
@@ -219,10 +225,10 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                     }
                     break;
                 case R.id.imageButtonAssign:
-                    GetSharedUserOfResourceInfoAsyncTask GetSharedUserOfResourceInfoAsyncTask = new GetSharedUserOfResourceInfoAsyncTask(this
+                    tempViewForPopupMenu = view;
+                    getAssignedUserOfProjectInfoAsyncTask = new GetAssignedUserOfProjectInfoAsyncTask(this
                             , getActivity(), settings, project_id, asset_id);
-                    GetSharedUserOfResourceInfoAsyncTask.execute();
-                    createPopupMenu(view);
+                    getAssignedUserOfProjectInfoAsyncTask.execute();
                     break;
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
@@ -246,11 +252,27 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         }
     }
 
+    public void onGetAssignedUserOfProjectInfoReady() {
+        Log.d(TAG, "onGetAssignedUserOfProjectInfoReady is called.");
+        assignedUserIdOfProjectInfoList = getAssignedUserOfProjectInfoAsyncTask.getUserIdList();
+        assignedUserNameOfProjectInfoList = getAssignedUserOfProjectInfoAsyncTask.getUserNameList();
+        if (null != tempViewForPopupMenu && null != assignedUserIdOfProjectInfoList && null != assignedUserNameOfProjectInfoList) {
+            createPopupMenu(tempViewForPopupMenu);
+        }
+    }
+
     private void createPopupMenu(View view) {
         PopupMenu popupMenu = new PopupMenu(getActivity(), view);
         popupMenu.setOnDismissListener(new OnDismissListener());
         popupMenu.setOnMenuItemClickListener(new OnMenuItemClickListener());
-        popupMenu.inflate(R.menu.menu_folder_create_upload);
+        popupMenu.inflate(R.menu.menu_assign_user_to_task);
+        for (int i = 0; i < assignedUserIdOfProjectInfoList.length; i++) {
+            String name = assignedUserNameOfProjectInfoList[i];
+            if (null != name)
+                popupMenu.getMenu().add(name);
+            else
+                popupMenu.getMenu().add("Unknown user name, user id: " + String.valueOf(assignedUserIdOfProjectInfoList[i]));
+        }
         popupMenu.show();
     }
 
@@ -259,7 +281,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         @Override
         public void onDismiss(PopupMenu menu) {
             // TODO Auto-generated method stub
-            showToast("Popup Menu is dismissed");
+            Log.d(TAG, "Popup Menu is dismissed");
         }
 
     }
@@ -270,21 +292,18 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             // TODO Auto-generated method stub
-            switch (item.getItemId()) {
+            /*switch (item.getItemId()) {
                 case R.id.create_new_folder:
                     showToast("create_new_folder is clicked");
                     return true;
                 case R.id.upload_item_image_or_video:
                     showToast("upload_item_image_or_video is clicked");
                     return true;
-            }
+            }*/
             return false;
         }
     }
 
-    public void onGetSharedUserOfResourceInfoReady() {
-        showToast("onGetSharedUserOfResourceInfoReady is called.");
-    }
 
     public void onDeleteAsset() {
         getActivity().finish();
