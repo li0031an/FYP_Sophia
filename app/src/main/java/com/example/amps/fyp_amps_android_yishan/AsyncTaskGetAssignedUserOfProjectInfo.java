@@ -21,34 +21,37 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class AssignAsset2UserAsyncTask extends AsyncTask<Object, Object, Object> implements Settings {
-    private static String TAG = "AssignAsset2UserAsyncTask";
-//    GetAssignedUserOfProjectInfoListener GetAssignedUserOfProjectInfoListener;
+public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Object, Object> implements Settings {
+
+    private static String TAG = "AsyncTaskGetAssignedUserOfProjectInfo";
+    GetAssignedUserOfProjectInfoListener GetAssignedUserOfProjectInfoListener;
     Context context;
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String assetId;
-    String assignedUserId;
+    String selectAttributes = "[userid], [username]";
+    String[] userNameList = null;
+    int[] userIdList = null;
 
-    public AssignAsset2UserAsyncTask(Context context, SharedPreferences settings, String projectId, String assetId, int assignedUserId) {
-//        this.GetAssignedUserOfProjectInfoListener = GetAssignedUserOfProjectInfoListener;
+
+    public AsyncTaskGetAssignedUserOfProjectInfo(GetAssignedUserOfProjectInfoListener
+                                                         GetAssignedUserOfProjectInfoListener
+            , Context context, SharedPreferences settings, String projectId) {
+        this.GetAssignedUserOfProjectInfoListener = GetAssignedUserOfProjectInfoListener;
         this.context = context;
         this.settings = settings;
         this.projectId = projectId;
-        this.assetId = assetId;
-        this.assignedUserId = String.valueOf(assignedUserId);
     }
 
     @Override
     protected void onPreExecute() {
         dialog = ProgressDialog.show(context,
-                "Assigning asset to user", "Please wait...", true);
+                "Retrieving users", "Please wait...", true);
     }
 
     @Override
     protected JSONArray doInBackground(Object... arg0) {
-        return assignAsset2User();
+        return getAssignedUserOfProjectInfo();
 
     }
 
@@ -63,23 +66,57 @@ public class AssignAsset2UserAsyncTask extends AsyncTask<Object, Object, Object>
             job = json.getJSONObject(0);
             int errorCode = job.getInt("error_code");
 //            if (errorCode == 0) showToast("get one level child successfully");
-            if (errorCode != 0 && errorCode != 3333) {
+            if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));
                 return;
+            }
+            data_array = job.getJSONArray("data_array");
+            Log.d(TAG, "JSON: " + data_array.toString());
+            int length = data_array.length();
+            if (null != data_array && length > 0) {
+                userIdList = new int[length];
+                userNameList = new String[length];
+                for (int i=0; i<length; i++) {
+                    job = data_array.getJSONObject(i);
+                    if (!job.isNull("userid")) {
+                        userIdList[i] = (job.getInt("userid"));
+                        Log.d(TAG, "userIdList[i]: " + userIdList[i]);
+                    } if (!job.isNull("username")) {
+                        userNameList[i] = (job.getString("username"));
+                        Log.d(TAG, "userNameList[i]: " + userNameList[i]);
+                    }
+                }
             } else {
-                showToast("The task is assigned successfully.");
+                showToast("There is no user assigned for this project yet.");
             }
         }catch(JSONException e){
             e.printStackTrace();
         }
+        GetAssignedUserOfProjectInfoListener.onGetAssignedUserOfProjectInfoReady();
     }
 
-    public JSONArray assignAsset2User() {
+    protected int[] getUserIdList() {
+        if (null != userIdList) {
+            return userIdList;
+        } else {
+            return null;
+        }
+    }
+
+    protected String[] getUserNameList() {
+        if (null != userNameList) {
+            return userNameList;
+        } else {
+            return null;
+        }
+    }
+
+    public JSONArray getAssignedUserOfProjectInfo() {
         JSONArray responseBody = null;
         // Instantiate an HttpClient
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(SZAAPIURL + "assignAsset2User");
+        HttpPost httppost = new HttpPost(SZAAPIURL + "getAssignedUserOfProjectInfo");
 
         // Post parameters
         ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -91,10 +128,7 @@ public class AssignAsset2UserAsyncTask extends AsyncTask<Object, Object, Object>
         Log.d(TAG, "userid: " + settings.getString("userid", null));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
         Log.d(TAG, "projectid: " + projectId);
-        postParameters.add(new BasicNameValuePair("assetid_list", assetId));
-        Log.d(TAG, "assetId: " + assetId);
-        postParameters.add(new BasicNameValuePair("assigned_userid", assignedUserId));
-        Log.d(TAG, "assigned_userid: " + assignedUserId);
+        postParameters.add(new BasicNameValuePair("select", selectAttributes));
 
         // Instantiate a POST HTTP method
         try {
@@ -115,5 +149,6 @@ public class AssignAsset2UserAsyncTask extends AsyncTask<Object, Object, Object>
                 Toast.LENGTH_SHORT);
         toast.show();
     }
+
 
 }

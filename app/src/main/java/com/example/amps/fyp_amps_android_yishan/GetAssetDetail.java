@@ -196,6 +196,8 @@ public class GetAssetDetail extends AsyncTask<Object, Object, ArrayList<String>>
                 asset.setCreated_username(data_array.getString("created_username"));
             } if (!data_array.isNull("updated_username")) {
                 asset.setUpdated_username(data_array.getString("updated_username"));
+            } if (!data_array.isNull("assigned_userid")) {
+                asset.setAssigned_userid(data_array.getString("assigned_userid"));
             }
 
         } catch (JSONException e) {

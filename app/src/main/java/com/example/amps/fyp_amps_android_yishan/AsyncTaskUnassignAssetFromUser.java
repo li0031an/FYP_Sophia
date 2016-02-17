@@ -21,37 +21,40 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class GetAssignedUserOfProjectInfoAsyncTask extends AsyncTask<Object, Object, Object> implements Settings {
-
-    private static String TAG = "GetAssignedUserOfProjectInfoAsyncTask";
-    GetAssignedUserOfProjectInfoListener GetAssignedUserOfProjectInfoListener;
+public class AsyncTaskUnassignAssetFromUser extends AsyncTask<Object, Object, Object> implements Settings {
+    private static String TAG = "AsyncTaskUnassignAssetFromUser";
+    //    GetAssignedUserOfProjectInfoListener GetAssignedUserOfProjectInfoListener;
+    UnassignAssetFromUserListener unassignAssetFromUserListener;
     Context context;
     ProgressDialog dialog;
     SharedPreferences settings;
     String projectId;
-    String selectAttributes = "[userid], [username]";
-    String[] userNameList = null;
-    int[] userIdList = null;
+    String assetId;
+    String unassignedUserId;
+    String newAssignUserId;
 
-
-    public GetAssignedUserOfProjectInfoAsyncTask(GetAssignedUserOfProjectInfoListener
-                                                         GetAssignedUserOfProjectInfoListener
-            , Context context, SharedPreferences settings, String projectId) {
-        this.GetAssignedUserOfProjectInfoListener = GetAssignedUserOfProjectInfoListener;
+    public AsyncTaskUnassignAssetFromUser(UnassignAssetFromUserListener unassignAssetFromUserListener
+            , Context context, SharedPreferences settings, String projectId
+            , String assetId, String unassignedUserId, String newAssignUserId) {
+//        this.GetAssignedUserOfProjectInfoListener = GetAssignedUserOfProjectInfoListener;
+        this.unassignAssetFromUserListener = unassignAssetFromUserListener;
         this.context = context;
         this.settings = settings;
         this.projectId = projectId;
+        this.assetId = assetId;
+        this.unassignedUserId = unassignedUserId;
+        this.newAssignUserId = newAssignUserId;
     }
 
     @Override
     protected void onPreExecute() {
         dialog = ProgressDialog.show(context,
-                "Retrieving users", "Please wait...", true);
+                "Assigning asset to user", "Please wait...", true);
     }
 
     @Override
     protected JSONArray doInBackground(Object... arg0) {
-        return getAssignedUserOfProjectInfo();
+        return assignAsset2User();
 
     }
 
@@ -66,57 +69,23 @@ public class GetAssignedUserOfProjectInfoAsyncTask extends AsyncTask<Object, Obj
             job = json.getJSONObject(0);
             int errorCode = job.getInt("error_code");
 //            if (errorCode == 0) showToast("get one level child successfully");
-            if (errorCode != 0) {
+            if (errorCode != 0 && errorCode != 3333) {
                 String errorMsg = job.getString("error_messages");
                 showToast(errorMsg.substring(2, errorMsg.length() - 2));
                 return;
-            }
-            data_array = job.getJSONArray("data_array");
-            Log.d(TAG, "JSON: " + data_array.toString());
-            int length = data_array.length();
-            if (null != data_array && length > 0) {
-                userIdList = new int[length];
-                userNameList = new String[length];
-                for (int i=0; i<length; i++) {
-                    job = data_array.getJSONObject(i);
-                    if (!job.isNull("userid")) {
-                        userIdList[i] = (job.getInt("userid"));
-                        Log.d(TAG, "userIdList[i]: " + userIdList[i]);
-                    } if (!job.isNull("username")) {
-                        userNameList[i] = (job.getString("username"));
-                        Log.d(TAG, "userNameList[i]: " + userNameList[i]);
-                    }
-                }
             } else {
-                showToast("There is no user assigned for this project yet.");
+                unassignAssetFromUserListener.onUnassignAssetFromUserReady(newAssignUserId);
             }
         }catch(JSONException e){
             e.printStackTrace();
         }
-        GetAssignedUserOfProjectInfoListener.onGetAssignedUserOfProjectInfoReady();
     }
 
-    protected int[] getUserIdList() {
-        if (null != userIdList) {
-            return userIdList;
-        } else {
-            return null;
-        }
-    }
-
-    protected String[] getUserNameList() {
-        if (null != userNameList) {
-            return userNameList;
-        } else {
-            return null;
-        }
-    }
-
-    public JSONArray getAssignedUserOfProjectInfo() {
+    public JSONArray assignAsset2User() {
         JSONArray responseBody = null;
         // Instantiate an HttpClient
         HttpClient httpclient = new DefaultHttpClient();
-        HttpPost httppost = new HttpPost(SZAAPIURL + "getAssignedUserOfProjectInfo");
+        HttpPost httppost = new HttpPost(SZAAPIURL + "unassignAssetFromUser");
 
         // Post parameters
         ArrayList<NameValuePair> postParameters = new ArrayList<NameValuePair>();
@@ -128,7 +97,10 @@ public class GetAssignedUserOfProjectInfoAsyncTask extends AsyncTask<Object, Obj
         Log.d(TAG, "userid: " + settings.getString("userid", null));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
         Log.d(TAG, "projectid: " + projectId);
-        postParameters.add(new BasicNameValuePair("select", selectAttributes));
+        postParameters.add(new BasicNameValuePair("assetid_list", assetId));
+        Log.d(TAG, "assetId: " + assetId);
+        postParameters.add(new BasicNameValuePair("unassigned_userid", unassignedUserId));
+        Log.d(TAG, "assigned_userid: " + unassignedUserId);
 
         // Instantiate a POST HTTP method
         try {
@@ -149,6 +121,5 @@ public class GetAssignedUserOfProjectInfoAsyncTask extends AsyncTask<Object, Obj
                 Toast.LENGTH_SHORT);
         toast.show();
     }
-
 
 }

@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
-import android.view.Menu;
 import android.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
@@ -50,10 +49,10 @@ import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
 
 public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener
         , ModifyAssetListener, View.OnClickListener, DownloadAssetListener
-        , GetAssignedUserOfProjectInfoListener {
+        , GetAssignedUserOfProjectInfoListener, UnassignAssetFromUserListener, AssignAsset2UserListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
-    GetAssignedUserOfProjectInfoAsyncTask getAssignedUserOfProjectInfoAsyncTask;
+    AsyncTaskGetAssignedUserOfProjectInfo asyncTaskGetAssignedUserOfProjectInfo;
     SharedPreferences settings;
     ProgressDialog dialog;
     Asset asset;
@@ -120,7 +119,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         settings = getActivity().getSharedPreferences(SETTINGS, 0);
         String selectAttributes = "[asset_id], [name], [ext], [file_size]" +
                 ", [latest_revid], [latest_revnum], [updated_userid], [updated_username]" +
-                ", [updated_datetime]" +
+                ", [updated_datetime], [assigned_userid]" +
                 ", [base64_small_file], [latest_revsize]";
         ArrayList<String> assetIdList = new ArrayList<>();
         assetIdList.add(asset_id);
@@ -226,9 +225,9 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                     break;
                 case R.id.imageButtonAssign:
                     tempViewForPopupMenu = view;
-                    getAssignedUserOfProjectInfoAsyncTask = new GetAssignedUserOfProjectInfoAsyncTask(this
+                    asyncTaskGetAssignedUserOfProjectInfo = new AsyncTaskGetAssignedUserOfProjectInfo(this
                             , getActivity(), settings, project_id);
-                    getAssignedUserOfProjectInfoAsyncTask.execute();
+                    asyncTaskGetAssignedUserOfProjectInfo.execute();
                     break;
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
@@ -254,8 +253,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
 
     public void onGetAssignedUserOfProjectInfoReady() {
         Log.d(TAG, "onGetAssignedUserOfProjectInfoReady is called.");
-        assignedUserIdOfProjectInfoList = getAssignedUserOfProjectInfoAsyncTask.getUserIdList();
-        assignedUserNameOfProjectInfoList = getAssignedUserOfProjectInfoAsyncTask.getUserNameList();
+        assignedUserIdOfProjectInfoList = asyncTaskGetAssignedUserOfProjectInfo.getUserIdList();
+        assignedUserNameOfProjectInfoList = asyncTaskGetAssignedUserOfProjectInfo.getUserNameList();
         if (null != tempViewForPopupMenu && null != assignedUserIdOfProjectInfoList && null != assignedUserNameOfProjectInfoList) {
             createPopupMenu(tempViewForPopupMenu);
         }
@@ -300,20 +299,39 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                     break;
                 }
             }
-            if (seq <assignedUserNameOfProjectInfoList.length) {
+            if (seq < assignedUserNameOfProjectInfoList.length) {
                 int id = assignedUserIdOfProjectInfoList[seq];
-                callAssignAsset2User(id);
+                callAssignAsset2User(String.valueOf(id));
                 return true;
             }
             return false;
         }
     }
 
-    private void callAssignAsset2User(int assignedUserId) {
+    private void callAssignAsset2User(String assignedUserId) {
 //        showToast("userid: " + String.valueOf(userId));
-        AssignAsset2UserAsyncTask assignAsset2UserAsyncTask = new AssignAsset2UserAsyncTask(
-                getActivity(), settings, project_id, asset_id, assignedUserId);
-        assignAsset2UserAsyncTask.execute();
+        Log.d(TAG, "asset.getAssigned_userid(): " + asset.getAssigned_userid());
+        if (null != asset.getAssigned_userid()) {
+            AsyncTaskUnassignAssetFromUser asyncTaskUnassignAssetFromUser =
+                    new AsyncTaskUnassignAssetFromUser(this, getActivity(), settings, project_id, asset_id, asset.getAssigned_userid(), assignedUserId);
+            asyncTaskUnassignAssetFromUser.execute();
+        } else {
+            AsyncTaskAssignAsset2User asyncTaskAssignAsset2User = new AsyncTaskAssignAsset2User(this,
+                    getActivity(), settings, project_id, asset_id, assignedUserId);
+            asyncTaskAssignAsset2User.execute();
+        }
+    }
+
+    @Override
+    public void onUnassignAssetFromUserReady(String newAssignUserId){
+        AsyncTaskAssignAsset2User asyncTaskAssignAsset2User = new AsyncTaskAssignAsset2User(this,
+                getActivity(), settings, project_id, asset_id, newAssignUserId);
+        asyncTaskAssignAsset2User.execute();
+    }
+
+    @Override
+    public void onAssignAsset2UserReady(String newAssignUserId){
+        asset.setAssigned_userid(newAssignUserId);
     }
 
     public void onDeleteAsset() {
