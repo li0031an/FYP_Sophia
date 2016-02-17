@@ -31,7 +31,7 @@ public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Obj
     String projectId;
     String selectAttributes = "[userid], [username]";
     String[] userNameList = null;
-    int[] userIdList = null;
+    String[] userIdList = null;
 
 
     public AsyncTaskGetAssignedUserOfProjectInfo(GetAssignedUserOfProjectInfoListener
@@ -75,16 +75,14 @@ public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Obj
             Log.d(TAG, "JSON: " + data_array.toString());
             int length = data_array.length();
             if (null != data_array && length > 0) {
-                userIdList = new int[length];
+                userIdList = new String[length];
                 userNameList = new String[length];
                 for (int i=0; i<length; i++) {
                     job = data_array.getJSONObject(i);
                     if (!job.isNull("userid")) {
-                        userIdList[i] = (job.getInt("userid"));
-                        Log.d(TAG, "userIdList[i]: " + userIdList[i]);
+                        userIdList[i] = (job.getString("userid"));
                     } if (!job.isNull("username")) {
                         userNameList[i] = (job.getString("username"));
-                        Log.d(TAG, "userNameList[i]: " + userNameList[i]);
                     }
                 }
             } else {
@@ -96,7 +94,7 @@ public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Obj
         GetAssignedUserOfProjectInfoListener.onGetAssignedUserOfProjectInfoReady();
     }
 
-    protected int[] getUserIdList() {
+    protected String[] getUserIdList() {
         if (null != userIdList) {
             return userIdList;
         } else {

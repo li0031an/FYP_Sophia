@@ -65,7 +65,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     double fileSize;
     byte[] decodedString;
 
-    int[] assignedUserIdOfProjectInfoList;
+    String[] assignedUserIdOfProjectInfoList;
     String[] assignedUserNameOfProjectInfoList;
     View tempViewForPopupMenu;
 
@@ -265,7 +265,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         popupMenu.setOnDismissListener(new OnDismissListener());
         popupMenu.setOnMenuItemClickListener(new OnMenuItemClickListener());
         popupMenu.inflate(R.menu.menu_assign_user_to_task);
-        for (int i = 0; i < assignedUserIdOfProjectInfoList.length; i++) {
+        for (int i = 0; i < assignedUserNameOfProjectInfoList.length; i++) {
             String name = assignedUserNameOfProjectInfoList[i];
             if (null != name)
                 popupMenu.getMenu().add(name);
@@ -300,8 +300,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 }
             }
             if (seq < assignedUserNameOfProjectInfoList.length) {
-                int id = assignedUserIdOfProjectInfoList[seq];
-                callAssignAsset2User(String.valueOf(id));
+                String assignedUserId = assignedUserIdOfProjectInfoList[seq];
+                callAssignAsset2User(String.valueOf(assignedUserId));
                 return true;
             }
             return false;
@@ -309,8 +309,6 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
     }
 
     private void callAssignAsset2User(String assignedUserId) {
-//        showToast("userid: " + String.valueOf(userId));
-        Log.d(TAG, "asset.getAssigned_userid(): " + asset.getAssigned_userid());
         if (null != asset.getAssigned_userid()) {
             AsyncTaskUnassignAssetFromUser asyncTaskUnassignAssetFromUser =
                     new AsyncTaskUnassignAssetFromUser(this, getActivity(), settings, project_id, asset_id, asset.getAssigned_userid(), assignedUserId);
