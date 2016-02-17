@@ -124,6 +124,7 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
             previewFragment.setFolderId(folderId);
             previewFragment.setAsset_id(asset_id);
             previewFragment.setProject_id(project_id);
+            Log.d(TAG, "projectid pass to assets preview: " + project_id);
             previewFragment.setVideo_Url(videoUrl);
             fragmentTra.addToBackStack(null);
             fragmentTra = getFragmentManager().beginTransaction();

@@ -78,6 +78,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         postParameters.add(new BasicNameValuePair("userid", settings
                 .getString("userid", null)));
         postParameters.add(new BasicNameValuePair("projectid", projectId));
+        Log.d(TAG, "projectid: " + projectId);
         postParameters.add(new BasicNameValuePair("folderid", folderId));
         postParameters.add(new BasicNameValuePair("SELECT", "[base64_thumbnail]"));
 

@@ -227,7 +227,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                 case R.id.imageButtonAssign:
                     tempViewForPopupMenu = view;
                     getAssignedUserOfProjectInfoAsyncTask = new GetAssignedUserOfProjectInfoAsyncTask(this
-                            , getActivity(), settings, project_id, asset_id);
+                            , getActivity(), settings, project_id);
                     getAssignedUserOfProjectInfoAsyncTask.execute();
                     break;
                 case R.id.imageButtonDownload:
@@ -292,18 +292,29 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             // TODO Auto-generated method stub
-            /*switch (item.getItemId()) {
-                case R.id.create_new_folder:
-                    showToast("create_new_folder is clicked");
-                    return true;
-                case R.id.upload_item_image_or_video:
-                    showToast("upload_item_image_or_video is clicked");
-                    return true;
-            }*/
+//            showToast("username: " + item.getTitle());
+            String name = String.valueOf(item.getTitle());
+            int seq;
+            for (seq = 0; seq < assignedUserNameOfProjectInfoList.length; seq++) {
+                if (name.equalsIgnoreCase(assignedUserNameOfProjectInfoList[seq])) {
+                    break;
+                }
+            }
+            if (seq <assignedUserNameOfProjectInfoList.length) {
+                int id = assignedUserIdOfProjectInfoList[seq];
+                callAssignAsset2User(id);
+                return true;
+            }
             return false;
         }
     }
 
+    private void callAssignAsset2User(int assignedUserId) {
+//        showToast("userid: " + String.valueOf(userId));
+        AssignAsset2UserAsyncTask assignAsset2UserAsyncTask = new AssignAsset2UserAsyncTask(
+                getActivity(), settings, project_id, asset_id, assignedUserId);
+        assignAsset2UserAsyncTask.execute();
+    }
 
     public void onDeleteAsset() {
         getActivity().finish();
