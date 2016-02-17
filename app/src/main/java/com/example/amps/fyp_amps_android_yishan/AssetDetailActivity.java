@@ -183,6 +183,9 @@ public class AssetDetailActivity extends BaseActivity implements TabListener,
                 case R.id.imageButtonUpload:
                     previewFragment.onClick(view);
                     break;
+                case R.id.imageButtonAssign:
+                    previewFragment.onClick(view);
+                    break;
                 case R.id.imageButtonDownload:
                     previewFragment.onClick(view);
                     break;

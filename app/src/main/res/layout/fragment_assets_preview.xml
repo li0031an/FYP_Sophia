@@ -222,13 +222,22 @@
             <!--android:src="@drawable/av_upload" />-->
 
         <ImageButton
+            android:id="@+id/imageButtonAssign"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.2"
+            android:background="@null"
+            android:onClick="onClick"
+            android:src="@mipmap/assign_user" />
+
+        <ImageButton
             android:id="@+id/imageButtonDownload"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
             android:background="@null"
             android:onClick="onClick"
-            android:src="@drawable/av_download" />
+            android:src="@mipmap/download" />
 
         <ImageButton
             android:id="@+id/imageButtonDelete"
@@ -237,7 +246,7 @@
             android:layout_weight="0.2"
             android:background="@null"
             android:onClick="onClick"
-            android:src="@drawable/content_remove" />
+            android:src="@mipmap/delete" />
 
         <TextView
             android:id="@+id/textViewPadding2"

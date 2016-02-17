@@ -1,7 +1,6 @@
 package com.example.amps.fyp_amps_android_yishan;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.apache.http.NameValuePair;
@@ -23,16 +22,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.widget.LinearLayoutManager;
+import android.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
@@ -45,15 +41,15 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.amps.fyp_amps_android_yishan.preview.ImageReviewFullScreenActivity;
 import com.example.amps.fyp_amps_android_yishan.preview.VideoPlayerActivity;
 
-public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener, ModifyAssetListener, View.OnClickListener, DownloadAssetListener {
+public class AssetsPreviewFragment extends Fragment implements Settings, GetAssetListener
+        , ModifyAssetListener, View.OnClickListener, DownloadAssetListener
+        , GetSharedUserOfResourceInfoListener {
     private final static String TAG = "AssetsPreviewFragment";
     GetAssetDetail getAssetDetail;
     SharedPreferences settings;
@@ -222,6 +218,12 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                         showToast("Sorry, this kind of file is not supported for preview yet");
                     }
                     break;
+                case R.id.imageButtonAssign:
+                    GetSharedUserOfResourceInfoAsyncTask GetSharedUserOfResourceInfoAsyncTask = new GetSharedUserOfResourceInfoAsyncTask(this
+                            , getActivity(), settings, project_id, asset_id);
+                    GetSharedUserOfResourceInfoAsyncTask.execute();
+                    createPopupMenu(view);
+                    break;
                 case R.id.imageButtonDownload:
                     String assetFullNameDownloaded = asset.getName() + "." + asset.getExt();
                     DownloadAsset taskDownload = new DownloadAsset(getActivity(), settings
@@ -242,6 +244,46 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void createPopupMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(getActivity(), view);
+        popupMenu.setOnDismissListener(new OnDismissListener());
+        popupMenu.setOnMenuItemClickListener(new OnMenuItemClickListener());
+        popupMenu.inflate(R.menu.menu_folder_create_upload);
+        popupMenu.show();
+    }
+
+    private class OnDismissListener implements PopupMenu.OnDismissListener {
+
+        @Override
+        public void onDismiss(PopupMenu menu) {
+            // TODO Auto-generated method stub
+            showToast("Popup Menu is dismissed");
+        }
+
+    }
+
+    private class OnMenuItemClickListener implements
+            PopupMenu.OnMenuItemClickListener {
+
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+            // TODO Auto-generated method stub
+            switch (item.getItemId()) {
+                case R.id.create_new_folder:
+                    showToast("create_new_folder is clicked");
+                    return true;
+                case R.id.upload_item_image_or_video:
+                    showToast("upload_item_image_or_video is clicked");
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    public void onGetSharedUserOfResourceInfoReady() {
+        showToast("onGetSharedUserOfResourceInfoReady is called.");
     }
 
     public void onDeleteAsset() {
@@ -283,7 +325,8 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
         return rotate;
     }
 
-    public void onAssetReady() {}
+    public void onAssetReady() {
+    }
 
     @Override
     public void onDownloadAssetReady(Bitmap bitmap) {
