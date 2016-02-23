@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
     android:layout_height="match_parent"
-    tools:context=".MainActivity" >
+    tools:context=".preview.VideoPlayerActivity" >
 
     <!-- View that will be hidden when video goes fullscreen -->
     <RelativeLayout

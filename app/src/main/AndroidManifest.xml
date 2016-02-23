@@ -69,6 +69,11 @@
             android:configChanges="orientation|screenSize|keyboardHidden">
         </activity>
         <activity
+            android:name=".VideoDemoActivity"
+            android:label="@string/title_activity_video_player_activity"
+            android:configChanges="orientation|screenSize|keyboardHidden">
+        </activity>
+        <activity
             android:name=".AssetUploadActivity"
             android:label="@string/title_activity_asset_upload"
             android:configChanges="orientation|screenSize|keyboardHidden">

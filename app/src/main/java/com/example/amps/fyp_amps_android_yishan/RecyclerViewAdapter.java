@@ -81,6 +81,10 @@ public class RecyclerViewAdapter extends RecyclerView
                 Log.e(TAG, "both folderDataset and assetDataset are empty");
             }
         }
+
+        if (mDataset == null || mDataset.size() == 0) {
+            showToast("the folder is empty.");
+        }
 //        for (int i = 0; i < mDataset.size(); i++) {
 //            Log.d(TAG, "mDataset i " + i + " " + mDataset.get(i).getClass().getName());
 //        }

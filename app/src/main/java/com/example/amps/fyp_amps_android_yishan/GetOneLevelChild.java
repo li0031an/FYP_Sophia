@@ -73,7 +73,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
                     if (null != folderList) {
                         getOneLevelChildListener.onOneLevelChildReady();
                     } else {
-                        showToast("The project is empty.");
+//                        showToast("The project is empty.");
                     }
                 } else {
                     folderList = null;

@@ -60,7 +60,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
             if (null != assetList && assetList.size() != 0) {
                 getAssetListener.onAssetReady();
             } else {
-                showToast("The folder is empty");
+//                showToast("The folder is empty");
             }
         }
     }

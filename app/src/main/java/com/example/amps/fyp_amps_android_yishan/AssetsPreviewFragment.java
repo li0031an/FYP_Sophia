@@ -211,7 +211,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                             }
                         });
                     } else if (asset.getFileType() == Asset.FileType.VIDEO) {
-                        Intent i = new Intent(getActivity(), VideoPlayerActivity.class);
+                        Intent i = new Intent(getActivity(), VideoDemoActivity.class);
                         i.putExtra("asset_id", asset_id);
                         i.putExtra("token_id", tokenid);
                         i.putExtra("user_id", userid);
