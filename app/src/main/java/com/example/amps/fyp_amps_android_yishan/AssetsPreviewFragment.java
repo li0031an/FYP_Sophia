@@ -220,7 +220,7 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                             i.putExtra("revNum", asset.getLatest_revnum());
                             startActivity(i);
                         } else {
-                            showToast("Sorry, cannot preview wmv video files, because Android video player does not support it.");
+                            showToast("Sorry, Android Video Player does not support wmv video files.");
                         }
                     } else {
                         //todo -- preview for audio, document/text to be implemented
