@@ -211,13 +211,17 @@ public class AssetsPreviewFragment extends Fragment implements Settings, GetAsse
                             }
                         });
                     } else if (asset.getFileType() == Asset.FileType.VIDEO) {
-                        Intent i = new Intent(getActivity(), VideoDemoActivity.class);
-                        i.putExtra("asset_id", asset_id);
-                        i.putExtra("token_id", tokenid);
-                        i.putExtra("user_id", userid);
-                        i.putExtra("project_id", project_id);
-                        i.putExtra("revNum", asset.getLatest_revnum());
-                        startActivity(i);
+                        if (!asset.getExt().equalsIgnoreCase("wmv")) {
+                            Intent i = new Intent(getActivity(), VideoDemoActivity.class);
+                            i.putExtra("asset_id", asset_id);
+                            i.putExtra("token_id", tokenid);
+                            i.putExtra("user_id", userid);
+                            i.putExtra("project_id", project_id);
+                            i.putExtra("revNum", asset.getLatest_revnum());
+                            startActivity(i);
+                        } else {
+                            showToast("Sorry, cannot preview wmv video files, because Android video player does not support it.");
+                        }
                     } else {
                         //todo -- preview for audio, document/text to be implemented
                         showToast("Sorry, this kind of file is not supported for preview yet");

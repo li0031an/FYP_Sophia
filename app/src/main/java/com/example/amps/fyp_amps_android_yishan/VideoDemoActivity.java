@@ -23,6 +23,7 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
@@ -71,9 +72,15 @@ public class VideoDemoActivity extends Activity implements Settings{
                 "&revnum=" + revNum;
 
         video = (VideoView) findViewById(R.id.video);
+        DisplayMetrics metrics = new DisplayMetrics(); getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        android.widget.LinearLayout.LayoutParams params = (android.widget.LinearLayout.LayoutParams) video.getLayoutParams();
+        params.width =  metrics.widthPixels;
+        params.height = metrics.heightPixels;
+        params.leftMargin = 0;
 //            video.setVideoPath(clip.getAbsolutePath());
+        video.setLayoutParams(params);
         video.setVideoURI(Uri.parse(VideoURL));
-        ctlr = new MediaController(this);
+        ctlr = new MediaController(this, false);
         ctlr.setMediaPlayer(video);
         video.setMediaController(ctlr);
         video.requestFocus();

@@ -71,6 +71,7 @@
         <activity
             android:name=".VideoDemoActivity"
             android:label="@string/title_activity_video_player_activity"
+            android:screenOrientation="landscape"
             android:configChanges="orientation|screenSize|keyboardHidden">
         </activity>
         <activity
