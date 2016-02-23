@@ -6,8 +6,8 @@ import android.view.View;
 
 public interface Settings {
     public static final String SETTINGS = "SETTINGS"; //correct
-    public static final String SZAAPIURL = "http://54.169.170.225/AMPS/ampslt/AMPSAPI/"; //correct testing
-//    public static final String SZAAPIURL = "https://api.amps.sg/AMPS/ampslt/AMPSAPI/"; //correct production
+//    public static final String SZAAPIURL = "http://54.169.170.225/AMPS/ampslt/AMPSAPI/"; //correct testing
+    public static final String SZAAPIURL = "https://api.amps.sg/AMPS/ampslt/AMPSAPI/"; //correct production
 
     //public static final String SZAAPIURL = "http://amps.magic.ntu.edu.sg/getAsset";
     //public static final String SZAAPIURL = "http://54.251.38.14/AMPS/ampslt/AMPSAPI/";

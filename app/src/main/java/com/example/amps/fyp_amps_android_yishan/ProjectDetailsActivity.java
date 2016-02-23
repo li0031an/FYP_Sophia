@@ -498,33 +498,40 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     @Override
     public void onOneLevelChildReady() {
-        ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
+        boolean valid = getOneLevelChild.valid;
+
+        if (valid) {
+            ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
 //        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
-        if (null != arrayfolderList && 0 != arrayfolderList.size()) {
+
+            if (null != arrayfolderList && 0 != arrayfolderList.size()) {
 //            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
-            currentItemList = (Object) arrayfolderList;
-            folderList.clear();
+                currentItemList = (Object) arrayfolderList;
+                folderList.clear();
 //            Log.d(TAG, "start to add folderlist");
-            for (int i = 0; i < arrayfolderList.size(); i++) {
+                for (int i = 0; i < arrayfolderList.size(); i++) {
 //                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
-                folderList.add(arrayfolderList.get(i));
-            }
-            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-            noAssetItem = 0;
-            noFolderItem = 0;
-            if (null != folderList) {
-                noFolderItem = folderList.size();
-            }
-            if (null != assetList) {
-                noAssetItem = assetList.size();
-            }
-            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                @Override
-                public void onItemClick(int position, View v) {
-                    onItemClickCommon(position, v);
+                    folderList.add(arrayfolderList.get(i));
                 }
-            });
-            mRecyclerView.setAdapter(mAdapter);
+                mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+                noAssetItem = 0;
+                noFolderItem = 0;
+                if (null != folderList) {
+                    noFolderItem = folderList.size();
+                }
+                if (null != assetList) {
+                    noAssetItem = assetList.size();
+                }
+                ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+                    @Override
+                    public void onItemClick(int position, View v) {
+                        onItemClickCommon(position, v);
+                    }
+                });
+                mRecyclerView.setAdapter(mAdapter);
+            } else {
+                folderList.clear();
+            }
         }
     }
 

@@ -34,6 +34,7 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
     SharedPreferences settings;
     String projectId;
     String rootFolderId;
+    boolean valid = false;
     ArrayList<Folder>folderList = new ArrayList<Folder>();
 
     public GetOneLevelChild(GetOneLevelChildListener getOneLevelChildListener, Context context, SharedPreferences settings, String rootId, String projectId){
@@ -64,19 +65,28 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
         if (null != result) {
             oneLevelChild = parseOneLevelChildObject((String) result);
         }
-        if (null != oneLevelChild) {
+
             if (Integer.parseInt(oneLevelChild.getError_code()) == 0) {
-                folderList = oneLevelChild.getFolderList();
-                if (null != folderList) {
-                    getOneLevelChildListener.onOneLevelChildReady();
+                valid = true;
+                if (null != oneLevelChild) {
+                    folderList = oneLevelChild.getFolderList();
+                    if (null != folderList) {
+                        getOneLevelChildListener.onOneLevelChildReady();
+                    } else {
+                        showToast("The project is empty.");
+                    }
                 } else {
-                    showToast("The project is empty.");
+                    folderList = null;
+                    getOneLevelChildListener.onOneLevelChildReady();
+                    Log.d(TAG, "no error, but the one level child is empty");
                 }
+            } else {
+                valid = false;
             }
 
             Log.d(TAG, "oneLevelChild.getError_code: " + oneLevelChild.getError_code());
             Log.d(TAG, "oneLevelChild.getError_message: " + oneLevelChild.getError_message());
-        }
+
     }
 
     public String getOneLevelChildObject() {
@@ -105,6 +115,10 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
             responseBody = null;
         }
         return responseBody;
+    }
+
+    public boolean getValid(){
+        return valid;
     }
 
     public OneLevelChild parseOneLevelChildObject(String responseBody) {
