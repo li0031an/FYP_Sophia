@@ -29,8 +29,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 
-public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener,
-        GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener, CreateDeleteProjectFolderListener {
+public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener
+        , GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener
+        , CreateDeleteProjectFolderListener, CanAccessFolderListener {
 
     private static String TAG = "ProjectDetailsActivity";
     private String projectId;
@@ -81,8 +82,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             } else {
-                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-                getRootFolderId.execute();
+                AsyncTaskCanAccessFolder asyncTaskCanAccessFolder = new AsyncTaskCanAccessFolder(this, ProjectDetailsActivity.this, settings, projectId);
+                asyncTaskCanAccessFolder.execute();
             }
         } else {
             if (null == savedInstanceState) {
@@ -114,6 +115,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 //        add_button.setOnClickListener(this);
         registerForContextMenu(add_button);
 
+    }
+
+    @Override
+    public void onCanAccessFolderReady (boolean isProjectAdmin) {
+        if (isProjectAdmin) {
+            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+            getRootFolderId.execute();
+        } else {
+            showToast("not project admin");
+        }
     }
 
     @Override
