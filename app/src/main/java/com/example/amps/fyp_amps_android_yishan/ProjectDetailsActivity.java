@@ -150,7 +150,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 //                callUploadActivity(environment);
 //                break;
             case R.id.create_new_folder:
-                showToast("create_new_folder.");
+//                showToast("create_new_folder.");
                 askForNewFolderName();
                 break;
             default: // do nothing
@@ -290,9 +290,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
             getOneLevelChild.execute();
         } else {
-            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-//            Log.d(TAG, "CALL - GetRootFolderId");
-            getRootFolderId.execute();
+            AsyncTaskCanAccessFolder asyncTaskCanAccessFolder = new AsyncTaskCanAccessFolder(this, ProjectDetailsActivity.this, settings, projectId);
+            asyncTaskCanAccessFolder.execute();
         }
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -667,8 +666,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             } else {
-                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-                getRootFolderId.execute();
+                AsyncTaskCanAccessFolder asyncTaskCanAccessFolder = new AsyncTaskCanAccessFolder(this, ProjectDetailsActivity.this, settings, projectId);
+                asyncTaskCanAccessFolder.execute();
             }
         } else {
             Log.e(TAG, "newFolderId is null in onCreateProjectFolderReady");
@@ -685,8 +684,8 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                 getOneLevelChild = new GetOneLevelChild(this, ProjectDetailsActivity.this, settings, rootFolderId, projectId);
                 getOneLevelChild.execute();
             } else {
-                getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-                getRootFolderId.execute();
+                AsyncTaskCanAccessFolder asyncTaskCanAccessFolder = new AsyncTaskCanAccessFolder(this, ProjectDetailsActivity.this, settings, projectId);
+                asyncTaskCanAccessFolder.execute();
             }
         } else {
             Log.e(TAG, "folderId is null in onDeleteProjectFolderReady");
