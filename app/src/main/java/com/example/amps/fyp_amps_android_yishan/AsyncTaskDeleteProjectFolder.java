@@ -100,7 +100,7 @@ public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Obje
 //            if (errorCode == 0) showToast("create new folder successfully");
             if (errorCode != 0 && errorCode != 33) {
                 errorMsg = job.getJSONArray("error_messages");
-                if (null != errorMsg && errorMsg.toString() != "[]") {
+                if (null != errorMsg && ! errorMsg.toString().equalsIgnoreCase("[]")) {
                     showToast(errorMsg.toString());
                 } else {
                     showToast("Sorry, you cannot delete the folder here.");

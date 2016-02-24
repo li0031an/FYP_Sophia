@@ -92,11 +92,16 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
             json = new JSONArray(responseBody);
             job = json.getJSONObject(0);
             int errorCode= job.getInt("error_code");
+
             String errorMsg = job.getString("error_messages");
 
 //            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot get project info.");
+                }
                 return array;
             }
             data_array = job.getJSONArray("data_array");

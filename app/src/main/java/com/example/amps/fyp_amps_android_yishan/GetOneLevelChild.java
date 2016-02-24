@@ -134,7 +134,12 @@ public class GetOneLevelChild extends AsyncTask<Object, Object, Object> implemen
 
 //            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
-                showToast(oneLevelChild.getError_message().substring(2, oneLevelChild.getError_message().length() - 2));
+                String errorMsg = oneLevelChild.getError_message();
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, oneLevelChild.getError_message().length() - 2));
+                } else {
+                    showToast("Error: cannot get one level child.");
+                }
                 return oneLevelChild;
             }
             data_array = job.getJSONArray("data_array");

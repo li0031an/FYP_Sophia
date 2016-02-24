@@ -106,7 +106,7 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
     }
 
     public RootFolderId parseRootFolderId(String responseBody) {
-        JSONArray json, errorMsg;
+        JSONArray json;
         JSONObject job, data_array;
         RootFolderId rootFolderId = new RootFolderId();
         try {
@@ -127,7 +127,12 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
 
 //            if (errorCode == 0) showToast("get root folder id successfully");
             if (errorCode != 0) {
-                showToast(rootFolderId.getError_message().substring(2, rootFolderId.getError_message().length()-2));
+                String errorMsg = rootFolderId.getError_message();
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, rootFolderId.getError_message().length() - 2));
+                } else {
+                    showToast("Error: cannot get root folder id.");
+                }
                 return rootFolderId;
             }
             data_array = job.getJSONObject("data_array");

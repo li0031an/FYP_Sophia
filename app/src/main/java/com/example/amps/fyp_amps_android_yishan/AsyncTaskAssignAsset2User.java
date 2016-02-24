@@ -67,7 +67,11 @@ public class AsyncTaskAssignAsset2User extends AsyncTask<Object, Object, Object>
 //            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Sorry, you are not able to assign tasks. ");
+                }
                 return;
             } else {
                 showToast("The task is assigned successfully.");

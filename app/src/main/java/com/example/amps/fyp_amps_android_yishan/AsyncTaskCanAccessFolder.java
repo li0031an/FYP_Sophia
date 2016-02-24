@@ -104,8 +104,10 @@ public class AsyncTaskCanAccessFolder extends AsyncTask<Object, Object, Object> 
 //            if (errorCode == 0) showToast("create new folder successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                if (null != errorMsg) {
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
                     showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot get can access folder return.");
                 }
             } else {
                 int canAccess = job.getInt("can_access");

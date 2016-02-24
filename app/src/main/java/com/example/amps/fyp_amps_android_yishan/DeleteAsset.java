@@ -105,7 +105,11 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
                 modifyAssetListener.onDeleteAsset();
             } else {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot delete asset.");
+                }
             }
         }catch (JSONException e) {
                 e.printStackTrace();

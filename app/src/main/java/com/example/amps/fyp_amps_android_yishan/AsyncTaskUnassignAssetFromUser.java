@@ -69,9 +69,13 @@ public class AsyncTaskUnassignAssetFromUser extends AsyncTask<Object, Object, Ob
             job = json.getJSONObject(0);
             int errorCode = job.getInt("error_code");
 //            if (errorCode == 0) showToast("get one level child successfully");
-            if (errorCode != 0 && errorCode != 3333) {
+            if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot unassign asset from user.");
+                }
                 return;
             } else {
                 unassignAssetFromUserListener.onUnassignAssetFromUserReady(newAssignUserId);

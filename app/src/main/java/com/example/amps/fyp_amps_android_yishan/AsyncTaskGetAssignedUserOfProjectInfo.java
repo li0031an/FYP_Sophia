@@ -68,7 +68,11 @@ public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Obj
 //            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot get assigned users of project info.");
+                }
                 return;
             }
             data_array = job.getJSONArray("data_array");

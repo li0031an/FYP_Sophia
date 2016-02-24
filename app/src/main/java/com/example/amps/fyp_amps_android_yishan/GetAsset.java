@@ -106,7 +106,11 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
 //            if (errorCode == 0) showToast("get one level child successfully");
             if (errorCode != 0) {
                 String errorMsg = job.getString("error_messages");
-                showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                if (null != errorMsg && !errorMsg.equalsIgnoreCase("[]")) {
+                    showToast(errorMsg.substring(2, errorMsg.length() - 2));
+                } else {
+                    showToast("Error: cannot get asset.");
+                }
                 assetArrayList = null;
             }
 
