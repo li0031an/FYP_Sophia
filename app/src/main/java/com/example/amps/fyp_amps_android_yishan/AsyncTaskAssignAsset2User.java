@@ -57,6 +57,10 @@ public class AsyncTaskAssignAsset2User extends AsyncTask<Object, Object, Object>
     @Override
     protected void onPostExecute(Object result) {
         dialog.dismiss();
+        if (null == result) {
+            showToast("Sorry, you are not able to assign tasks. ");
+            return;
+        }
         Log.d(TAG, result.toString());
         JSONArray json, data_array;
         JSONObject job;

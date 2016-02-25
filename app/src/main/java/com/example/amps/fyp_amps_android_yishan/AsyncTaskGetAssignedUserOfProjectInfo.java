@@ -58,6 +58,7 @@ public class AsyncTaskGetAssignedUserOfProjectInfo extends AsyncTask<Object, Obj
     @Override
     protected void onPostExecute(Object result) {
         dialog.dismiss();
+        if (null == result) return ;
         Log.d(TAG, result.toString());
         JSONArray json, data_array;
         JSONObject job;

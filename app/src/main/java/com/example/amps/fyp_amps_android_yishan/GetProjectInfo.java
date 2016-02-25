@@ -105,35 +105,48 @@ public class GetProjectInfo extends AsyncTask<Object, Object, Object> implements
                 return array;
             }
             data_array = job.getJSONArray("data_array");
-            for (int i = 0; i < data_array.length(); i++) {
-                JSONObject dataJob = new JSONObject(data_array.getString(i));
-                p = new Project();
-                if (!dataJob.isNull("project_id")) {
-                    p.setProject_id(dataJob.getString("project_id"));
-                } if (!dataJob.isNull("name")) {
-                    p.setName(dataJob.getString("name"));
-                } if (!dataJob.isNull("des")) {
-                    p.setDes(dataJob.getString("des"));
-                } if (!dataJob.isNull("estimated_datestart")) {
-                    p.setEstimated_datestart(dataJob.getString("estimated_datestart"));
-                } if (!dataJob.isNull("estimated_dateend")) {
-                    p.setEstimated_dateend(dataJob.getString("estimated_dateend"));
-                } if (!dataJob.isNull("actual_datestart")) {
-                    p.setActual_datestart(dataJob.getString("actual_datestart"));
-                } if (!dataJob.isNull("actual_dateend")) {
-                    p.setActual_dateend(dataJob.getString("actual_dateend"));
-                } if (!dataJob.isNull("duration")) {
-                    p.setDuration(dataJob.getString("duration"));
-                } if (!dataJob.isNull("created_userid")) {
-                    p.setCreated_userid(dataJob.getString("created_userid"));
-                } if (!dataJob.isNull("created_datetime")) {
-                    p.setCreated_datetime(dataJob.getString("created_datetime"));
-                } if (!dataJob.isNull("updated_userid")) {
-                    p.setUpdated_userid(dataJob.getString("updated_userid"));
-                } if (!dataJob.isNull("updated_datetime")) {
-                    p.setUpdated_datetime(dataJob.getString("updated_datetime"));
+            if (null != data_array) {
+                for (int i = 0; i < data_array.length(); i++) {
+                    JSONObject dataJob = new JSONObject(data_array.getString(i));
+                    p = new Project();
+                    if (!dataJob.isNull("project_id")) {
+                        p.setProject_id(dataJob.getString("project_id"));
+                    }
+                    if (!dataJob.isNull("name")) {
+                        p.setName(dataJob.getString("name"));
+                    }
+                    if (!dataJob.isNull("des")) {
+                        p.setDes(dataJob.getString("des"));
+                    }
+                    if (!dataJob.isNull("estimated_datestart")) {
+                        p.setEstimated_datestart(dataJob.getString("estimated_datestart"));
+                    }
+                    if (!dataJob.isNull("estimated_dateend")) {
+                        p.setEstimated_dateend(dataJob.getString("estimated_dateend"));
+                    }
+                    if (!dataJob.isNull("actual_datestart")) {
+                        p.setActual_datestart(dataJob.getString("actual_datestart"));
+                    }
+                    if (!dataJob.isNull("actual_dateend")) {
+                        p.setActual_dateend(dataJob.getString("actual_dateend"));
+                    }
+                    if (!dataJob.isNull("duration")) {
+                        p.setDuration(dataJob.getString("duration"));
+                    }
+                    if (!dataJob.isNull("created_userid")) {
+                        p.setCreated_userid(dataJob.getString("created_userid"));
+                    }
+                    if (!dataJob.isNull("created_datetime")) {
+                        p.setCreated_datetime(dataJob.getString("created_datetime"));
+                    }
+                    if (!dataJob.isNull("updated_userid")) {
+                        p.setUpdated_userid(dataJob.getString("updated_userid"));
+                    }
+                    if (!dataJob.isNull("updated_datetime")) {
+                        p.setUpdated_datetime(dataJob.getString("updated_datetime"));
+                    }
+                    array.add(p);
                 }
-                array.add(p);
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -61,6 +61,7 @@ public class AsyncTaskUnassignAssetFromUser extends AsyncTask<Object, Object, Ob
     @Override
     protected void onPostExecute(Object result) {
         dialog.dismiss();
+        if (null == result) return;
         Log.d(TAG, result.toString());
         JSONArray json, data_array;
         JSONObject job;

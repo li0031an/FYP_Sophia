@@ -93,6 +93,7 @@ public class DeleteAsset extends AsyncTask<Object, Object, Object> implements Se
     }
 
     public void parseJSONResponse(String responseBody) {
+        if (null == responseBody || 0 == responseBody.length()) return;
         Log.d(TAG, "responseBody: " + responseBody);
         JSONArray json;
         JSONObject job;

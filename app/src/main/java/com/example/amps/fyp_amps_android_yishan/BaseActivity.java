@@ -162,6 +162,7 @@ public class BaseActivity extends Activity implements Settings {
         }
 
         public void parseJSONResponse(String responseBody) {
+            if (null == responseBody || 0 == responseBody.length()) return;
             JSONArray json, data_array;
             JSONObject job;
             try {

@@ -96,6 +96,7 @@ public class AsyncTaskCreateProjectFolder extends AsyncTask<Object, Object, Obje
     }
 
     public String parseResultObject(String responseBody) {
+        if (null == responseBody || 0 == responseBody.length()) return null;
         JSONArray json;
         JSONObject job, data_array;
         String tempFolderId = "";

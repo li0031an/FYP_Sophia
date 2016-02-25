@@ -90,6 +90,7 @@ public class AsyncTaskDeleteProjectFolder extends AsyncTask<Object, Object, Obje
     }
 
     public boolean parseResultObject(String responseBody) {
+        if (null == responseBody || 0 == responseBody.length()) return false;
         JSONArray json, errorMsg;
         JSONObject job, data_array;
         boolean isSuccessful = false;

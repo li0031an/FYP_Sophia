@@ -136,11 +136,13 @@ public class GetRootFolderId extends AsyncTask<Object, Object, Object> implement
                 return rootFolderId;
             }
             data_array = job.getJSONObject("data_array");
-            Folder folder = parseFolder(data_array);
-            if (null != folder) {
-                rootFolderId.setRootFolderInfo(folder);
-            } else {
-                Log.e(TAG, "root folder id is null unexpectedly");
+            if (null != data_array) {
+                Folder folder = parseFolder(data_array);
+                if (null != folder) {
+                    rootFolderId.setRootFolderInfo(folder);
+                } else {
+                    Log.e(TAG, "root folder id is null unexpectedly");
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();

@@ -94,6 +94,7 @@ public class AsyncTaskCanAccessFolder extends AsyncTask<Object, Object, Object> 
     }
 
     public int parseResultObject(String responseBody) {
+        if (null == responseBody || 0 == responseBody.length()) return -1;
         JSONArray json;
         JSONObject job, data_array;
         String tempFolderId = "";
