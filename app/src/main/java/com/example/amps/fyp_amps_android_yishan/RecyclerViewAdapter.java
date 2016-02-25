@@ -115,7 +115,8 @@ public class RecyclerViewAdapter extends RecyclerView
             Asset asset = (Asset) mDataset.get(position);
             holder.label.setText(asset.getName());
 
-            if (null != asset.getExt() && ((asset.getExt().equals("jpg") || (asset.getExt().equals("png") || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
+            if (null != asset.getExt() && ((asset.getExt().equals("jpg") || (asset.getExt().equals("png")
+                    || (asset.getExt().equals("jpeg")) || (asset.getExt().equals("gif")))))) {
                 if (null != asset.getBase64_thumbnail() && (!asset.getBase64_thumbnail().isEmpty())) {
 //                    Log.d(TAG, "get Base64_thumbnail");
                     byte[] decodedString = Base64.decode(

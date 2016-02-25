@@ -31,7 +31,7 @@ import java.util.ArrayList;
 
 public class ProjectDetailsActivity extends BaseActivity implements Settings, View.OnClickListener
         , GetRootFolderIdListener, GetOneLevelChildListener, GetAssetListener
-        , CreateDeleteProjectFolderListener, CanAccessFolderListener {
+        , CreateDeleteProjectFolderListener, CanAccessFolderListener, GetSharedResourceListener {
 
     private static String TAG = "ProjectDetailsActivity";
     private String projectId;
@@ -39,11 +39,11 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     private Folder rootFolder;
     private ArrayList<Object> folderList = new ArrayList<Object>();
     private ArrayList<Object> assetList = new ArrayList<Object>();
-    private Object currentItemList;
     GetRootFolderId getRootFolderId;
     GetOneLevelChild getOneLevelChild;
     GetAsset getAsset;
     GetAssetDetail getAssetDetail;
+    AsyncTaskGetSharedResource asyncTaskGetSharedResource;
 
     private static String header;
     private RecyclerView mRecyclerView;
@@ -117,15 +117,6 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
     }
 
-    @Override
-    public void onCanAccessFolderReady (boolean isProjectAdmin) {
-        if (isProjectAdmin) {
-            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
-            getRootFolderId.execute();
-        } else {
-            showToast("not project admin");
-        }
-    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -184,7 +175,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                             public void onClick(DialogInterface dialog, int id) {
                                 // get user input and set it to result
                                 // edit text
-                                String name =  userInput.getText().toString();
+                                String name = userInput.getText().toString();
                                 startCreateProjectFolderAsyncTask(name);
                             }
                         })
@@ -216,13 +207,13 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
             // set dialog message
             alertDialogBuilder
-                    .setMessage("Confirm to delete the folder " + ((Folder)folderList.get(position)).getName() + " ?")
+                    .setMessage("Confirm to delete the folder " + ((Folder) folderList.get(position)).getName() + " ?")
                     .setCancelable(false)
                     .setPositiveButton("Confirm",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
 //                                    showToast("should start delete folder " + ((Folder)folderList.get(position)).getName());
-                                    startDeleteProjectFolderAsyncTask((Folder)folderList.get(position));
+                                    startDeleteProjectFolderAsyncTask((Folder) folderList.get(position));
                                 }
                             })
                     .setNegativeButton("Cancel",
@@ -242,7 +233,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         }
     }
 
-    public void startCreateProjectFolderAsyncTask(String name){
+    public void startCreateProjectFolderAsyncTask(String name) {
         AsyncTaskCreateProjectFolder asyncTaskCreateProjectFolder =
                 new AsyncTaskCreateProjectFolder(this, name, ProjectDetailsActivity.this,
                         rootFolderId, settings, projectId);
@@ -267,7 +258,7 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart()");
-        if(null != mAdapter) {
+        if (null != mAdapter) {
             ((RecyclerViewAdapter) mAdapter).clearData();
         }
         SharedPreferences details = getSharedPreferences(TAG, Context.MODE_PRIVATE);
@@ -488,6 +479,79 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
         startActivity(intent);
     }
 
+    protected void refreshRecyclerView() {
+        mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
+        noAssetItem = 0;
+        noFolderItem = 0;
+        if (null != folderList) {
+            noFolderItem = folderList.size();
+        }
+        if (null != assetList) {
+            noAssetItem = assetList.size();
+        }
+        ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
+            @Override
+            public void onItemClick(int position, View v) {
+                onItemClickCommon(position, v);
+            }
+        });
+        mRecyclerView.setAdapter(mAdapter);
+    }
+
+    protected void refreshFolderList(ArrayList<Folder> arrayfolderList) {
+        if (null != arrayfolderList && 0 != arrayfolderList.size()) {
+//            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
+            folderList.clear();
+//            Log.d(TAG, "start to add folderlist");
+            for (int i = 0; i < arrayfolderList.size(); i++) {
+//                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
+                folderList.add(arrayfolderList.get(i));
+            }
+        } else {
+            folderList.clear();
+        }
+        refreshRecyclerView();
+    }
+
+    protected void refreshBasicAssetList(ArrayList<Asset> arrayAssetList) {
+        if (null != arrayAssetList) {
+//            Log.d(TAG, "assetList is gotten");
+            Boolean needThumbNailUpdate = false;
+            Boolean hasBasicInfo = false;
+            assetList.clear();
+            ArrayList<String> assetIdList = new ArrayList<String>();
+            for (int i = 0; i < arrayAssetList.size(); i++) {
+                Asset temp = arrayAssetList.get(i);
+                assetIdList.add(temp.asset_id);
+                if (null != temp.getExt()) {
+                    hasBasicInfo = true;
+                    if (temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif")))) {
+//                    Log.d(TAG, "call GetAssetDetail()");
+                        needThumbNailUpdate = true;
+                    }
+                } else {
+                    needThumbNailUpdate = true;
+                }
+                assetList.add(temp);
+            }
+            //Todo -- if several images are calling GetAssetDetail() at almost the same time
+            if (needThumbNailUpdate) {
+                String selectAttributes;
+                if (hasBasicInfo) {
+                    selectAttributes = "[asset_id],[base64_thumbnail],[ext]";
+                } else {
+                    selectAttributes = "[asset_id], [name], [ext], [file_size]" +
+                            ", [latest_revid], [latest_revnum], [updated_userid], [updated_username]" +
+                            ", [updated_datetime], [assigned_userid]" +
+                            ", [base64_small_file], [latest_revsize]";
+                }
+                getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId, selectAttributes);
+                getAssetDetail.execute();
+            }
+            refreshRecyclerView();
+        }
+    }
+
 
     @Override
     public void onGetRootFolderIdReady() {
@@ -512,82 +576,14 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
 
         if (valid) {
             ArrayList<Folder> arrayfolderList = getOneLevelChild.getFolderList();
-//        Log.d(TAG, "arrayfolderList.size(): " + arrayfolderList.size());
-
-            if (null != arrayfolderList && 0 != arrayfolderList.size()) {
-//            Log.d(TAG, "folderList.getFolder_id: " + arrayfolderList.get(0).getFolder_id());
-                currentItemList = (Object) arrayfolderList;
-                folderList.clear();
-//            Log.d(TAG, "start to add folderlist");
-                for (int i = 0; i < arrayfolderList.size(); i++) {
-//                Log.d(TAG, "i, arrayfolder name " + i + " " + arrayfolderList.get(i).getName());
-                    folderList.add(arrayfolderList.get(i));
-                }
-                mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-                noAssetItem = 0;
-                noFolderItem = 0;
-                if (null != folderList) {
-                    noFolderItem = folderList.size();
-                }
-                if (null != assetList) {
-                    noAssetItem = assetList.size();
-                }
-                ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                    @Override
-                    public void onItemClick(int position, View v) {
-                        onItemClickCommon(position, v);
-                    }
-                });
-                mRecyclerView.setAdapter(mAdapter);
-            } else {
-                folderList.clear();
-            }
+            refreshFolderList(arrayfolderList);
         }
     }
 
     @Override
     public void onAssetReady() {
         ArrayList<Asset> arrayAssetList = getAsset.getAssetList();
-
-        if (null != arrayAssetList) {
-//            Log.d(TAG, "assetList is gotten");
-            Boolean needThumbNailUpdate = false;
-            assetList.clear();
-            ArrayList<String> assetIdList = new ArrayList<String>();
-            for (int i = 0; i < arrayAssetList.size(); i++) {
-                Asset temp = arrayAssetList.get(i);
-//                Log.d(TAG, "array type: " + temp.getExt());
-                if (null != temp.getExt() && (temp.getExt().equals("jpg") || (temp.getExt().equals("png") || (temp.getExt().equals("jpeg")) || (temp.getExt().equals("gif"))))) {
-//                    Log.d(TAG, "call GetAssetDetail()");
-                    needThumbNailUpdate = true;
-                    assetIdList.add(temp.asset_id);
-                } //Todo -- if several images are calling GetAssetDetail() at almost the same time
-                assetList.add(temp);
-            }
-            currentItemList = (Object) assetList;
-            if (needThumbNailUpdate) {
-                String selectAttributes = "[asset_id],[base64_thumbnail],[ext]";
-                getAssetDetail = new GetAssetDetail(this, ProjectDetailsActivity.this, settings, assetIdList, projectId, selectAttributes);
-                getAssetDetail.execute();
-            }
-            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-            noAssetItem = 0;
-            noFolderItem = 0;
-            if (null != folderList) {
-                noFolderItem = folderList.size();
-            }
-            if (null != assetList) {
-                noAssetItem = assetList.size();
-            }
-            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                @Override
-                public void onItemClick(int position, View v) {
-                    onItemClickCommon(position, v);
-                }
-            });
-            mRecyclerView.setAdapter(mAdapter);
-
-        }
+        refreshBasicAssetList(arrayAssetList);
     }
 
     public void onAssetDetailReady() {
@@ -601,11 +597,16 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                     for (int i = 0; i < assetList.size(); i++) {
                         Asset temp = (Asset) assetList.get(i);
                         if (temp.getAsset_id().equalsIgnoreCase(assetDetail.getAsset_id())) {
-                            String base64_thumbnail = assetDetail.getBase64_thumbnail();
-                            if (null == base64_thumbnail) {
+                            if (null == assetDetail.getName()) {
+                                String base64_thumbnail = assetDetail.getBase64_thumbnail();
+//                                if (null == base64_thumbnail) {
 //                                Log.d(TAG, "base64_thumbnail is null");
+//                                }
+                                ((Asset) assetList.get(i)).setBase64_thumbnail(base64_thumbnail);
+                            } else {
+                                assetList.remove(i);
+                                assetList.add(assetDetail);
                             }
-                            ((Asset) assetList.get(i)).setBase64_thumbnail(base64_thumbnail);
                             newAssetUsed = true;
                             if (null != ((Asset) assetList.get(i)).getBase64_thumbnail()) {
 //                                Log.d(TAG, "Base64_thumbnail is available");
@@ -617,43 +618,10 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
                         Log.d(TAG, "new asset is not used, asset id: " + assetDetail.getAsset_id());
                         Log.d(TAG, "new asset is not used, asset type: " + assetDetail.getExt());
                     }
-//                    mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-//                    noAssetItem = 0;
-//                    noFolderItem = 0;
-//                    if (null != folderList) {
-//                        noFolderItem = folderList.size();
-//                    }
-//                    if (null != assetList) {
-//                        noAssetItem = assetList.size();
-//                    }
-//                    ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-//                        @Override
-//                        public void onItemClick(int position, View v) {
-//                            onItemClickCommon(position, v);
-//                        }
-//                    });
-//                    mRecyclerView.setAdapter(mAdapter);
                 }
             }
-//            Log.d(TAG, "onAssetDetailReady: folderList, assetList" + folderList.size() + " " + assetList.size());
-            mAdapter = new RecyclerViewAdapter(this, folderList, assetList);
-            noAssetItem = 0;
-            noFolderItem = 0;
-            if (null != folderList) {
-                noFolderItem = folderList.size();
-            }
-            if (null != assetList) {
-                noAssetItem = assetList.size();
-            }
-            ((RecyclerViewAdapter) mAdapter).setOnItemClickListener(new RecyclerViewAdapter.MyClickListener() {
-                @Override
-                public void onItemClick(int position, View v) {
-                    onItemClickCommon(position, v);
-                }
-            });
-            mRecyclerView.setAdapter(mAdapter);
+            refreshRecyclerView();
         }
-        currentItemList = (Object) assetList;
     }
 
     @Override
@@ -691,6 +659,26 @@ public class ProjectDetailsActivity extends BaseActivity implements Settings, Vi
             Log.e(TAG, "folderId is null in onDeleteProjectFolderReady");
         }
     }
+
+    @Override
+    public void onCanAccessFolderReady(boolean isProjectAdmin) {
+        if (isProjectAdmin) {
+            getRootFolderId = new GetRootFolderId(this, ProjectDetailsActivity.this, settings, projectId);
+            getRootFolderId.execute();
+        } else {
+            asyncTaskGetSharedResource = new AsyncTaskGetSharedResource(this, ProjectDetailsActivity.this, settings, projectId);
+            asyncTaskGetSharedResource.execute();
+        }
+    }
+
+    @Override
+    public void onGetSharedResourceReady() {
+        ArrayList<Folder> tempFolderList = asyncTaskGetSharedResource.getFolderList();
+        refreshFolderList(tempFolderList);
+        ArrayList<Asset> tempAssetList = asyncTaskGetSharedResource.getAssetList();
+        refreshBasicAssetList(tempAssetList);
+    }
+
 
     public void createFolderCardRow(View v) {
 //        CardView tl = (CardView) findViewById(R.id.cardRowFolderList);

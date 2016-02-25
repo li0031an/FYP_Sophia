@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class GetAsset extends AsyncTask<Object, Object, Object> implements Settings{
+public class GetAsset extends AsyncTask<Object, Object, Object> implements Settings {
     private static String TAG = "GetAsset";
     GetAssetListener getAssetListener;
     Context context;
@@ -31,7 +31,8 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
     String folderId;
     ArrayList<Asset> assetList = new ArrayList<Asset>();
 
-    public GetAsset(GetAssetListener getAssetListener, Context context, SharedPreferences settings, String rootId, String projectId){
+    public GetAsset(GetAssetListener getAssetListener, Context context, SharedPreferences settings
+            , String rootId, String projectId) {
         this.getAssetListener = getAssetListener;
         this.context = context;
         this.settings = settings;
@@ -128,37 +129,47 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
 //            if (null != assetArrayList && assetArrayList.size() == 0) {
 //                showToast("the folder is empty.");
 //            }
-        }catch(JSONException e){
-                e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return assetArrayList;
     }
 
-    private Asset parseAsset(JSONObject data_array){
+    private Asset parseAsset(JSONObject data_array) {
         Asset asset = new Asset();
         try {
             if (!data_array.isNull("asset_id")) {
                 asset.setAsset_id(data_array.getString("asset_id"));
                 Log.d(TAG, "parseAsset: setAsset_id()" + asset.getAsset_id());
-            } if (!data_array.isNull("name")) {
+            }
+            if (!data_array.isNull("name")) {
                 asset.setName(data_array.getString("name"));
-            } if (!data_array.isNull("ext")) {
+            }
+            if (!data_array.isNull("ext")) {
                 asset.setExt(data_array.getString("ext"));
-            } if (!data_array.isNull("created_userid")) {
+            }
+            if (!data_array.isNull("created_userid")) {
                 asset.setCreated_userid(data_array.getString("created_userid"));
-            } if (!data_array.isNull("estimated_datestart")) {
+            }
+            if (!data_array.isNull("estimated_datestart")) {
                 asset.setEstimated_datestart(data_array.getString("estimated_datestart"));
-            } if (!data_array.isNull("created_datetime")) {
+            }
+            if (!data_array.isNull("created_datetime")) {
                 asset.setCreated_datetime(data_array.getString("created_datetime"));
-            } if (!data_array.isNull("updated_userid")) {
+            }
+            if (!data_array.isNull("updated_userid")) {
                 asset.setUpdated_userid(data_array.getString("updated_userid"));
-            } if (!data_array.isNull("estimated_dateend")) {
+            }
+            if (!data_array.isNull("estimated_dateend")) {
                 asset.setEstimated_dateend(data_array.getString("estimated_dateend"));
-            } if (!data_array.isNull("updated_datetime")) {
+            }
+            if (!data_array.isNull("updated_datetime")) {
                 asset.setUpdated_datetime(data_array.getString("updated_datetime"));
-            } if (!data_array.isNull("getBase64_thumbnail")) {
+            }
+            if (!data_array.isNull("getBase64_thumbnail")) {
                 asset.setBase64_thumbnail(data_array.getString("getBase64_thumbnail"));
-            } if (!data_array.isNull("statusid")) {
+            }
+            if (!data_array.isNull("statusid")) {
                 asset.setStatusid(data_array.getString("statusid"));
             }
         } catch (JSONException e) {
@@ -167,7 +178,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         return asset;
     }
 
-    public void showToast(String info){
+    public void showToast(String info) {
         Toast toast = Toast.makeText(
                 context,
                 info,
@@ -175,7 +186,7 @@ public class GetAsset extends AsyncTask<Object, Object, Object> implements Setti
         toast.show();
     }
 
-    protected ArrayList<Asset> getAssetList(){
+    protected ArrayList<Asset> getAssetList() {
         return assetList;
     }
 }
